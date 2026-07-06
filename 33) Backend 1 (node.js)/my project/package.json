@@ -1,0 +1,15 @@
+{
+  "name": "learning-node.js",
+  "version": "1.0.0",
+  "description": "this the my project where i m create my own package and learning how to integrate it and use it. Today I learned for the first time that i can create packages and contribte so that other developers can use it. Let see how how stong I can become. I truely never tested my abilities but now it feels like I can achieve anything. ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Priyanshu Srivastava aka KRISH",
+  "license": "ISC",
+  "dependencies": {
+    "figlet": "^1.9.4",
+    "give-me-a-joke": "^0.5.1"
+  }
+}
