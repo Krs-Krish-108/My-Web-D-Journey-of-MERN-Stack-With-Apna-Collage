@@ -8,5 +8,5 @@
   },
   "author": "Krish",
   "license": "ISC",
-  "type": "module"
+  "type": "commonjs"
 }
