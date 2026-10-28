@@ -1,0 +1,16 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  color: #111
+}
+
+body {
+  background-color: pink;
+}
+img{
+    width: 150px;
+    height: 150px;
+}
+hr{
+    border: 1px solid #111;
+}
