@@ -6,17 +6,29 @@
     <title>GET & POST</title>
 </head>
 <body>
+
     <h1>Get request Form</h1>
+<!--    
+    in ```method="get" ``` all the details filled is sent through and visible in the URL, which is unsafe, specially details like password.
+    
+    all details is sent via URL which as a result increases the length of the URL, and different browers  a have their specific lenth for a URL, which means if the length exceeds, the browser won't allow our URL.
+-->
     <form method="get" action="http://localhost:8080/register">
         <input placeholder="Enter username" type="text" name="user">
         <input placeholder="Enter password" type="password" name="password">
         <input type="submit">
     </form>
+
+    <!-- method shows how our request will be sent once we submit the form -->
+
     <h1>Post request Form</h1>
+    <!-- here the data is not sent directly via URL but rather sent inside the request body -->
+
     <form method="post" action="http://localhost:8080/register">
         <input placeholder="Enter username" type="text" name="user">
         <input placeholder="Enter password" type="password" name="password">
         <input type="submit">
-    </form>=
+    </form>
+    <script src="script.js"></script>
 </body>
 </html>
