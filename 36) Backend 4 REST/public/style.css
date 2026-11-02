@@ -1,0 +1,24 @@
+* {
+ 
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+.heading{
+    color: crimson;
+}
+
+.container{
+    width: 100%;
+    padding: 2px;
+    background-color: aqua;
+}
+
+.username{
+    color: blue;
+}
