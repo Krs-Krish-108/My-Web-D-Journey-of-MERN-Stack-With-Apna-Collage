@@ -12,12 +12,18 @@
         <div class="container">
             <h4 class="username">@<%= post.username%></h4>
             <h5 class="content"><%= post.content%></h5>
-            <a href="http://localhost:8080/posts/<%= post.id %>"> View post</a>
+            <a href="http://localhost:8080/posts/<%= post.id %>"> View post</a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="http://localhost:8080/posts/<%= post.id %>/edit"> Edit post</a>&nbsp;&nbsp;&nbsp;&nbsp; 
+            <form method="post" action="/posts/<%=post.id%>?_method=DELETE">
+                <button>Delete</button>
+            </form>
         </div>  
         <br>  
     <%}%>
     <br>
     <br>
-    <a href="http://localhost:8080/posts/new">Create new post</a>
+    <form action="/posts/new">
+        <button>Create New Post</button>
+    </form>
 </body>
 </html>
