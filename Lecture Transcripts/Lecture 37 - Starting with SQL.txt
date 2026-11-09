@@ -1,0 +1,714 @@
+# MySQL and MongoDB Overview
+
+## Summary
+### Flow Summary
+Speaker 1 ne Delta course ke liye databases ka intro diya: SQL vs NoSQL, tables aur schema, MySQL Workbench setup, aur basic SQL commands (CREATE, DROP, USE, INSERT, SELECT) ka demo.
+
+### Database aur DBMS ki basics
+- Database large data ka collection hai; SQL ek language hai jo database se baat karne ke liye use hoti hai, khud database nahi
+- Files ke mukable databases: large data storage, security, scalability, aur aasan search/CRUD operations
+- Ab tak data.json ya arrays par CRUD kiya, practical life mein ye sab databases ke saath hota hai
+- DBMS database ke upar ek layer hai jo operations aur SQL queries deti hai
+
+### SQL vs NoSQL databases
+- SQL (relational) databases data tables mein store karte hain; table ko hi relation kehte hain
+    - Examples: MySQL, Oracle, PostgreSQL; sab SQL use karte hain, thoda flavor alag
+- NoSQL (non-relational) databases ka collection hai jo SQL use nahi karte: documents, key-value, graph
+    - Examples: MongoDB, Cassandra, Neo4j; MongoDB MERN/MEAN stack ka M hai
+- Course order: pehle MySQL, phir MongoDB; dono independent hain, SQL tables se visualize karna aasan
+- Company ki tech stack jaanna interviews mein edge deta hai, jaise Oracle ke liye SQL basics
+
+### Server, databases, tables aur schema
+- MySQL ek server hai jis par multiple databases bante hain, har database mein interrelated tables
+    - Examples: college (student, teacher), xyz company (employee), Instagram (user)
+- Columns table ka design batate hain, jise schema kehte hain
+- Row ek entity ka data hoti hai, jise tuple kehte hain
+
+### Installation aur MySQL Workbench
+- Do cheezein install karni hain: MySQL server aur MySQL Workbench (Windows aur Mac dono ke liye links diye gaye)
+- Workbench mein naya connection banaya (delta connection), password set kiya, test connection kiya; default localhost3306
+- sys database internal system data rakhta hai, ise kabhi change nahi karna
+- Selected statement ko cursor wale execute option se ek-ek karke run karna prefer karenge
+
+### Basic SQL commands demo
+- CREATE DATABASE college aur xyz\_company banaye; DROP DATABASE se xyz\_company delete kiya
+- SQL case insensitive hai; commands capital mein, naam small mein likhna prefer, har command ke end mein semicolon
+- USE college ke baad CREATE TABLE student: roll\_number int, name varchar(30), age int
+- INSERT INTO se Adam (101, 12) aur Bob (102, 14) add kiye, SELECT \* FROM student se dekha; IF NOT EXISTS error ko warning banata hai
+
+## Transcript
+[00:01] Speaker 1: Hi everyone aur ab hum baat karne waale hain apne databases ke baare mein. To abhi hamaara backend complete nahi hua hai; backend ke andar hi hum apne databases ko padhne waale hain ki kaise hum apne data ko store karne ke liye DBs ko use kar sakte hain, aur kaise node ki help se hum un databases ko access kar sakte hain. Ab sabse pehla database jisko hum cover karenge, ye hone wala hai MySQL.
+[00:18] Speaker 1:  Yahan par ek cheez zaroor dhyan deni hai ki MySQL hamara database hone wala hai, aur is database ko use karne ke liye hum ek language ko padhte hain jis language ka naam SQL hota hai. Aisa nahi hai ki MySQL hamari language hai ya SQL database hai.
+[00:30] Speaker 1:  Ye jo SQL hota hai, ye koi database nahi hai; ye ek language hoti hai jisko database ke saath baat karne ke liye use kiya jata hai. Database ko hum aise imagine kar sakte hain ki yahan par hamara bahut sara data stored hoga.
+[00:39] Speaker 1:  Ek tarike se usko imagine kar sakte hain ki hamare paas kaafi saari files hain ek folder ke andar, toh us folder ko humne database naam de diya. Ab is database ko access karne ke liye, yaani isme se data delete karne ke liye, data ko update karne ke liye, naya data add karne ke liye, hum directly is folder ko touch nahi kar sakte.
+[00:51] Speaker 1:  Hamein kya karna padega? Beech mein ek translator lagana padega, jo hai hamare paas SQL.
+[00:55] Speaker 1:  Yaani hum isi bhasha ko use karke apne is database ke andar saare changes kar sakte hain. To as a developer, hum SQL ko use karenge to access the database and to make changes to the database itself.
+[01:05] Speaker 1:  To yahan se hum apni shuruat karne waale hain. Pehle hum SQL ko padhenge, uske baad hum Mongo DB ko cover karenge, jo hamara non-relational database hota hai.
+[01:11] Speaker 1:  To abhi ke kuch parts ke liye hum focus karne waale hain apne SQL ke upar. Ab sabse pehle baat karte hain ki hamara database exactly hota kya hai.
+[01:18] Speaker 1:  Database ki jab hum baat karte hain, toh it is a collection of data in a format that can be easily accessed. Ab shuruat mein kya hota tha, jab databases nahi hote the, saari ki saari jo cheezein hain, woh files ke format mein store hoti thi.
+[01:27] Speaker 1:  Isko hum aise imagine kar sakte hain jaise government officers hote hain ya bank hote hain. Pehle jab internet nahi hota tha, pehle jab hamari websites nahi hoti thin, toh saari cheezein hamari files aur folders ki form mein store hoti thin.
+[01:35] Speaker 1:  Uske baad jab cheezein digital hone lagin, toh wahi jo physical files hoti hain, paper wali files hoti hain, unhi ka digital format aane laga, jo hamare computer system ke andar hum files bana sakte hain, folders bana sakte hain. Uske baad jab data bahut bade scale par store hone laga, kyunki ek bank system ke paas aisa toh hai nahi ki sirf 100 logon ka data hai.
+[01:50] Speaker 1:  Bank ke paas ho sakta hai hazaron, lakhon logon ka data ho. Isi tarike se aisi-aisi apps hain, jaise Facebook ho gaya, jinke paas karodon logon ka data hai.
+[01:56] Speaker 1:  Ab itna sara data kisi ek computer ke andar, kisi laptop ke andar store kar pana possible nahi hai. To yahan se hamare paas concept nikla databases ka.
+[02:03] Speaker 1:  Databases mein sirf aisa nahi ki hum bahut sara data store kar sakte hain; uske alawa bhi bahut saare additional features hote hain. To databases ko jab hum imagine kar rahe hain, inhein imagine karna hai as a collection of large data.
+[02:12] Speaker 1:  Hum utna large data toh khud se store nahi karwayenge, par jab bhi databases company ke andar exist karte hain, toh wahan par lakhon logon ka data wahan par store hota hai. To hum databases ko exactly use kyun karte hain?
+[02:20] Speaker 1: Kyonki pehla, ye large data ko store kar sakte hain. Dusra, inke andar security ke features hote hain.
+[02:25] Speaker 1: Jaise agar hamare system ke andar koi file hai, koi folder hai, wo itni secure nahi hoti as compared to the data jo hamare databases ke andar stored hota hai. Iske alawa, scalability ka feature bhi inke paas hota hai ki kal ko agar hamari app maan lete hain bahut zyada boom kar gayi, aur kaafi saare users uske paas aa gaye, kaafi saare users hamari website ke upar aa gaye, toh phir hamare database ke paas capability hai ki wo scale kar paega, wo expand ho paega depending
+[02:43] Speaker 1: upon the users. Aur iske alawa bhi kai saare features hain. Saath ke sath, databases ko use karna, access karna aasan hota hai as compared to files.
+[02:50] Speaker 1: Files ke andar ek-ek cheez agar hamein search karni hai. Maan lete hain, ek file ke andar agar 2000 logon ke naam stored hain, toh usme se ek specific information nikalna, ya un logon ki information nikalna jo saare ke saare Delhi ke resident hain, ya jo saare ke saare Bangalore ke resident hain, is tarike ki queries perform karna mushkil hota hai.
+[03:03] Speaker 1: Jabki databases ke andar ye bahut easy, ek single line ki command likhni padti hai. Toh databases ke andar data ko insert karna, data ko update karna, data ko delete karna, aur in fact, data ko search karna, ye saare ke saare operations bahut easy hote hain ek baar humne SQL ko sikh liya toh.
+[03:18] Speaker 1: Toh basically, abhi tak backend ke andar jo hum CRUD operations karte aa rahe the, CRUD operations yaani data ko create karna, read karna, update karna, delete karna. Abhi toh in saare operations ko humne is tarike ke jaise data.json naam ki humne file bana li, ya fir humne koi array bana liya, uske andar hum changes kar rahe hain.
+[03:31] Speaker 1: But actual, practical life mein saare ke saare changes hamare databases ke sath hote hain, na ki normal arrays ya na ki normal JSON files ke sath. Toh isliye ab hum sahi tarika dekh rahe hain apne data ke sath deal karne ka.
+[03:40] Speaker 1: Uske sath-sath, jab bhi hum data ki baat karte hain, hamare paas ek aur additional term aati hai, DBMS naam se, which is database management systems. Database management systems bas hamare database ke upar ek additional layer hoti hai.
+[03:50] Speaker 1: Jaise ye hamara database hai, jiske andar sara ka sara data stored hai. Ab is data ko access karne ke liye, maan lete hain ki humne bahut saare operations de diye, bahut saare functions de diye, alag-alag commands humne set kar diye.
+[04:00] Speaker 1: Toh ye ek jo layer aa gayi iske upar, ise hum apna DBMS keh dete hain. Aur DBMS ke andar hi hamare paas SQL queries ho jaati hain.
+[04:06] Speaker 1: Toh DBMS koi alag se term nahi hai, koi alag se database nahi hota. DBMS hamare database ke upar hi ek humne covering chada di hai, usko aur achhe se systematically organize karne ke liye, jisko hum apna DBMS keh dete hain.
+[04:21] Speaker 1: Ab ye to ho gayi baat databases ki. Databases ke andar bhi hamare paas kai saare different-different types hote hain.
+[04:27] Speaker 1: Ek hote hain hamare paas SQL databases, ek hote hain hamare paas NoSQL databases. SQL databases ko hum relational database bhi kehte hain.
+[04:34] Speaker 1: Relational database kehne ka matlab hai ki SQL databases ke andar jo hamara data hota hai, wo tables ki form mein stored hota hai. Ab tables kehne ka kya matlab hai?
+[04:41] Speaker 1: Jaise for example, ye hamare paas ek Excel sheet hai. Is Excel sheet mein, let's suppose, hum apne student naam ki ek table banate hain.
+[04:47] Speaker 1: aur is student naam ki table ke andar hum kai sara data store karaenge. maan lete hain, hum student ka roll number store karane wale hain, hum student ka name store karane wale hain, aur hum student ki age store karwane wale hain.
+[04:57] Speaker 1: ye teeno values hum store karaenge. ab is table ke andar, let's suppose, roll number 101 hai, 101 ka name hai adam, 101 ki age hai 12.
+[05:04] Speaker 1: uske baad roll number 102 hai, 102 ka name hai bob, iski age hai hamare paas 14. uske baad 103 hai, 103 ka name hai kesi, aur iski age hai hamare paas 11.
+[05:13] Speaker 1: to is tareeqe se kya hua? ye hamari ek table ban gayi.
+[05:16] Speaker 1: aur isi tareeqe ki table hamari data bases ke andar banti hai. jaisi table maine abhi excel sheet ke andar banayi, aisi hi table hum data base ke andar bana sakte hain.
+[05:22] Speaker 1: aur inhi tables ke andar humne kya kiya? sara ka sara ye apna data store kar diya.
+[05:26] Speaker 1: jab is tareeqe ke table format mein hum apna data store karate hain, to aise data bases ko hum keh dete hain apna relational data base. aur yahan par table kya hoti hai?
+[05:33] Speaker 1: table ko hi actually hum apna relation kehte hain.
+[07:31] Speaker 1: to relational naam kahan se aaya? kyunki ye jo relation hai, ye actually ek table hai.
+[07:34] Speaker 1: to tables ko relation kehte hain, aur wahin se hamare paas relational data base naam aata hai. ab relational data bases ke example kya-kya hain?
+[07:40] Speaker 1: hamare paas my sql sabse popular relational data base hai, hamare paas oracle hai, hamare paas postgres sql hai, hamare paas aur bhi kai sare relational data bases hain. yahan par thodi si extra cheez, jaise for example, agar hum oracle ke andar as a developer apply kar rahe hain, to kyunki hume pata hai ki oracle kiske upar kaam karta hai, oracle sql aur data bases ke upar kaam karta hai.
+[07:54] Speaker 1: to agar aap oracle ke interviews dene jaenge for development position, to expected hai aapse ki aapko sql ke basics aate honge. And there is a high probability ki interviews mein aapse sql ki commands ya basic commands ya basic knowledge poochhi ja sakti hai.
+[08:05] Speaker 1: to is tareeqe se hum company wise bhi track kar sakte hain ki company kin technologies pe kaam karti hai, aur unke baare mein agar hamare paas basic knowledge ho, to wo hume hamare interviews ke andar edge deta hai. to ye to ho gaye hamare relational data bases, jisme se hum cover karenge my sql ko.
+[08:15] Speaker 1: ab in teeno data bases ke andar hi, in fact, aur bhi jo hote hain, sabke andar sql hi use hoti hai. yaani in saare data bases ke saath baat karne ke liye sql language ko hi use kiya jata hai, par uski thodi-thodi commands ya thoda-thoda flavor change ho jata hai.
+[08:25] Speaker 1: to aise mein hume sabka sikhne ki zaroorat nahi hai. agar hume sirf ek relational data base bhi acche se aata ho, to bhi hamara kaam chal jayega.
+[08:30] Speaker 1: to uske liye hum MySQL ko cover karenge. Aur dusre tarike ke databases hamare paas hote hain, NoSQL databases.
+[08:36] Speaker 1: NoSQL actually ek collection of databases hain. Yaani inke andar sirf ek hi common property hai ki ye SQL ko use nahi karte.
+[08:41] Speaker 1: Zaruri nahi hai ki ye kisi aur language ko use karte honge saare ke saare. Ho sakta hai inmein se koi ek kisi aur ko use karta ho, dusra kisi aur ko use karta ho, par ye SQL ko to bilkul use nahi karte.
+[08:50] Speaker 1: To NoSQL jo hote hain, wo ek data base nahi hain. Ye bahut saare alag-alag type ke databases ka collection hai.
+[08:54] Speaker 1: To inhein hum non-relational data base bhi kehte hain. Yaani aise databases jo tables ki form mein data store nahi karte.
+[09:00] Speaker 1: Ye kisi aur format mein kar sakte hain, par tables mein nahi karenge. Jaise ho sakta hai kisi NoSQL data base ke andar documents ki form mein data stored ho, ya kisi ke andar key-value pairs mein data stored ho.
+[09:07] Speaker 1: Jaise hamara JSON format hota hai key-value pair ka, waise hi kisi format mein data stored hota hai. Ho sakta hai ki koi koi graph ki form mein data store karta ho.
+[09:13] Speaker 1: Graph hamara ek data structure hota hai, jisse kai saare databases bhi implement hote hain. Iske example hain hamare paas MongoDB, Cassandra, Neo4j, aur aur bhi kaafi saare NoSQL databases hote hain.
+[09:22] Speaker 1: Ismein se sabse popular hota hai hamare paas MongoDB. Aur MongoDB se hi hamare MERN stack ka naam nikalta hai.
+[09:28] Speaker 1: Delta ke andar hum MERN stack padh rahe hain. MERN stack mein M stands for MongoDB, E stands for Express, R stands for React, N stands for Node.
+[09:37] Speaker 1: To Express aur Node to hum kar hi rahe hain, saath mein ab hum MongoDB ko bhi cover karenge. Iske alawa, agar aapne MEAN stack ka naam suna hoga.
+[09:42] Speaker 1: MEAN stack mein bas React ki jagah hum Angular ko padhte hain. To is tarike ke jo stacks hote hain, in sabke andar hamara MongoDB use hota hai.
+[09:49] Speaker 1: To hum bhi kya karenge? Pehle hum SQL ko cover karenge, MySQL ko, fir hum MongoDB data base ki taraf badhenge.
+[09:54] Speaker 1: Ab aisa nahi hai ki hume MongoDB samajhne ke liye SQL pehle se aana chahiye, hume SQL samajhne ke liye MongoDB pehle se aana chahiye. Ye dono completely independent cheezein hain.
+[10:01] Speaker 1: To kisi ko bhi hum pehle padh sakte hain. Par kyunki conventionally hum thoda sa SQL ko pehle se shuruat karte hain, kyunki wo zyada thoda sa easier tarika hai to visualize a database.
+[10:08] Speaker 1: kyunki already pata hai humein ki excel ke andar tables kaisi banti hain. Is tareeqe ki tables humne khud bhi banakar dekhi hongi kabhi na kabhi kisi project ke liye ya kisi aur kaam ke liye.
+[10:14] Speaker 1: To inhi tables ke andar apne data ko store karwana, visualize karna thoda sa aasan rehta hai. To hum vahan se shuruat kar rahe honge.
+[10:19] Speaker 1: Saath mein, jab hum development jobs ki baat karte hain, toh ho sakta hai ki hum full stack developer ban gaye ya hum backend developer ban gaye. Ismein ho sakta hai hum ek first company ke andar kaam kar rahe hain, toh woh mongo db use kar rahi hai.
+[10:28] Speaker 1: Par agar hum kisi doosri company mein switch kar rahe hain, woh vaise toh node jaise hi use kar rahi hai, react jaise hi use kar rahi hai, par data bases ke liye doosri company sql use kar rahi hai. To aise cases mein thoda sa aasan ho jata hai agar humein dono data bases ki thodi si basic knowledge ho, taaki hum ek se doosre mein shift kar paaye depending upon hum kaun si company ke andar kaam kar rahe hain.
+[10:42] Speaker 1: Kyunki saari companies alag-alag data bases ko use karti hain. Iske saath-saath, data base jo hota hai, apne aap mein ek alag hi subject hota hai.
+[10:48] Speaker 1: Matlab hum apne delta ke andar utne data bases ki concepts ko, utni knowledge ko cover karenge jo hamare liye as a developer zaroori hai, jo hamare liye as a developer important hai. Lekin agar maan lijiye aapko poora ka poora data bases ko cover karna hai, toh sql ke aapko 30 ghante ke, 60 ghante ke proper poore-poore courses mil jayenge.
+[11:03] Speaker 1: Par un poore courses ki humein utni zyada karne ki zaroorat nahi hai, kyunki hum development ke andar data bases ko padh rahe hain. Delta ke andar hum full stack development padh rahe hain, jiska ek chhota part data bases hai.
+[11:13] Speaker 1: To yahan par hum full mastery course nahi karne wale apne data bases ke upar. Hum utne data bases ko padhenge jitne hum development ke andar use karte hain, jitne hum apne projects ke andar use karte hain, jitna humse interviews ke andar poocha ja sakta hai hamare kaam ke basis par.
+[11:24] Speaker 1: To ab shuruat karte hain apne first data base ke saath, which is going to be my sql. Ab yeh toh ab my sql ab my sql ke andar hum sql ko padhte hain.
+[17:58] Speaker 1: Sql ki full form hoti hai Structured Query Language. To sql is a programming language used to interact with relational databases.
+[18:04] Speaker 1: Jaise programming ke andar har ek language ka apna-apna kaam hota hai. Humein pata hai html ka kaam kya hota tha.
+[18:09] Speaker 1: Html ka kaam hota tha kisi bhi website ko, web page ko structure dena. Humein pata hai jo hamari css hai, cascading style sheets, inka kaam hota hai kisi bhi web page ko styling dena.
+[18:17] Speaker 1: Humein pata hai ki hamari jo javascript hai, iska kaam hai humein functionality dena. Yaani yeh hamari website ke andar kayi saare important features ko add karne ke kaam aati hai.
+[18:24] Speaker 1: Waise hi hamare paas ek aur language hai sql, jiska kaam hai data bases ke saath baat karna. Specially relational data bases ke saath baat karna ya interact karna.
+[18:32] Speaker 1: Aisa nahi hai ki kal ko sql ke andar hum baithkar apne web pages ka style change kar rahe honge ya unka structure bana rahe honge. Sql ko hum data bases ke liye hi use karte hain aur relational data bases ke liye hi use karte hain.
+[18:41] Speaker 1: Ab yahan par jab hum databases ki baat kar rahe hain, toh databases ko imagine kaise karna hai? Databases ko hum aise imagine kar sakte hain, jaise let's suppose ye hamara pura ka pura MySQL ka data base hai.
+[18:50] Speaker 1: Yahan par is puri ki puri file ko maine naam de diya MySQL. Yaani ye pura ka pura jo bhi worksheet chal rahi hai, ye hamara MySQL ka data base hai.
+[18:57] Speaker 1: Ab MySQL ke andar hum apne databases create kar sakte hain. Jo MySQL hota hai, woh hamara proper ek server hota hai, jiske upar bahut sare databases create kiye ja sakte hain.
+[19:04] Speaker 1: Toh MySQL ke andar let's suppose humne apna ek data base create kar diya. Ise rename kar dete hain.
+[19:08] Speaker 1: Jaise hum apni sheet ko rename kar dete hain. Toh let's suppose hum apne college ka ek data base create karte hain.
+[19:12] Speaker 1: College ke data base mein hamari student ki information store ho sakti hai. Toh data base toh college ho gaya, par data base ke andar bahut sari tables ho sakti hain.
+[19:18] Speaker 1: Toh ek table ho gayi hamari student table. Iske alawa kal ko hum chahein toh apni teacher table bhi bana sakte hain.
+[19:23] Speaker 1: Teacher table mein har teacher ke paas apni ek ID ho sakti hai. Har teacher ka apna ek individual naam ho sakta hai.
+[19:29] Speaker 1: Aur har teacher ka apna ek subject hota hai, jis subject ko woh padhate hain. Toh ise bhi highlight kar dete hain.
+[19:33] Speaker 1: ID ke liye let's suppose teacher ki ID one hai. Yahan par teacher ki ID two hai.
+[19:36] Speaker 1: Yahan par teacher ki ID three hai. Teachers ke hum kuch-kuch naam de sakte hain.
+[19:39] Speaker 1: Hum is tareeqe se apne naam likh dete hain. Toh ye hamare teen teachers ke naam ho gaye.
+[19:44] Speaker 1: And inke hum subject bhi likh sakte hain ki koi English padhata hai, koi hame computer science padhata hai. Iske alawa koi let's suppose hame math padhata hai.
+[19:51] Speaker 1: Toh ye sare ke sare hamare teachers ke naam ho gaye. Toh ye kya ho gayi?
+[19:54] Speaker 1: Ye ek aur individual hamari table ho gayi. Toh hamara data base hota hai, jaise college ka data base hai, uske andar hamari multiple tables hoti hain.
+[20:00] Speaker 1: aur un tables ke andar hum apna data is tarike se store karvate hain. Aisa bhi ho sakta hai ki MySQL ka server humne start kar rakha hai, jise aage dekhenge ki hum kaise install karte hain.
+[20:07] Speaker 1: aur sari cheezein hum practically karke dekhenge. Abhi ke liye bas hum imagine kar rahe hain ki data base kaisa dikhta hoga.
+[20:12] Speaker 1: to ek to hamara college ka data base hai. Kal ko maan lete hain yahi same company kisi dusre vyakti ke liye ek aur data base design karwati hai.
+[20:18] Speaker 1: hamare pas X Y Z koi company aati hai. Aur ye us X Y Z company ka data base hai.
+[20:22] Speaker 1: ab aisa to hai nahi ki college ke data base me hi hum company ke employees ki information store kar denge. Aisa nahi hota.
+[20:26] Speaker 1: har kisi entity ki information store karne ke liye hum alag data base banate hain. Jaise company apna data alag rakhna chahegi, vo kisi college ke sath apne data base ko kyon store karegi?
+[20:34] Speaker 1: apne data ko kyon store karegi? To company kisi college ke data ke sath apne data ko mix up nahi karna chahegi.
+[20:38] Speaker 1: to isiliye company apna alag se data banati hai, jiske andar vo employee naam ki table banati hai. Har employee ki ID hogi, har employee ka name hoga, har employee ki alag apna koi designation ya isko role keh lete hain.
+[20:47] Speaker 1: har employee ka apna koi role hoga, har employee ki apni ek salary hogi. To is tarike se hamari table ban jayegi.
+[20:52] Speaker 1: table ke andar let's suppose ye hamari ID ho gayi, ye hamara name ho gaya, hamara role ho gaya ki yahan par HR ka role hai, salary kitni hai, salary let's suppose it's 35000. Is tarike se information jo hai, vo is table ke andar akar store kara di.
+[21:04] Speaker 1: to ye kya ho gaya? Ye ek second data base ho gaya company ka.
+[21:06] Speaker 1: And iske andar employee naam ki table ho gayi, jiske andar alag information hai. Kal ko ho sakta hai finance department ki ya company related ya tax related isme ek aur table ban jaye.
+[21:14] Speaker 1: iske alawa kal ko man lo yahi same company jo data bases bana rahi hai, jo hum hain, hume Instagram ka contract milta hai ki hume Instagram ke liye data base banana hai. To ab aisa to hai nahi ki Instagram ka data hum kisi dusri company ya apne college ke sath mix up karenge.
+[21:25] Speaker 1: hum Instagram ka data alag se banayenge. To Instagram ke andar ek user naam ki table ho sakti hai.
+[21:28] Speaker 1: har user ka ID hoga. Yahan par har user ka name hoga, har user ka email hoga, har user ka password store hoga.
+[21:33] Speaker 1: to is tarike se kayi saari information har user ke liye store hogi. to hamara jo MySQL hota hai, uske andar bahut saare databases create ho sakte hain.
+[21:40] Speaker 1: har individual database ke andar multiple tables ban sakti hain. aur ye tables related hoti hain.
+[21:44] Speaker 1: ye tables interrelated hoti hain. aisa nahi hai ki kisi company ke data ko hum mix up kar denge kisi college ke bachche ke data ke sath.
+[21:51] Speaker 1: ek single database ke andar interrelated tables hoti hain, jinka ek dusre ke sath koi na koi logical connection ho. jaise hame pata hai student aur teacher ka, jo same college ke andar padhate hain, unka koi na koi relational connection hai.
+[21:59] Speaker 1: to is cheez ko agar hame imagine karna hai, ek database ko, toh hum aise kar sakte hain ki hamare paas hamara database hota hai. database ke andar hamare paas kayi saari tables ho sakti hain.
+[22:10] Speaker 1: ye let's suppose this is my table van. iske alawa isi same database ke andar hamare paas ek aur table ho sakti hai, table tu.
+[22:16] Speaker 1: And isi ke andar hamare paas aur bhi kayi saari different different tables ho sakti hain. aur ye jo tables hoti hain, ye related tables hoti hain ya interrelated tables hoti hain.
+[22:22] Speaker 1: matlab ek dusre ke sath inka kuch na kuch connection hota hai. aisa nahi hai ki hum illogical tarike se koi bhi table kisi bhi database ke andar store kar dete hain.
+[22:29] Speaker 1: aur jaise hamara ye ek database hai.
+[22:35] Speaker 1: aise hi hamare paas multiple databases exist karte hain.
+[22:42] Speaker 1: ab baat karte hain ki jab hum table ki baat kar rahe hain SQL ke andar, toh table kahne ka matlab kya hai? yahan par humne ek table ka example liya hai, jiska naam hai user.
+[23:54] Speaker 1: ab user ke andar kayi saari information store hai. isko hum Instagram ke user ki tarah imagine kar sakte hain.
+[23:58] Speaker 1: har user ke paas apni ek ID hai. aur ID kya hai?
+[24:00] Speaker 1: unique ID hai. har user ke paas apna ek name hai, apna ek email hai, apne followers ka account hai, apne following ka account hai.
+[24:06] Speaker 1: toh ye saari ki saari information har ek user ke paas hai. toh jab hum table ki baat karte hain, table ke do components hote hain.
+[24:11] Speaker 1: ek component hota hai hamara column. Toh ye hamara column one ho gaya.
+[24:14] Speaker 1: Ye hamara column two ho gaya. Ye hamara column three ho gaya.
+[24:18] Speaker 1: And is tareeqe se. Toh column one ke andar kya store hai?
+[24:20] Speaker 1: ID store hai. Column two ke andar kya store hai?
+[24:22] Speaker 1: name store hai. Column three ke andar hamare paas email store hai.
+[24:25] Speaker 1: Isi tareeqe se column four ke andar followers hain. Column five ke andar following hai.
+[24:28] Speaker 1: Toh columns hamein kya batate hain? Columns hamein hamari table ka design batate hain.
+[24:33] Speaker 1: Table ka design kehne ka matlab hai ki hamari table ke andar, ye jo hamari user naam ki table hai, iske andar kya-kya data hai. Table ke andar ID hai, table ke andar name hai, table ke andar email hai, followers hain, following hai.
+[24:42] Speaker 1: Kis tareeqe ka data hai, woh design hota hai. actual data store ki baat nahi kar rahe.
+[24:46] Speaker 1: store kis tareeqe ka data hai. Design keh lo isko.
+[24:49] Speaker 1: Nahi toh databases ki bhasha mein isko hum apna schema kehte hain. Schema is the design of the table.
+[25:12] Speaker 1: Kya-kya data hai? Table ke andar ID hai, table ke andar name hai, table ke andar email hai, followers hain, following hai.
+[25:17] Speaker 1: Kis tareeqe ka data hai, woh design hota hai. actual data store ki baat nahi kar rahe.
+[25:21] Speaker 1: store kis tareeqe ka data hai. Design keh lo isko.
+[25:24] Speaker 1: Nahi toh databases ki bhasha mein isko hum apna schema kehte hain. Schema is the design of the table.
+[25:28] Speaker 1: To schema kya hai hamari table ka? Hamari table ke andar hamare paas id hai, hamare paas name hai, hamare paas email hai, hamare paas hamare followers hain, and hamare paas hamare following ka account hai.
+[25:39] Speaker 1: To ye sara kya hai? Ye sara ka sara hamari table ka design hai.
+[25:42] Speaker 1: Yaani hamare columns hain. Uske baad aati hai hamari rows.
+[25:45] Speaker 1: Rows kehne ka kya matlab hota hai? Rows matlab ye ek hamari ek particular row hai, jiske andar ek user ka data store hai.
+[25:50] Speaker 1: Ye doosri row hai, jiske andar second user ka data store hai. To rows hamari horizontal direction mein hoti hain, jiske andar ek particular user ki hame information dikhai deti hai.
+[25:57] Speaker 1: Jaise first row ke andar hamare paas id one hai, name Adam hai, Adam at yahoo dot in hamari email hai, ye followers ka account hai, ye hamare following ka account hai. To ye ek user ka data hum kisi na kisi row se nikaal sakte hain.
+[26:07] Speaker 1: Aur ye jo hamari rows hoti hain, in rows ko data bases ki bhasha mein hum tuple kehte hain. Jab bhi aapko tuple word sunai de SQL ke andar, tuple ka matlab hota hai ek single row.
+[26:15] Speaker 1: To schema kya hota hai? Schema hota hai design.
+[26:17] Speaker 1: Yaani hamare columns ke andar kya-kya information store hai. Aur rows hoti hai ek single vyakti ki information ya ek single entity ki information, jo hamari table ka naam hai, jaise user.
+[26:24] Speaker 1: To ek single user ki information ek single tuple hoga, yaani ek single row hogi. To is tareeqe se hamari data bases ke andar saari ki saari tables aur unke andar ka data dikhai deta hai.
+[26:32] Speaker 1: Ab data bases ke sath actually kaam karne ke liye hame do cheezein install karni padengi, jinko installation ki poori information aur link aapko diya hua hai. Sabse pehli cheez jo hame install karni padegi, wo hoga hamara MySQL ka server.
+[26:42] Speaker 1:  Isi server ke upar hamare saare ke saare data bases create honge aur un data bases ke andar ki hamari tables create hongi. Ab ye to ho gaya MySQL ka server.
+[26:49] Speaker 1: MySQL ke server ko start karke hum apne data base ko manipulate karna start kar sakte hain. Par kyunki hum as a beginner apne SQL ko sikh rahe hain, to SQL ko access karne ke liye hum ek cheez install karenge, app install karenge, MySQL Workbench.
+[27:00] Speaker 1: Ye dono hi hame MySQL provide karte hain. Yaani officially hum dono ko use karte hain.
+[27:05] Speaker 1: To chahe aap Windows system ke andar hain, chahe aap Mac system ke andar hain, dono ke liye humne installation diya hua hai. In do cheezon ko ek baar hame jaake install karna hai.
+[27:12] Speaker 1: And uske baad hum apne data bases ke sath changes karna start kar sakte hain. To abhi tak jitni bhi humne data bases ki baat ki hai, ye saari hamari theoretical baatein hain.
+[27:18] Speaker 1: Humne sirf imagine kiya ki data base kaise dikhai deta hoga, uski theory padhi hai. Par data bases ko actually practically banakar, uske data ko manipulate karke, access karke dekhne ke liye humein in do cheezon ko install karna padega.
+[27:27] Speaker 1: Aur uske baad hum apne practical data bases ke upar kaam karenge.
+[27:33] Speaker 1: To ab hum SQL ko install karne wale hain windows ke andar. To hum is link par jab hum apne MySQL workbench ko first time kholenge, to hamare paas kuch is tarike ki screen aayegi.
+[28:07] Speaker 1: Isme already ek connection hamare paas formed hoga. Agar hamare paas is tarike ka koi bhi instance nahi hai, toh tension ki baat nahi hai.
+[28:13] Speaker 1: Hum khud se apne MySQL ke connections bana sakte hain. Ek connection banane ke liye hum kya karte hain?
+[28:17] Speaker 1: Sabse pehle hum apne connection ka naam likhenge. Ise keh dete hain delta connection.
+[28:22] Speaker 1: And phir hum apne password wale option par jaenge, store in key chain. Yahan par hum apna wo password set karenge, jise humne apne data base ke liye originally set kiya tha.
+[28:30] Speaker 1: Isko kar dete hain okay. And yahan se sabse pehle apne connection ko test karenge.
+[28:33] Speaker 1: Test connection par jaane ke baad is tarike ki warning agar aati hai, toh isko hum ignore kar sakte hain. Humein karna hai continue anyway.
+[28:38] Speaker 1: Continue anyway kiya, toh hamare paas aa gaya successfully made the MySQL connection. Agar connection fail ho raha hai, toh usme aapko dekhna hai ki aapka server already working hai kya.
+[28:45] Speaker 1: Waise agar humne bilkul basic install kiya, agar aapne pehle SQL ko use nahi kiya tha, toh 99.99 cases mein koi problem nahi aayegi.
+[29:42] Speaker 1: Hamara jo connection hai, wo successfully ho jayega. Click kar dete hain okay.
+[29:45] Speaker 1: And yahan par bhi okay. To hamara naya delta connection humein dikhai de raha hai.
+[29:48] Speaker 1: Aur hamara jo MySQL ka server hai, wo kaun se port pe run kar raha hai? Wo is port pe run kar raha hai.
+[29:52] Speaker 1: ye humein yahan par dikhai de raha hai. Pehle wala jo automatically tha, wo hamare localhost3306 pe run kar raha tha.
+[29:57] Speaker 1: ye humne ek aur connection form kar liya. Apne delta connection ko hum open kar sakte hain.
+[30:00] Speaker 1: jaise hi double click karke open karenge, is tarike ki window humein dikhai degi. Ismein kai saare options hain.
+[30:04] Speaker 1: ek hamare paas left mein yahan pe admin ka option aa raha hoga. In fact, shuruat mein screen kuch aisi hogi.
+[30:09] Speaker 1: ye admin ke kuch-kuch options honge yahan par. Basically, yahan se hum apne server ko start kar sakte hain, use shut down kar sakte hain.
+[30:14] Speaker 1: is tarike ki cheezein hain.
+[32:19] Speaker 1: kya hai?
+[32:22] Speaker 1: aur kya tha? Ho gaya?
+[32:32] Speaker 1: arey, brown wala.
+[34:50] Speaker 1: ho sakta hai wo usmein ho, brown wale bag mein.
+[36:24] Speaker 1: yahan par gift nahi hai toh? Ye mamma, bhabhi, bhaiya ko gift dena padega na?
+[36:31] Speaker 1: gift dena hoga.
+[37:03] Speaker 1: fir hamare paas ek schemas ka option hoga. Schemas ke andar hum saare ke saare apne data bases ko, apni tables ko, saari cheezon ko related to SQL dekhte hain.
+[37:11] Speaker 1: toh yahan par automatically hamare paas pehle se ek data base bana hua aata hai, jiska naam hai sys. Sys yaani ye hamara internal MySQL ka data base hai, jiske andar system related information store hai. Tables ke andar iske paas ek sysconfig naam ki table hai.
+[37:22] Speaker 1: humein is data base ko kabhi nahi chhedna aur iske saath hum koi changes nahi karenge. Upar hamare paas kuch-kuch options aate hain.
+[37:27] Speaker 1: is option se hum apni MySQL ki nayi ek file create kar sakte hain. yaani jitni bhi commands hain hamari SQL ki, hum unko chahein toh ek single file ke andar store karke rakh sakte hain.
+[37:34] Speaker 1: yahan se hum databases create kar sakte hain, tables create kar sakte hain, is tareeqe ki cheezein.
+[37:37] Speaker 1: right mein hamare paas kuch-kuch options aate hain, par inki hamein zaroorat nahi hai. toh yahan se is button pe click karke hum apne right wala panel hide kar sakte hain. bottom mein hamein dikhayi deta hai ki humne kya-kya command run ki SQL ki aur woh successfully run ki ya usmein koi error aa gaya.
+[37:48] Speaker 1: abhi ke liye, chahein toh ise hide bhi kar sakte hain, chahein toh ise show bhi kar sakte hain. aur yeh jo beech wali window hai, yeh hamari major window hogi.
+[37:54] Speaker 1: yaani hamari query one naam ki jo file hai, iske andar hum apni saari ki saari commands ko likhne waale hain, which are related to SQL. hum chahein toh iska size bhi badha sakte hain.
+[38:01] Speaker 1: let's make it 130. toh hamari commands hamein thodi si badi hokar dikhayi dengi.
+[38:04] Speaker 1: hum chahein toh aur increase kar sakte hain to 160, to make our commands larger. ab jab bhi hum SQL likhte hain, hum SQL ko ya toh agar hamein poori ki poori file ko ek saath run karna hai, toh uske liye hum is option par click kar sakte hain.
+[38:14] Speaker 1: yeh jo first option hamein dikhayi de raha hai. par agar ek time par hum ek hi command run karna chahte hain, toh uske liye hamara yeh jo second option hota hai, which is execute the statement under the keyboard cursor.
+[38:22] Speaker 1: yaani jitne part ko hum select karenge, sirf utne hi part ko hum chahein toh execute kar sakte hain. toh hum is option ko prefer karenge apne SQL commands ko run karne ke liye.
+[38:29] Speaker 1: ab sabse pehle apne databases ka ek chhota sa hum demo dekhne waale hain, jismein kuch-kuch basic commands ko hum run karke dekhenge. in commands ko hum baad mein detail mein padhne waale hain.
+[38:36] Speaker 1: bas abhi ke liye kuch basic si commands hain.
+[44:11] Speaker 1: sabse pehle hum apne pehle database ko banakar dekhenge. hum kya karenge?
+[44:14] Speaker 1: let's make apna college ka database. is college ke database ke andar hum apne student ki information store karwayenge.
+[44:19] Speaker 1: aur yeh jo student kya hone wala hai, yeh student hamari table hogi. and the college hamara database hoga.
+[44:24] Speaker 1: jis tareeqe ki cheez humne apni is excel sheet ke andar banayi thi. humne college naam ka ek database banaya tha aur humne student naam ki apna yeh ek table banayi thi.
+[44:31] Speaker 1: phir hamne teacher naam ki apni ek table banayi thi. us tareeke ka kuch hum yahan par karenge.
+[44:34] Speaker 1: kisi bhi naye data base ko create karne ke liye hum command likhte hain. ye hamari SQL ki command hai.
+[45:19] Speaker 1: hum command likhte hain create database. hum chahein toh inhein create database small mein bhi likh sakte hain, capital mein bhi likh sakte hain.
+[45:24] Speaker 1: aur phir hum likhte hain apne data base ka naam. toh jaise let's suppose humein apni command likhni hai create database.
+[45:31] Speaker 1: and hum apne data base ko naam dena chahte hain college. so hum itne part ko select kar sakte hain apne cursor se.
+[45:36] Speaker 1: and a second option par jayenge aur isko kar denge execute. execute kar diya.
+[45:39] Speaker 1: toh ye keh raha hai successful. yaani yahan green tick dikhai de raha hai.
+[45:41] Speaker 1: action kya tha? create database college.
+[45:44] Speaker 1: ab yahan se jaake hum refresh all kar lenge. toh ab humein hamara data base dikhai dene lag jayega.
+[45:48] Speaker 1: ye hamara college wala data base hai, jiske andar abhi koi tables nahi hain. par hamara college wala data base create ho gaya.
+[45:53] Speaker 1: hum chahein toh apna ye xyz company wala data base bhi bana sakte hain. is baar small mein apni commands likh dete hain.
+[45:58] Speaker 1: create database. and ise keh dete hain xyz_company.
+[46:04] Speaker 1: jo bhi hamari SQL ki commands hoti hain, un saari commands ko ek command ke end pe hum hamesha semicolon lagate hain. kind of like javascript.
+[46:10] Speaker 1: jaise javascript ke andar ek command likhne ke baad hum apna semicolon lagate hain, waise hi yahan par hota hai. is second line ko hum select kar lenge aur ise bhi kar denge run.
+[56:43] Speaker 1: toh run kiya toh successful ho gaya. yahan aake dobaara se schemas mein refresh kar lenge.
+[56:46] Speaker 1: to hamara second database hume dikhai de raha hai. Ab SQL case insensitive hoti hai.
+[56:50] Speaker 1: uske andar hum capital me cheezein likhenge, wo bhi work karengi. Small me likhenge, wo bhi work karengi.
+[56:54] Speaker 1: but generally taki hum highlight kar paayein ki hum SQL ki commands likh rahe hain, toh hum capital ke andar cheezon ko likhkar dekh rahe honge. Aur isme sath me jo bhi hamara naam hota hai, jaise database ka naam ho gaya, jaise table ka naam ho gaya, ye sari cheezein hum generally small me likhna prefer karenge.
+[57:05] Speaker 1: nahi toh inko bhi hum chahein toh kisi bhi format me likh sakte hain. Ab next agar hume kisi bhi database ko delete karna hota hai, toh databases ko ya kisi bhi cheez ko delete karne ke liye hum drop command ko use karte hain.
+[57:14] Speaker 1: hum likhenge drop database aur fir apne database ka naam, jisko bhi hum delete karna chahte hain. Jaise let's suppose hum is xyz_company naam ke database ko delete karna chahte hain.
+[57:21] Speaker 1: toh iske liye hum command likh sakte hain. Hum likhenge drop database xyz_company.
+[57:29] Speaker 1: ise kar lete hain select and execute. Execute jaise hi kiya, hamara database delete ho gaya.
+[57:33] Speaker 1: and wo yahan se schemas se bhi automatically jakar hat jayega. Ab agar kisi bhi database ke andar hum apni tables ko create karna chahte hain, toh hume apne database ko use karna padega.
+[57:41] Speaker 1: hume alag se specify karna padta hai ki agar mujhe table ko create karna hai, toh us table ko hum kaun se database me create karna chahte hain. Kyunki hamare paas multiple databases ho sakte hain.
+[57:49] Speaker 1: toh jis bhi database ke andar table create karte hain, usse pehle hume likhna padta hai use aur fir us database ka naam. Jaise yahan par hum chahte hain ki hum college naam ke database ke andar tables ko create karna start karein.
+[57:57] Speaker 1: toh uske liye hum likh sakte hain use and fir apne college ka naam. Toh isko kar lete hain select and execute.
+[58:03] Speaker 1: toh iska matlab hai ki ab hum apne college database ke andar aa gaye hain, jo yahan pe highlight ho gaya hoga. Aur uske andar hum apni tables ko create karna start kar sakte hain.
+[64:03] Speaker 1: ab apni tables ko create karne ke liye hum apni create command ko use karte hain. Create table aur fir hum apni table ka naam likhte hain.
+[64:09] Speaker 1: aur table ke andar kya-kya hamara schema hone wala hai. Table ke andar hum define karte hain ki hamara schema kya hone wala hai.
+[64:14] Speaker 1: matlab hamari table ka design kya hone wala hai. Ya fir ise keh sakte hain ki hamari table ke andar hum kin-kin columns ko create karne wale hain.
+[64:20] Speaker 1: To use define karne ke liye hum parenthesis ke andar apne har ek column ka naam likhte hain. Aur phir hum us column ka data type likhte hain.
+[64:26] Speaker 1: Data type hume batata hai ki us column ke andar kis tarike ka data store hoga. Kya uske andar numbers store honge, kya uske andar string store hogi, kya uske andar date store hone wali hai, kya uske andar time store hone wala hai.
+[64:35] Speaker 1: To is tarike se SQL ke paas bahut sare different different data types hote hain, jinko hum baad me padh rahe honge. Par abhi ke liye is tarike ka hamare paas data type hota hai.
+[64:41] Speaker 1: Saath me hum chahein to hum constraints ko bhi define kar sakte hain.
+[65:04] Speaker 1: Ab constraints ko define karna optional hota hai. Constraint hamare kisi bhi data ke upar rules hote hain, jinko hum define karte hain.
+[65:09] Speaker 1: Constraints ko bhi hum detail me padhne wale hain. Abhi ke liye constraints ko hum ignore karte hain.
+[65:12] Speaker 1: Hum simply kya karenge, hume ek table banani hai student naam se, jisme hume column name banane hain aur jisme hume unka data type likhna hai. Jaise let's suppose hum apne student ke liye is table ki baat kar rahe hain.
+[65:20] Speaker 1: Ye jo humne Excel me table banayi thi, yahi same table hum banana chahte hain. To isko banane ke liye hum likhenge create table and table ke andar hum table ko naam denge student.
+[65:30] Speaker 1: Student table ke andar hamara pehla jo column hone wala hai, ye hoga roll_number. To pehle column ko humne naam de diya roll_number.
+[65:36] Speaker 1: Aur iske andar data type kya hone wala hai, abhi ke liye hamara ek int data type hota hai, jo integer values ko store karata hai. Uske baad second column ka naam ho jayega hamare paas name.
+[65:43] Speaker 1: to isko naam de denge name. Aur hamare paas strings ke liye ek var ka naam ka data type hota hai, jiske andar hum apni string ka size define kar sakte hain.
+[65:50] Speaker 1: And teesra ho jayega hamare paas age. Age ko de denge.
+[65:53] Speaker 1: And iske andar bhi hum apni integer values ko store karwayenge. To different different apne columns ko define karne ke liye hum inhe comma se separate karte hain.
+[65:59] Speaker 1: Aur is tarike se apni table ko hum create kar sakte hain. Abhi hum sirf sample dekh rahe hain table ko create karne ka.
+[66:04] Speaker 1: Inko hum baad me is command ko totally detail me padhenge, data types ko bhi, constraints ko bhi. Abhi sirf hum SQL ko use karna seekh rahe hain.
+[66:09] Speaker 1: to yahan par apni table ko create karne ke liye we can write create table. Hamari table ka naam hai student.
+[66:13] Speaker 1: student ke andar hamare paas sabse pehle aayega hamara roll_number, jiska type hoga int. Ya ise single bhi likh sakte hain.
+[66:20] Speaker 1: comma. Uske alawa ek hamare paas name ho jayega, jisko hum define kar denge ki iske andar 30 characters aa sakte hain.
+[66:26] Speaker 1: aur ek ho jayega hamare paas hamari age. Ye bhi hoga hamara integer type.
+[66:29] Speaker 1: to is tareeqe se hamari create table command ho gayi. Isko select kar sakte hain.
+[66:32] Speaker 1: aur yahan se ise run kar sakte hain. Jaise hi execute kiya, ab hamare college ke andar jaise hi hum schemas ko refresh karenge, ek nayi table create ho gayi.
+[66:41] Speaker 1: aur is nayi table ke andar hum dekhenge toh hamara student table hai. columns kya-kya hain.
+[66:45] Speaker 1: columns mein ek roll_number hai, ek name hai, ek age hai hamare paas. Toh is tareeqe se saari cheezein humein yahan par dikhayi bhi deti hain, agar hum dekhna chahte hain toh.
+[66:51] Speaker 1: ab is table ke andar agar hum data ko enter karna chahte hain, toh uske liye hamari ek insert command hoti hai, jisko hum baad mein padhenge. Toh hum simply likhte hain insert into student.
+[66:58] Speaker 1: phir hum likh sakte hain hamari values. Values kya hongi, pehle hum roll_number batayenge 101.
+[67:01] Speaker 1: phir hum Dekhna chahte hain to. Ab is table ke andar agar hum data ko enter karna chahte hain, to uske liye hamari ek insert command hoti hai, jisko hum baad mein padhenge.
+[76:04] Speaker 1: To hum simply likhte hain insert into student. Phir hum likh sakte hain hamari values.
+[76:08] Speaker 1: Values kya hongi, pehle hum roll_number batayenge 101. Phir hum likhenge Adam.
+[76:11] Speaker 1: And Adam ki age hai hamare paas 12 ke equal. Iske alawa hum enter kar sakte hain roll_number 102, Bob.
+[76:17] Speaker 1: And Bob ki age hai hamare paas 14 ke equal. To abhi ke liye do hi students ki information hum enter karne wale hain.
+[76:22] Speaker 1: To insert into student ko hum execute kar sakte hain. To yahan Adam ko hum ek string ki tarah enter kar rahe hain.
+[76:27] Speaker 1: To ise string form mein hum daal dete hain. Ab ise select karte hain aur re-execute kar dete hain.
+[76:32] Speaker 1: Re-execute kiya to college ke andar sara ka sara data jo hai enter ho gaya. Agar hame student table ka data kisi bhi point par check karna hai, to hum likh sakte hain select star from apni table ka naam.
+[76:42] Speaker 1: To data ko select karne ke liye, dekhne ke liye hum is command ko execute kar sakte hain. Execute kiya to ye hamare paas hamari poori table aa gayi.
+[76:48] Speaker 1: Table ke andar roll_number hai, kuch is tarike se. Hamare paas name hai, hamare paas age hai, and ye do student ki information humne yahan par store karai hai apne liye.
+[76:54] Speaker 1: Hum chahein to is data ko sort kar sakte hain yahan par click karke. To is tarike se hamara roll_number 101 ka data hai, 102 ka data hai.
+[77:00] Speaker 1: Ise hum chahein to kar sakte hain yahan se cross. To ye to ho gaya basic tarika ki kaise hum databases ko create karte hain, databases ko kaise hum use karte hain, phir unke andar tables create karte hain, tables ke andar data add karte hain, aur phir us data ko hum dekh bhi sakte hain.
+[77:11] Speaker 1: Ab isi tarike ke bahut saare operations hamare paas hote hain, jin ek-ek operation ko ab hum padhne wale hain.
+[87:49] Speaker 1: Inmein se sabse pehle operations ya queries, inko hum queries kehte hain ya inko hum SQL commands kehte hain, jinhe hum run karte hain, ye hoti hain hamari database-related queries. Yaani overall database ke andar hum kya-kya actions ko perform kar sakte hain.
+[87:59] Speaker 1: Inmein se sabse pehla hota hai create database, jismein hum database ko create kar sakte hain. Par jab bhi hum database ko create karne ki command likhte hain, uske saath mein hum hamesha ye cheez add kar dete hain, matlab ek condition add kar sakte hain, if not exist.
+[88:10] Speaker 1: If not exist availability ko hum kya bolte hain, if condition ki tarah samajh sakte hain, ki agar database pehle se exist nahi karta, tabhi use create karna. Nahi to kya hoga, let's suppose humne already apne college naam ke database ko create kiya hua hai.
+[88:21] Speaker 1: Ab hum dobaara se kya likhte hain, dobaara se hum likh dete hain create database.
+[88:27] Speaker 1: College. Ise jab hum dobaara se likhkar, select karke execute karenge, toh hamare paas error aa jaayega.
+[88:33] Speaker 1: Error isliye aayega kyunki ye database toh already exist karta hai, toh ise hume dobaara create karne ki koshish nahi karni. Toh yahaan par hum likh sakte hain if not exist.
+[88:39] Speaker 1: Toh us case mein ye hamari query jo hai, successfully run ho jaayegi, par iske andar koi error nahi aayega, sirf ek warning aayegi ki database pehle se tha, toh is baar warning hume dikhai degi neeche ki taraf, ise hume dobaara create nahi karna. Isi tareeqe se hum chahein toh ek aur database create kar sakte hain, let's suppose hum kal ko Instagram ke liye database create karna.
+
+
+
+
+
+
+
+
+
+
+# SQL Database Concepts Overview
+
+## Summary
+### Flow Summary
+Speaker 1 ne MySQL basics padhaye: database aur table commands, data types, constraints, primary/foreign keys, ER diagram, aur INSERT/SELECT. Post table ke liye homework diya.
+
+### Database Commands
+- CREATE DATABASE IF NOT EXISTS: database pehle se ho to error nahi, sirf warning aati hai
+    - Example: college aur instagram databases banaye
+- DROP DATABASE IF EXISTS college se database tabhi delete hota hai jab woh exist kare
+- SHOW DATABASES sab databases dikhata hai; mysql, performance schema, information schema internal hain
+- SHOW TABLES se pehle USE instagram karna padta hai; abhi tables khaali thi
+
+### Table Commands aur Data Types
+- Table commands: CREATE, INSERT, UPDATE, ALTER, TRUNCATE (data khaali), DELETE (poori table)
+- CHAR fixed length, VARCHAR variable (dono 0 se 255); VARCHAR prefer kiya kyunki memory waste nahi hoti
+    - Bade objects ke liye BLOB
+- Number types: INT, TINYINT (-128 se 127), BIGINT, BIT (till 64), FLOAT, DOUBLE; BOOLEAN internally TINYINT hai
+    - UNSIGNED TINYINT range 0 se 255 ho jaati hai
+    - DATE aur YEAR bhi available
+- User table schema: id INT, name VARCHAR(30), email VARCHAR(50), followers INT, following INT
+
+### Constraints aur Keys
+- Constraints: NOT NULL (name), UNIQUE (email), DEFAULT (followers 0, salary 25,000), CHECK (age >= 13)
+    - CHECK constraint ka naam (jaise age check) optional hai; AND se conditions mix kar sakte hain
+- PRIMARY KEY automatically unique aur not null; table mein ek hi, ya columns ka combination (id + name)
+- FOREIGN KEY doosri table ki primary key refer karti hai; duplicate, null aur multiple foreign keys allowed
+    - Example: student table ka teacher ID, teacher table ki ID refer karta hai
+
+### Post Table aur ER Diagram
+- Post table: id INT PRIMARY KEY, content VARCHAR(100), user id FOREIGN KEY REFERENCES user(id)
+- MySQL Workbench mein reverse engineer karke ER diagram dekha: primary key chaabi, not null dark blue, FK arrow
+- ER ka matlab entity relation; database ki bhasha mein table ko relation kehte hain
+
+### INSERT aur SELECT
+- INSERT INTO mein columns aur VALUES ka order same hona zaroori hai; 4 users (jaise Adam) insert kiye
+- Constraint errors demo: duplicate ID, name missing, duplicate email, age 10 par CHECK violation
+- SELECT columns FROM table; \* ka matlab all; DISTINCT se sirf unique values (ages 14, 15, 16, 17)
+
+### Agle Kadam
+- (Students) Homework: post table mein content insert karke SELECT se print karke dekhna
+
+## Transcript
+[00:14] Speaker 1: inmein se sabse pehle operations, ya queries—inko hum queries kehte hain, ya inko hum SQL commands kehte hain—jin `<`, `nko hum run karte hain, ye hoti hain hamari database related queries. Yani overall database ke andar hum kya-kya actions ko perform kar sakte hain. Inmein se sabse pehla hota hai create database, jismein hum database ko create kar sakte hain.
+[00:28] Speaker 1: par jab bhi hum database ko create karne ki command likhte hain, uske saath mein hum hamesha ye cheez add kar dete hain, matlab ek condition add kar sakte hain: if not exists. if not exists ka matlab hai, isko hum javascript ki if condition ki tarah samajh sakte hain—ki agar database pehle se exist nahi karta, tabhi use create karna. Nahi toh kya hoga?
+[00:42] Speaker 1: lets suppose humne already apne college naam ke database ko create kiya hua hai. Ab hum dobara se kya likhte hain?
+[00:47] Speaker 1: dobara se hum likh dete hain: createDatabase("college"). Ise jab hum dobara se likhkar select karke execute karenge, toh hamare paas error aa jayega.
+[00:54] Speaker 1: error isliye aayega kyunki ye database toh already exist karta hai, toh ise hume dobara create karne ki koshish nahi karni hai. Toh yahan par hum likh sakte hain: if not exists.
+[01:01] Speaker 1: toh us case mein ye hamari query jo hai, successfully run ho jayegi, par iske andar koi error nahi aayega, sirf ek warning aayegi ki database pehle se tha. Toh is baar warning hamein dikhai degi neeche ki taraf, ise hume dobara create nahi karna.
+[01:11] Speaker 1: isi tarike se hum chahein toh ek aur database create kar sakte hain. lets suppose hum kal ko instagram ke liye database create karna chahte hain.
+[01:16] Speaker 1: ise instagram naam de dete hain. Ise kar lete hain select and execute.
+[01:20] Speaker 1: ab yahan schema ko jaise hi hum refresh karenge, toh hamare paas ek aur database aa jayega, instagram naam se. Is instagram database ke andar bhi hum apni chahein toh tables ko create kar sakte hain.
+[01:28] Speaker 1: aise hi hamare paas drop database hota hai, jisse hum apne database ko drop kar sakte hain. Jab hum drop database execute karte hain, tab hum ek condition daal sakte hain: if exists.
+[01:35] Speaker 1: matlab database agar exist karta hai, tabhi usko drop karna. Aisa nahi hai ki database exist hi nahi karta aur drop karne ki hum koshish karein, toh phir error aa jayega.
+[01:41] Speaker 1: toh jaise agar hum apne instagram database ko delete karne ki koshish karna chahte hain, ya lets suppose hum apne college database ko delete karne ki koshish karna chahte hain, toh yahan par hum likh sakte hain: dropDatabase("if exists") aur yahan likh denge college. Ki college ke database ko tabhi drop karna hai agar woh exist karta hai.
+[01:56] Speaker 1: ise run kiya, ye execute ho gaya, toh hamara college ka database yahan se delete ho gaya jaakar. Ab iske saath-saath hamare paas show databases bhi hota hai, jo ek point pe saare ke saare databases ki information ko show karta hai ki kitne databases hain abhi.
+[02:06] Speaker 1: toh hum likh sakte hain: showDatabases("""). Isko kar lete hain select and execute.
+[02:11] Speaker 1: toh hamare paas dikhai de raha hai ki databases mein ek hamara mysql wala database hai, ek performance schema hai, ek sis naam ka database hai, ek information schema hai. Ye saare internal hain.
+[02:18] Speaker 1: jo hamne create kiya hai, vo hamara instagram naam ka database hai. saath ke saath, kisi bhi database ke andar agar hum uski saari tables ko dekhna chahte hain, jaise lets suppose agar hame instagram ke database ki saari tables dekhni hain, toh uske liye hum show tables command ko kar sakte hain execute.
+[02:29] Speaker 1: toh show tables ko execute karne se pehle hame use karna padega apne instagram naam ke database ko. toh is database ko pehle use karna start karte hain.
+[02:36] Speaker 1: aur ab hum iske andar likh sakte hain: showTables(""") ya ise capital TABLES. select kar liya, execute kiya.
+[02:42] Speaker 1: toh abhi kya dikha raha hai? abhi khaali dikha raha hai, kyunki instagram ke andar abhi humne koi bhi table create nahi ki hai.
+[02:47] Speaker 1: par agar koi table hoti, toh use yahin par dikha raha hota. ise kar lete hain cross.
+[02:50] Speaker 1: toh ye saari vo major commands hain jinhe hum databases ke saath use karte hain.
+[02:57] Speaker 1: ab baat karte hain ki hum ab baat karte hain ki hamari tables ki kya-kya commands hain.
+[10:03] Speaker 1: tables ki queries mein, hamare paas generally jin queries ko hum use karte hain, usme hamari create command aa jaati hai, jisse hum kisi nayi table ko create karte hain. insert se hum us table ke andar data ko add karte hain, data ko insert karte hain, tuples ko, rows ko add karte hain.
+[10:14] Speaker 1: update se hum data ko update kar sakte hain. alter se hum apni table ke schema ko alter kar sakte hain, columns ko change kar sakte hain.
+[10:20] Speaker 1: truncate ka matlab hota hai ki table ke andar ka saara ka sara data delete karke use khaali kar dena. delete ka matlab hota hai poori ki poori table ko hi delete kar dena.
+[10:27] Speaker 1: toh in saari commands ko hum dheere-dheere detail mein padhenge.
+[11:04] Speaker 1: inme se sabse pehli command ki baat karte hain, which is the create command. table ko create karne ke liye hum apni command likhte hain: createTable("teble" ka naam, phir apne column ke name, phir data type, end is tarike se constraints).
+[11:13] Speaker 1: toh create command ka kaam hota hai hamari kisi bhi table ke liye uska schema define karna. schema, ya ise keh sakte hain uske columns define karna.
+[11:19] Speaker 1: agar hame batana hai hame is table ko create karna hai, toh uske kya columns honge, hum unhe define karne ke liye apni create command ko use karte hain. toh agar hame is table ko banana hai, toh is table ke andar hame paanch cheezein define karni padengi.
+[11:29] Speaker 1: paanch columns honge: ek id naam se, name naam se, email, followers, and following. abhi ke liye data type hum khud se set karne wale hain, constraint hum khud se set karne wale hain, toh usko ignore karna hai.
+[11:36] Speaker 1: to ek baar dekhte hain apni user table ko banakar. itne wale part ko hum yahan se hata lete hain.
+[11:40] Speaker 1: ise bhi hata lete hain. and hum ise bhi yahan se hata lete hain.
+[11:44] Speaker 1: aur yahan par aa jaate hain. ab apni user table ko create karne ke liye hum likhenge createTable(""") aur phir apni table ka naam, which is user.
+[11:50] Speaker 1: ab user table ke andar hum apne columns ko create karne wale hain. hamein apne paanch columns banane padenge.
+[11:55] Speaker 1: to in saare columns ka hum ek-ek karke ek baar naam likh lete hain. ek hamara id column hone wala hai, ek hamara name column hone wala hai, ek hamari email hogi, ek hamare followers honge, and ek hamari following hogi.
+[12:04] Speaker 1: ab in saare ke saare columns ke saath hamein inke data types likhne hain. to sabse pehle pehle baat karte hain ki hamare data types kya hote hain.
+[12:13] Speaker 1: data types ke andar hamare paas mysql ke andar bahut saare different different data types hote hain. par inmein se jo hum regularly use karte hain ya jo hamare liye zyada important hai, hum unko cover karenge.
+[12:21] Speaker 1: ab data types mein sabse pehle hamare character types hote hain. character types ke andar ek hamara char data type hota hai, jiske andar hum string ko store karaate hain.
+[12:27] Speaker 1: iske andar hum 0 se 255 characters tak ki koi bhi string store kara sakte hain. aur ye jo char data type hota hai, ye hamara fixed length ka hota hai.
+[12:33] Speaker 1: isko use karne ke liye hum likhte hain char aur beech mein phir size. yaani iske andar hum 50 characters ko store karane wale hain.
+[12:39] Speaker 1: aur aisa hi, jaisa char kaam karta hai, waise hi hamare paas ek varchar data type hota hai, jiska size bhi same hota hai, 0 se 255. but ye hamara variable character data type hota hai.
+[12:47] Speaker 1: isko bhi use karne ke liye hum apna koi bhi size define kar sakte hain. jaise lets suppose humne ek data type define kiya char aur use likha 20.
+[12:54] Speaker 1: ya 20 ki jagah ise likh dete hain 5. aur humne ek aur column banaya, jisko hum keh dete hain varchar.
+[12:59] Speaker 1: aur ise hum keh dete hain ki iska bhi size 5 hone wala hai. ab dono ke beech mein difference kya hota hai?
+[13:03] Speaker 1: difference ye hota hai ki jab hum character data type define karte hain, to hamari jo memory hoti hai, memory ke andar already ek paanch character ke size ki space reserve ho jaati hai.
+[13:47] Speaker 1: Ab lets suppose hamara name hamein store karna hai. Name ke liye humne yeh define kiya hai.
+[13:50] Speaker 1: Aur doosre ek aur doosre kisi table ke andar name ke liye humne varchar define kiya hai. Agar hamare paas koi name aata hai, hamare paas Om naam ka name aata hai.
+[13:56] Speaker 1: Ab Om kya hoga? Om yahan pe aake store ho jayega.
+[13:58] Speaker 1: Toh yeh baaki ki jo space hogi teen characters ki, yeh yahan par waste ho jayegi. Aise hi lets suppose agar humne paanch size ka varchar name define kiya hai, toh yahan par agar humein Om store karana hai, toh kya hoga?
+[14:07] Speaker 1: Toh hamare paas do hi size ki memory reserve hogi. And uske baad hamara naam store hoga.
+[14:11] Speaker 1: Toh generally char ki jagah hum varchar ko prefer karte hain, kyunki varchar variable sizing hoti hai, jissey hamari memory ka use zyada optimized hota hai. Faaltu ki jagah hum reserve karke nahi rakhte, jo baad mein jaake kharab ho jaati hai.
+[14:21] Speaker 1: Toh isiliye varchar ko use karte hain.
+[14:49] Speaker 1: Aise hi lets suppose agar humne paanch size ka varchar name define kiya hai, toh yahan par agar humein Om store karana hai, toh kya hoga? Toh hamare paas do hi size ki memory reserve hogi.
+[14:56] Speaker 1: And uske baad hamara naam store hoga. Toh generally char ki jagah hum varchar ko prefer karte hain, kyunki varchar variable sizing hoti hai, jissey hamari memory ka use zyada optimized hota hai.
+[15:04] Speaker 1: Faaltu ki jagah hum reserve karke nahi rakhte, jo baad mein jaake kharab ho jaati hai. Toh isiliye varchar ko use karenge.
+[15:09] Speaker 1: Issmein maximum hum 255 characters tak ki string ko store kara sakte hain. Aise hi ek aur bada size hota hai hamare paas blob.
+[15:15] Speaker 1: Blob ke andar kya hota hai? String ke andar hum zyada string, zyada badi objects ko store kara sakte hain.
+[15:19] Speaker 1: Aur blob ka use jaise hota hai. Uske baad hamare number types ke liye hamare paas ek integer type hota hai, jismein yeh range hoti hai ki is range se is range tak ke numbers ko hum store kara sakte hain.
+[15:27] Speaker 1: Jaise integer hota hai, integer ka ek chhota version hamare paas tinyint hota hai. Tinyint ke andar -128 se 127 tak numbers ko store kara sakte hain.
+[15:33] Speaker 1: Phir big int hota hai. Aise hi hamare paas bit hoti hai.
+[15:35] Speaker 1: bit ke andar hum size define kar sakte hain. Jaise let's suppose bit kya hoti hai?
+[15:39] Speaker 1: ek hamare paas 0 bit hoti hai, ek 1 bit hoti hai. Agar 0 is tareeqe se 0 aur 1 ka agar hum combination store karana chahte hain, toh usko hum bit ki form mein store kara sakte hain.
+[15:46] Speaker 1: agar hamein pata hai ki hamein isi size ka bit number milega, toh uske liye hum bit define kar sakte hain. Aur phir hamara jo size, jisme hamari utni hi bit value store hongi.
+[15:53] Speaker 1: toh ismein maximum jo range ho sakti hai, woh ho sakti hai till 64. Aise hi hamare paas ek float hota hai.
+[15:57] Speaker 1: ab integers ke andar toh hamare paas hole numbers aate hain ya integer numbers aate hain. Integer number kehne ka matlab hai ki hamare paas 1, 2, 3, 4 is tareeqe se numbers aa jayenge.
+[16:04] Speaker 1: hamare paas negative numbers aa jayenge. Hamare paas 0 aa jayega.
+[16:07] Speaker 1: bat 12.5 agar hamein store karana hai, toh decimal values nahi aa payengi. Ab decimal values ko store karane ke liye hum float ko use karte hain.
+[16:13] Speaker 1: float ke andar hum decimal numbers ko store kar sakte hain, with a precision to 23 digits. Float ke liye hum float use karte hain.
+[16:19] Speaker 1: aur float ka hi ek aur bada version hota hai, jisme zyada numbers store ho sakte hain. Woh hota hai hamare paas double.
+[16:23] Speaker 1: iske alawa hamare paas boolean bhi hota hai, jisme hum 0 ya 1 value ko store kara sakte hain. 0, 1 value ko store karane ka matlab hai true ya false.
+[16:29] Speaker 1: 0 ka matlab hota hai false. And 1 ka matlab hamare paas hota hai true.
+[16:31] Speaker 1: ab boolean directly SQL ke andar exist nahi karta. Boolean ko implement karne ke liye hum actually tinyint ko use karte hain.
+[16:37] Speaker 1: internally implementation tinyint ki hoti hai. Tinyint mein 0 jata hai, uska matlab false ho gaya.
+[16:40] Speaker 1: 1 jata hai, uska matlab true ho gaya. Iske alawa hamare paas date bhi hota hai, year bhi hota hai, jinko hum use kar sakte hain.
+[17:12] Speaker 1: par most commonly apne databases ke andar hum kya use karne wale hain? Abhi practice karne ke liye hum apna varchar use karenge.
+[17:17] Speaker 1: hum apna int use karenge. To ye dono sabse jyada commonly use hote hain.
+[17:20] Speaker 1: baki hum float ko bhi use kar sakte hain and double ko, agar hume decimal values ko store karana hai toh.
+[18:39] Speaker 1: iske sath-sath data types ke sath-sath hamare paas ek aur additional cheez hoti hai, jisko hum kehte hain unsigned. Unsigned hamara hum numbers ke sath use kar sakte hain.
+[18:47] Speaker 1: unsigned kehne ka kya matlab hai? Jaise let's suppose tiny int jo hai, tiny int ki ye range hai hamare paas.
+[18:52] Speaker 1: ki tiny int ke andar -128 se lekar 127 tak numbers ko hum store kar sakte hain. Agar tiny int ke andar hum 129 ko store karne ki koshish karenge, toh possible nahi ho payega.
+[19:00] Speaker 1: agar iske andar 128 ko store karne ki koshish karenge, positive, toh bhi possible nahi ho payega, kyunki maximum limit itni hai. Lekin agar hume pata chal jata hai ki hume sirf 1 se lekar 200 tak hi numbers store karne hain, toh uske liye kya hum integer ko use karein?
+[19:13] Speaker 1: ek aur better tarika ye hoga ki is kaam ko karne ke liye, kyunki tiny int toh 127 tak ki limit deta hai, hum apne data type ke sath likh dein. Let's suppose hamare column ka naam hai number aur uske sath hum likh dein ki ye tiny int type ka hone wala hai.
+[19:23] Speaker 1: aur tiny int ke sath iske andar unsigned tiny int ye hone wala hai. Unsigned kehne ka matlab hai ki isme negative numbers nahi aayenge.
+[19:30] Speaker 1: hum sirf positive values ko store karenge. Toh jab hum sirf positive values ko store karna chahte hain, toh iski jo range hogi negative numbers wali, ki -1 se lekar -128 tak jo sare ke sare numbers honge, 128 numbers, woh range ab positive numbers mein chali jayegi.
+[19:42] Speaker 1: positive numbers mein chali jayegi. Toh ab iski range ban jayegi 0 se lekar 255 tak.
+[19:46] Speaker 1: yaani total 256 numbers ab hum store kara payenge tiny int ke andar. Agar hum keh dete hain SQL ko ki hume negative number store nahi karane hain, sirf positive karwane hain.
+[19:53] Speaker 1: toh jo jagah negative numbers ke liye hoti thi, woh ab positive numbers aur hamari range positive numbers mein badh jayegi. Toh hum is tarike se apne jo number values hoti hain, unki range bhi bada sakte hain, agar hamare paas sirf positive numbers hote hain toh.
+[20:03] Speaker 1: toh ab jitne bhi data types pade hain, us hisab se dekhte hain ki hume apni table ko create karne ke liye kya-kya data type use karne honge. Sabse pehle aa jaate hain apne id par.
+[20:10] Speaker 1: id hume dikh raha hai number type ki hai. Toh id ke liye hum int use karenge.
+[20:13] Speaker 1: name hamara kya hai? Name hamara string type ka hai.
+[20:16] Speaker 1: To iske liye hum varchar use karenge. Email bhi string type ka hai.
+[20:20] Speaker 1: Yaani iske andar kuch bhi aa sakta hai. Numbers bhi aa sakte hain.
+[20:21] Speaker 1: Hamare characters bhi aa sakte hain. Dot bhi aa sakte hain.
+[20:23] Speaker 1: Special characters. To iske liye bhi hum apna varchar use karenge.
+[20:26] Speaker 1: Uske baad followers and following dono ke andar numbers use ho rahe hain. To inke liye bhi hum int use kar sakte hain.
+[20:32] Speaker 1: Ab inhe aage likh lete hain. ID ke sath hum likh denge int.
+[20:35] Speaker 1: Name ke sath hum likhne wale hain apna varchar. Varchar name ke andar size kya hone wala hai?
+[20:39] Speaker 1: Varchar ka maximum naam jo hum lenge, wo 30 length ka hum le sakte hain. Comma se in sabko separate kar lete hain.
+[20:44] Speaker 1: aur email kyunki hamare lambe ho sakte hain size mein, to email ke liye hum ise 50 kar lete hain. followers ke andar bhi hamare paas integer name hone wala hai aur following ke andar bhi hamare paas int hone wala hai.
+[20:53] Speaker 1: To is tarike se hum apni table create kar sakte hain.
+[20:59] Speaker 1: Ab ye to humne cover kar liya creation of table mein column ka naam and data type. Iske sath-sath hamare paas constraints bhi hote hain, jinhe hum apne columns ke upar apply kar sakte hain.
+[21:06] Speaker 1: Ab next hum baat karne wale hain constraints ke bare mein. Constraints hamare rules hote hain for data in the table.
+[24:20] Speaker 1: Yaani ek table ke andar hum kis tarike ka data define karne wale hain, uske upar hum kuch-kuch rules apply kar sakte hain. Inme se sabse pehla, waise to ab waise to bahut sare rules hote hain.
+[24:28] Speaker 1: Bahut sare different-different types ke constraints hote hain. Par inme se hum important constraints ko cover karenge.
+[24:32] Speaker 1: Jisme se sabse pehla hai not null. Yaani agar hum chahte hain ki humne koi table create ki.
+[24:36] Speaker 1: For example, agar hum apni user table ko create karte hain. Jaise yahan par apne Instagram database ke andar aa jaate hain sheets ke andar aur hum user table ko create kar rahe hain.
+[24:43] Speaker 1: Iske andar ID aa jaayegi. Iske andar hamare paas hamara name aa jaayega, email aa jaayega.
+[24:47] Speaker 1: Password ki jagah hum followers ka count store kara rahe hain. And iske saath hum apne following ka count store kara rahe hain.
+[24:52] Speaker 1: Ye saari ki saari values hum store karane waale hain. Ab in values ke saath-saath kya hone waala hai?
+[29:51] Speaker 1: Pehle hum apna data store karaenge. Data ke andar hum apni table ka data yahan par likh lete hain.
+[29:56] Speaker 1: This is going to be one, two, three, four. Ab let's suppose agar humne is tarike ki table create ki hai.
+[30:03] Speaker 1: To har table ke andar hame pata hai ki jo hamara name hai, wo kabhi bhi null nahi ho sakta. Kyunki har vyakti ke paas apna kuch na kuch naam to hota hi hai.
+[30:08] Speaker 1: To hamara jo name wala column hai, uske saath hum ek constraint define kar sakte hain. That the name is going to be not null.
+[30:13] Speaker 1: Yaani jab bhi hum chahte hain ki kisi bhi column ke andar koi bhi jo specific value hai, wo kabhi bhi null na ho paaye. Matlab wo kabhi bhi khaali na ho sake.
+[32:42] Speaker 1: Jaise for example, hamare jo following ka account hai, wo null ho sakta hai. Agar kisi ke paas koi kisi account ka account hai, to wahan par hum null store kara sakte hain.
+[32:47] Speaker 1: Kisi account ke koi followers hi nahi hai, to wahan par hum null store kara sakte hain. Par har account ka apna kuch na kuch naam to hoga hi.
+[32:52] Speaker 1: To wahan par hum null store nahi kara sakte. To uske liye hum apna constraint use kar sakte hain not null.
+[32:56] Speaker 1: Not null ko likhne ke liye hum yahan likh sakte hain apna name varchar and varchar ke baad hum apna constraint define karenge. Isko hum keh sakte hain not null.
+[33:02] Speaker 1: Ek baar humne name ko not null define kar diya. To aage se agar kabhi bhi name ke andar hum null value daalne ki koshish karte hain ya agar koi hum naya user enter kar rahe hain iske andar.
+[33:09] Speaker 1: Let's suppose hum ye number two ID wala naya user enter kar rahe hain aur iske andar agar name missing hua to us case mein hamare paas SQL se error aa jaayega. To isliye hum not null constraint use kar sakte hain.
+[33:17] Speaker 1: second constraint hamare paas hota hai unique constraint. Agar hum chahte hain kisi bhi column ki saari ki saari values different ho, unique ho, toh uske liye hum unique likh sakte hain.
+[33:24] Speaker 1: Jaise agar Instagram ke upar bahut saare users hain, toh Instagram ki requirement hoti hai ki har user ke paas apna unique email hona chahiye. Toh hum chahte hain jitne bhi emails ho hamare paas, saare ke saare emails unique hone chahiye.
+[33:33] Speaker 1: Aisa nahi hai ki Bob aur Casey do account hain aur dono account ka same email hai. Toh isliye hamara jo email hai, uske saamne hum likh sakte hain unique.
+[33:39] Speaker 1: Yaani hamara unique constraint hai. Ab agar hum koi aisa user daalne ki koshish karenge, enter karne ki koshish karenge jisme do users ka same email hoga, toh SQL hume kya karega?
+[33:46] Speaker 1: Error de dega. Iske alawa hamare paas default hota hai.
+[33:49] Speaker 1: Default ka matlab hai ki agar us column ke liye koi bhi value add nahi ki ja rahi, toh ek default value assign kar do. Jaise for example, shuruat mein agar kisi user ke liye humne koi followers following ka account add nahi kiya, toh hum default value set kar sakte hain to zero ki zero followers hain.
+[34:01] Speaker 1: Toh yahan pe followers ke liye hum pehle likh sakte hain default. Toh default constraint ko likhne ka yeh format hota hai.
+[34:06] Speaker 1: Jaise agar humne employees naam ki table banayi hai, unke liye agar hum salary rakhna chahte hain ki kisi bhi employee ki salary enter nahi ki, toh by default salary 25,000 hone wali hai. Toh hum aise likh sakte hain salary int default 25,000.
+[34:16] Speaker 1: Waise hi yahan par likh sakte hain followers int default. Kitne followers ho jayenge?
+[34:19] Speaker 1: By default zero followers ho jayenge hamare. And saath ke saath hamare paas ek check constraint bhi hota hai.
+[34:24] Speaker 1: Check constraint ka kaam hota hai to set limits to the value allowed in a column. Jaise for example, agar is table ke andar hamare paas ek aur column hota.
+[34:32] Speaker 1: Yahan par example ke liye ek aur column add kar dete hain hamara age ka column ki agar hamare paas har user ki age bhi hoti, toh age ke andar hum ek constraint daal sakte the ki hamara jo platform hai, uske upar 13 plus honi chahiye. Jaise Instagram bolta hai ki saare ke saare jo users hone chahiye, sab 13 plus hone chahiye ya fir 16 plus hone chahiye ya fir 18 plus hone chahiye.
+[34:48] Speaker 1: Hum is tarike ka ek check laga sakte hain. Kal ko fir koi bhi agar user aisa aayega jo us check ko clear nahi karta hoga, us limit ko age limit ko clear nahi karta hoga, toh woh account nahi bana paayenge fir.
+[34:56] Speaker 1: Toh is tarike ka check lagane ke liye hum ek constraint create kar sakte hain. Constraint yaani limit.
+[35:00] Speaker 1: Toh uske liye hum likh sakte hain constraint. Fir apne check ka naam ki hum kya check karne wale hain?
+[35:04] Speaker 1: hum apni age check karne wale hain. Phir hum likhte hain check aur wahan par hum likh sakte hain age greater than 18.
+[35:08] Speaker 1: agar humein do conditions ko mix karna hai, to uske liye hum do condition ki city hamari Delhi honi chahiye. Age greater than 18 honi chahiye.
+[35:13] Speaker 1: beech mein hum and laga sakte hain. Is tarike ka hum ek example le sakte hain.
+[35:16] Speaker 1: to let's suppose agar humne ek aur column iske andar bana liya hota age ka. Isko keh dete hain int.
+[35:22] Speaker 1: to age ke andar hum ek constraint laga sakte the. Is tarike se constraint.
+[35:25] Speaker 1: is constraint ko naam de dete hain age check. Aur age check ke andar hum kya check karne wale hain?
+[35:29] Speaker 1: hum check karne wale hain ki hamari jo age hai, wo greater than equal to 13 hai kya? Apne checks ko hum apne parenthesis ke andar define karte hain.
+[35:38] Speaker 1: to ye hamara check ho gaya. Matlab is condition ko hum check karne wale hain.
+[35:41] Speaker 1: aisi conditions humne kayi baar javascript ke andar dekhi hogi. Aisi hi similar conditions hum apne SQL ke andar likhte hain.
+[35:45] Speaker 1: to ye constraint ho gaya. Kya hai constraint ka naam?
+[35:47] Speaker 1: age check. Yaani humein hamesha constraint ko ek naam dena hota hai.
+[35:50] Speaker 1: baaki ye jo naam hota hai, ye optional hota hai. Isko hum chahein to yahan se hata bhi sakte hain.
+[35:53] Speaker 1: hum simply likh sakte hain constraint check ki hamari age greater than equal to 13 hai kya?
+[36:00] Speaker 1: ab ye to ho gaya.
+[45:15] Speaker 1: ye hamare common constraints. Iske alawa hamare paas do aur important constraints.
+[45:19] Speaker 1: Ab ye to ho gaye hamare common constraints. Iske alawa hamare paas do aur important constraints hote hain jo hoti hain hamari keys.
+[45:25] Speaker 1: Ek hota hai hamara primary key constraint. Ek hota hai hamara foreign key constraint.
+[45:28] Speaker 1: Ab keys kaafi zyada important hoti hain jab bhi hum tables ki baat karte hain. Primary key constraint ki baat karein toh jis bhi column ko humne bol diya ki ye column hamara primary key hai.
+[45:37] Speaker 1: Key kya hoti hai? Ki hamare kuch special columns hote hain.
+[45:40] Speaker 1: Inko vaise hum detail mein padhenge abhi. Par keys hamare special columns hote hain.
+[45:43] Speaker 1: Aur jis bhi column ko humne primary key keh diya, vo kya karega? Vo column automatically unique bhi ho jayega aur not null bhi ho jayega.
+[45:49] Speaker 1: Aur hum sirf ek hi column ko ya ek set of columns ko primary key bana sakte hain. Aisa nahi hai ki hamari koi bhi table hai toh uske andar bahut saare columns ko humne primary key bol diya.
+[45:57] Speaker 1: Kisi bhi column ko primary key banane ke liye hum likhte hain PRIMARY KEY aur fir apne column ka naam. Let's suppose agar hum multiple columns ko primary key banana chahte hain.
+[46:04] Speaker 1: Jaise koi table hai. Table ke andar ek hamare paas id aa gayi.
+[46:07] Speaker 1: Ek hamare paas hamara name aa gaya. Ab id ke andar ho sakta hai id 1 ho, 2 ho, dobara se 1 ho.
+[46:12] Speaker 1: Name ke andar ho sakta hai ek name Ram ho, ek name Shyam ho aur dusra name bhi hamare paas Shyam ho. Toh is case mein kya hona chahiye?
+[46:20] Speaker 1: Agar hum sirf id ko primary key banate hain toh sirf id ko primary key banana possible nahi hai kyunki 1 aur 1 yahan pe repeat ho raha hai. Agar hum sirf name ko primary key banate hain toh vo bhi possible nahi hai kyunki Shyam aur Shyam yahan pe repeat ho raha hai.
+[46:30] Speaker 1: Par hum id aur name ke combination ko primary key bana sakte hain. Matlab dono ka combination hamesha unique rehna chahiye.
+[46:36] Speaker 1: Agar 1 aur Ram hai toh 1 aur Ram dobara kabhi nahi dikhega. Agar 2 aur Shyam hai toh 2 aur Shyam dobara kabhi nahi dikhega.
+[46:41] Speaker 1: Agar 1 aur Shyam hai toh 1 aur Shyam dobara kabhi nahi dikhega. Toh is case mein primary key ek column nahi hai.
+[46:46] Speaker 1: is case mein primary key do columns ka combination hai. To ye to ho gaya do columns ka combination primary key.
+[46:51] Speaker 1: But generally hamari primary key hum single hi rakhenge. Jaise agar hum ek temporary table banayein jiske andar id column ho gaya.
+[46:56] Speaker 1: To is id column ko hum apni primary key bana sakte hain. Primary key unique hoti hai.
+[47:00] Speaker 1: Primary key not null hoti hai. Jaise humne apne quora wale post wale example mein liya tha ki har post ki apni ek unique id hoti hai.
+[47:05] Speaker 1: To koi bhi id null nahi ho sakti. Koi bhi id duplicate nahi ho sakti.
+[47:08] Speaker 1: To unique aur not null hogi. Jaise yahan par ye jo hamari user table hai, user table ke andar hum apni id ko apni primary key bana sakte hain.
+[47:13] Speaker 1: Ab id ko primary key ya kisi bhi column ko primary key banane ke do tarike hote hain. Ek to hai ki id ke samne hi hum apna primary key constraint likh dein.
+[47:20] Speaker 1: Ye hoga pehla tarika. Dusra tarika hota hai ki alag se last mein jake hum comma karke likhein primary key aur phir apni id ka naam yani apne column ka naam ki hamara id kya hone wala hai?
+[47:30] Speaker 1: Hamara id hamare liye primary key hone wala hai. Uske alawa hamare paas ek aur constraint hota hai foreign key ka.
+[47:34] Speaker 1: Foreign key kya karta hai? It prevents actions that would destroy links between tables.
+[47:38] Speaker 1: Foreign key ko hum abhi detail mein padhenge. Par generally hamare paas do jo tables hoti hain wo connected ho sakte hain.
+[47:44] Speaker 1: Yani isme ek bahut simple sa basic sa example lete hain. Jaise ek hamare paas student table hai.
+[47:49] Speaker 1: Ek hamare paas teacher table hai. Student table ke andar ho sakta hai har student ki apni id ho.
+[47:53] Speaker 1: Har student ka apna naam ho aur har student ke samne ek teacher ki id ho jisse pata chalta hai ki student ko kaun si teacher padhati hai aur teacher ke samne uski id hai aur teacher ke samne uska naam hai. Ab yahan par teacher number one hai, teacher number two hai, teacher number three hai.
+[48:05] Speaker 1: Ye hamara student number lets call it 101 aur 102 hai. Agar student 101 ko teacher number two padhati hai aur student 102 ko teacher number one padhati hai, to ye teacher id kya banega?
+[48:15] Speaker 1: Ye teacher ID foreign key kehlayega. Foreign key hamare khud ki table mein student table mein ek aisa column hota hai jo dusre kisi table ke andar ek primary key hoti hai.
+[48:24] Speaker 1: Kyunki teacher table ke andar teachers ki ID ek primary key hai ki har teacher ki unique ID hogi. Toh usi ID ki values ko jab hum kisi aur table ke andar use karte hain, jaise humne student table ke andar use kiya, toh student table ke andar usi column ko hum apni foreign key kehte hain.
+[48:38] Speaker 1: Jo dusri table ke andar primary key tha, woh is table ke andar foreign key ban jata hai. Agar dusri table mein use hota hai toh.
+[48:43] Speaker 1: Toh isse hum do tables ko kya kar rahe hain? Do tables ko hum ek tarike se link karne ki koshish kar rahe hain.
+[48:47] Speaker 1: Toh kisi bhi column ko foreign key batane ke liye hum likhte hain foreign key aur phir us column ka naam jo hamara foreign key hai. Aur phir hum likhte hain references.
+[48:54] Speaker 1: Aur references kehne ka matlab hai kaun si table ke andar woh column hamara primary key hai.
+[49:23] Speaker 1: Jaise agar student table ke andar jo teacher ID hai, woh teacher table ke andar ID hai, toh use foreign key banane ke liye hum likhenge foreign key aur phir apne column ka naam. Hamare liye column kya hai?
+[49:34] Speaker 1: Hamare liye column hai teacher ID. Aur phir hum likh sakte hain references.
+[49:39] Speaker 1: References aur phir dusri table ka naam jahan par woh primary key hai. Dusri table ka naam hai hamare paas teacher table aur teacher table ke andar ID jo column hai, uski value yahan pe aake teacher ID ban rahi hai aur teacher ID hamare liye hamari foreign key hai.
+[49:51] Speaker 1: Toh is tarike se hum foreign key ka relationship pura ka pura define karte hain.
+[52:20] Speaker 1: Recording progress recording jaise let's suppose ki apne Instagram ke andar kal ko jakar hum ek aur table banate hain jiska naam hai post.
+[57:04] Speaker 1: Is table ko thoda sa hum copy kar lete hain. Yahan paste kar lete hain.
+[57:07] Speaker 1: Yahan paste kar lete hain. Isi table ko humne naam de diya hai post.
+[57:11] Speaker 1: Post ke andar hum sabke post store karate hain. Toh har post ki apni ek unique ID hogi.
+[57:15] Speaker 1: Har post ke andar apna ek content hoga. Ise keh dete hain yahan par ise keh dete hain content aur itne part ko delete karke le aate hain yahan par.
+[57:24] Speaker 1: to har post ki apni unique ID hone wali hai aur har post ka apna ek content hone wala hai aur har post ke paas apne user ki ID hone wali hai ki us post ko kaun se user ne post kiya hai. Jaise lets suppose pehle post ke andar likha hua hai hello world.
+[57:37] Speaker 1: Is tarike se dusre post ke andar likha hua hai lets suppose we write bye-bye. To ye do post kiye gaye hain Instagram ke upar aur dono post ki hamare paas ID hai.
+[57:45] Speaker 1: In IDs ko aur unique karne ke liye isko 101 kah dete hain. Isko 102 kah dete hain.
+[57:48] Speaker 1: Ab user ID kisne hello world post kiya hai? Lets suppose number three ne hello world post kiya hai.
+[57:51] Speaker 1: To user ki ID aa jayegi. Aur kisne hamara bye-bye post kiya hai?
+[57:55] Speaker 1: Ye number one ne post kiya hai. To is tarike se hamare paas ek post table alag se aa jayegi.
+[57:59] Speaker 1: Ab is post table ke andar ye user ID kya hai? Ye user ID hamari ek foreign key ban jayegi.
+[58:03] Speaker 1: Jabki ye same user ID jab user table ke andar hai to user table ke andar ye hamari primary key hoti hai. Aur post ke andar ID kya hai?
+[58:09] Speaker 1: Post ke andar ID khud apni ek primary key hai. To pehle to hum kya karenge?
+[58:12] Speaker 1: Pehle to apni ye user naam ki table create karte hain. Isko kar lete hain highlight aur run.
+[58:16] Speaker 1: To hamari user naam ki table create ho gayi. Yahan pe aake refresh all kar denge.
+[58:20] Speaker 1: To user naam ki table ke andar kaun-kaun se columns hain? Ek hamare paas ID hai, ek hamare paas age hai, name hai, email hai, followers hain, following hai.
+[58:26] Speaker 1: Kafi sari information user ke andar hum hamare paas stored hai. Ab aise hi hum apni ek aur table create kar sakte hain Instagram database mein jisko hum keh denge create table post.
+[58:34] Speaker 1: Post ke andar hum kya store karayenge? Post ke andar hamare paas teen columns hain.
+[58:38] Speaker 1: Ek hamare paas ID hai, ek hamare paas content hai, ek hamare paas user ID hai. To schema define karne ke liye hum likhenge ID.
+[58:43] Speaker 1: id kis type ki hai? id ko int type ka hum keh dete hain.
+[58:45] Speaker 1: uske baad hamare paas content hai. content ko hum varchar type ka keh dete hain.
+[58:49] Speaker 1: ab content ke andar kai saari information aa sakti hai. toh 100 tak hum characters iske andar store kar sakte hain.
+[58:54] Speaker 1: uske alawa hamare paas user id hai. toh user id hamara ek aur column ho jayega jo bhi hamare paas integer type ki hogi.
+[59:00] Speaker 1: ab hame pata hai ki ye jo user id hai, ab sabse pehle toh is id ko hum primary key bana sakte hain. toh isko keh dete hain hum primary key.
+[59:06] Speaker 1: ab user id ka hame pata hai ki ye jo user id hai, ye ek foreign key hai. toh kaise bataye hum apni table ko ki ye foreign key hai?
+[59:11] Speaker 1: table ko batane ke liye hum likhte hain foreign key aur fir apne column ka naam ki ye user id ek foreign key hai. par ye foreign key kahan se aayi hai?
+[59:18] Speaker 1: ye foreign key references hamari user table ki id column ki user table ke andar ise parentheses ke andar daal dete hain. hum kehna cha rahe hain ki hamari jo foreign key hai user id ye hamari user table ke andar id column se values leti hai.
+[59:32] Speaker 1: matlab jo users exist karte honge wahi user post kar payenge Instagram ke upar. toh is tarike se hum ek aur table create kar sakte hain with a foreign key.
+[59:39] Speaker 1: isko execute kar lete hain aur yahan pe aake refresh kar dete hain. toh ab tables ke andar hamare paas do tables aa gayi.
+[59:43] Speaker 1: ek hamare paas post table hai jiske andar ye teen columns hain aur ek hamare paas hamari user table hai. ab hum chahein toh hum apni tables ko visualize bhi kar sakte hain MySQL workbench ke andar.
+[59:51] Speaker 1: hum upar jaakar select kar sakte hain database aur yahan se hum click karenge reverse engineer par. reverse engineer karne ke liye hum apni tables ko imagine karte hain.
+[59:57] Speaker 1: toh ise kar dete hain continue. saari cheezon ko continue kar denge.
+[60:01] Speaker 1: aur hum Instagram ka jo database hai usko reverse engineer karna chahte hain. continue kar denge.
+[60:05] Speaker 1: continue aur execute. ise kar dete hain close.
+[60:07] Speaker 1: Jaise hi close karenge yahan hamein hamara jo poora ka poora table hai, poora ka poora schema hai woh thoda sa dikhai dena start hota hai. Matlab picture format mein hum apni tables ko dekh sakte hain.
+[60:15] Speaker 1: Ab yahan par ek hamare paas posts table hai. Ek hamare paas users table hai.
+[60:18] Speaker 1: User table ke andar chhoti si chaabi bani hui hai jo key ko represent karti hai. Key kehne ka matlab hai ki hamein bataya ja raha hai yeh jo ID hai user table ke andar yeh hamari primary key hai.
+[60:26] Speaker 1: Uske alawa hamare paas age integer hai, name hai, email hai, followers hai, following hai. Ab yahan name ke saamne jo bullet point hai jo diamond hai woh thoda sa dark blue hai.
+[60:33] Speaker 1: Dark blue isliye hai kyunki woh dikha raha hai ki baaki sab sab mein toh null values aa sakti hain. Par name ke saath humne constraint diya tha ki yeh not null hoga.
+[60:39] Speaker 1: Not null kya hai? Ticked hai hamare name ke liye.
+[60:42] Speaker 1: Toh woh cheez yahan par hamein display hokar dikhai de rahi hai. Aise hi hamare paas posts wali table hai.
+[60:46] Speaker 1: Post wali table ke andar jo primary key hai woh post ki ID hai. Content hai hamare paas user ID hai.
+[60:50] Speaker 1: Aur dono ke beech mein ek arrow hai. Yeh arrow hamein dikhati hai ki user ke andar jo hamari primary key hai woh post ke andar user ID karke ek foreign key ban rahi hai.
+[60:58] Speaker 1: Toh dono jo columns hain jo dono column same hain. Yaani post ka user ID aur user ka apna ID dono columns same hi hain.
+[61:04] Speaker 1: Ek tarike se dono ke andar same values hain. Isliye dono ko same colour se highlight kiya jaata hai.
+[61:08] Speaker 1: Toh yeh link kaise form hota hai? Link form hota hai with the help of a foreign key.
+[61:11] Speaker 1: Toh is tarike se hamari tables linked hoti hain. Aur yeh jo diagram banta hai hamari tables ka isko database ki bhasha mein hum kya kehte hain?
+[61:18] Speaker 1: Hum ek ER diagram kehte hain. Aur jo hamari tables hoti hain unko hum relation kya hai?
+[65:01] Speaker 1: Toh relation relation kehte hain.
+[65:07] Speaker 1: To ER ka matlab hota hai entity relation jisme relation ka matlab hai hamari table. Ye hamari tables ka diagram hai.
+[65:13] Speaker 1: Isko hum chahein toh cross bhi kar sakte hain. Toh yahan se isko cross kar dete hain.
+[65:16] Speaker 1: MySQL model ko bhi cross kar dete hain. Don't save aur wapas se aa jaate hain hum apne SQL page ke upar.
+[65:21] Speaker 1: To is tarike se jin bhi tables ko hum create karenge unko hum visualize bhi kar sakte hain. Ab aur thoda sa detail me baat karte hain ki exactly ye primary key aur ye foreign key hoti kya?
+[72:49] Speaker 1: Kya ye ki hamare paas ek hi primary key ho sakti hai puri table ke andar.
+[81:15] Speaker 1: Aisa nahi hai. Jab bhi hum jab bhi hum keys ki baat karte hain, toh keys hamari special columns hoti hain in a table.
+[81:21] Speaker 1: Yaani kuch-kuch hamare special columns hote hain jinhe hum special maante hain. Ab hamare paas do major tarike ki keys hoti hain.
+[81:26] Speaker 1: Ek hoti hai primary key, ek hoti hai foreign key. Primary key is a column ya fir set of columns in a table that uniquely identifies each row.
+[81:33] Speaker 1: Jab bhi ek table ke andar hume row ek row ko uniquely identify karna hota hai, toh hume pata hona chahiye ki har ek row ke andar ye wala jo column hai, iske andar toh hamesha unique value hui hogi. Matlab is column ki value kabhi bhi dusre column ke sath same nahi ho sakti.
+[81:45] Speaker 1: Jaise hamare paas school ke andar ya college ke andar har bacche ke paas apna roll number hota hai. Ek bacche ka roll number kabhi bhi dusre bacche ke roll number ke sath same nahi ho sakta.
+[81:51] Speaker 1: Har student ka roll number unique hota hai. Toh roll number ki help se hum har student ko identify kar sakte hain.
+[81:56] Speaker 1: Waise hi yahan par is table me hum apni ID ki help se apne sare ke sare individual users ko identify kar sakte hain. Ab primary key ki unique property hoti hai ki hamare paas ek hi primary key ho sakti hai puri table ke andar.
+[82:07] Speaker 1: Aisa nahi hai ki hamara name bhi primary key ho jayega. Hamari ID bhi primary key ho jayegi.
+[82:10] Speaker 1: Hamara address bhi primary key ho jayega. Ek hi primary key hoti hai aur woh primary key unique toh hoti hai.
+[82:15] Speaker 1: Matlab primary key unique bhi hoti hai aur automatically primary key not null bhi hoti hai. Matlab aisa college ke andar aisa koi student nahi hoga jo bina roll number ke ghum raha hai.
+[82:23] Speaker 1: vaise hi hamari jo bhi table hoti hai, uske andar koi bhi aisi row nahi ho sakti jiske paas apni primary key null value ho. to aise hi users ke paas koi bhi aisa user nahi ho sakta jiski ID null ho.
+[82:32] Speaker 1: har kisi ke paas apni ID honi hi honi chahiye. jaise post table ki baat karein, to post table mein har post ki apni ek unique ID honi hi honi chahiye.
+[82:39] Speaker 1: ye to ho gayi hamari primary key. aise hi hamare paas foreign key hoti hai.
+[82:42] Speaker 1: to foreign key is a column ya column ya phir set of columns in a table that refers to the primary key in another table.
+[83:32] Speaker 1: dusri kisi table ke andar jo primary key column hoga, vo agar kisi dusri table ke andar use kiya jaye, toh use hum foreign key keh dete hain. ab foreign keys ke paas duplicate value ho sakti hai.
+[83:40] Speaker 1: jaise kal ko ho sakta hai ki post ke andar ye jo mera user number three hai, ye koi aur post kar de. to yahan par 103 karke ek aur naya post aa jaye.
+[83:47] Speaker 1: naye post ke andar likha ho, let's suppose, "Hello Delta" is tarike ka ek aur post kar diya. kisne post kiya?
+[83:53] Speaker 1: user number three ne hi kiya. to ab user number three ki value to duplicate ho gayi.
+[83:56] Speaker 1: even do ye yahan pe foreign key hai. to foreign key ki value duplicate ho sakti hai, par primary key ki kabhi nahi ho sakti.
+[84:00] Speaker 1: to foreign key ke paas duplicate value bhi ho sakti hai. foreign key null value bhi ho sakti hai.
+[84:04] Speaker 1: in fact, hamare paas ek table ke andar zaroori nahi hai ek hi foreign key ho. hamare paas multiple foreign keys ho sakti hain.
+[84:08] Speaker 1: to we can have multiple foreign keys. we can have duplicate and null values in foreign key.
+[84:12] Speaker 1: par ye saari cheezein primary key mein possible nahi ho paati. iska ek example lete hain.
+[84:15] Speaker 1: example ke liye humne hamari user table li thi aur example ke liye humne hamari ek post table create ki hai. ab jo bhi hamare user ke andar ID hai, vahi same IDs humein hamari user ID yaani post table ke andar user ID ki form mein dikhti hai.
+[84:25] Speaker 1: to in tables ke andar agar hum identify karein, user table ke andar ID kya hai? user table ke andar ID hamari primary key hai.
+[84:31] Speaker 1: post table ke andar id kya hai? post table ke andar id bhi hamari primary key hai.
+[84:34] Speaker 1: post table ke andar user id kya hai? post table ke andar user id hamari foreign key hai.
+[84:38] Speaker 1: to is tarike se hum apni keys ko identify karte hain apni tables ke andar.
+[92:13] Speaker 1: ab ab next hum baat karne wale hain ki kaise table ke andar hum apne data ko insert kar sakte hain. data ko insert karne ke liye hum apni insert command ko use karte hain.
+[92:20] Speaker 1: hum likhte hain insert into table aur fir apne columns ka sequence ki pehle let's suppose hamein id insert karni hai. fir hamein name insert karna hai.
+[92:26] Speaker 1: hum chahe to pehle name bhi insert kar sakte hain. fir id bhi insert kar sakte hain.
+[92:29] Speaker 1: fir hum likhte hain values. and is tarike se hum apni multiple values ko define karte hain.
+[92:33] Speaker 1: jaise let's suppose agar hamein id number one yahan par karni hai aur fir hum name enter karna chahte hain. fir hum dusre student ki dusri row ki information add karna chahte hain.
+[92:41] Speaker 1: to hum is tarike se information ko ek-ek karke ek-ek karke add karte hain. ek cheez zarur dhyan rakhni hai jab hum is format ko use karte hain to order bahut important hota hai.
+[92:47] Speaker 1: yaani agar humne yahan par pehle id likhi to hamein yahan par bhi pehle id likhni padegi. agar humne baad mein name likha hai to yahan par bhi hamein baad mein name hi likhna padega.
+[92:54] Speaker 1: to is tarike se order bahut important hota hai jab bhi hum data ko insert karte hain ya add karte hain table ke andar.
+[96:19] Speaker 1: ab apne data ko add karne ke liye sabse pehle apni user table ke andar data ko add karte hain. to hum is data ko add karenge.
+[96:25] Speaker 1: yahan par aa jaate hain user table ke paas aur yahan hum likh sakte hain insert into fir apni table ka naam which is user. hum kya-kya insert karne wale hain?
+[96:36] Speaker 1: vaise to ye saari ki saari cheezein same line par likhna possible hai. par hum thoda readability badhane ke liye saari cheezon ko alag lainon par likh rahe hain.
+[96:42] Speaker 1: to iska matlab ye nahi hai ye alag-alag commands hain. ye hamari same command hai.
+[96:44] Speaker 1: ek aur cheez yahan par ye semicolon nahi aayega. Toh galti se bhi semicolon ko mat likh dena.
+[96:49] Speaker 1: hamari jo poori ki poori command hai voh last mein yahan par finish ho rahi hai. Toh apni commands ko likhne ke liye insert into user hum sabse pehle apni id insert karenge.
+[96:55] Speaker 1: fir hum age insert karne waale hain kyunki humne yahan pe age define ki hai. Toh yahan apni kuch-kuch ages bhi likh lete hain.
+[97:00] Speaker 1: Lets suppose this is 14, this is 15, this is 16, this is 17. Simple si ages rakh rahe hain.
+[97:05] Speaker 1: 13 plus sabko rakha hai kyunki humne constraint define kar rakha hai 13 plus ka. Age add karenge pehle.
+[97:10] Speaker 1: fir name add karenge. Fir email add karenge.
+[97:12] Speaker 1: fir apne followers ka count hum add karenge. Fir apne following ka count hum add karenge.
+[97:16] Speaker 1: toh is tareeqe se ye saari information hum add karenge. Toh ab values likh lete hain.
+[97:20] Speaker 1: sabse pehle id mein kya aayega? Ye saari information hum likhne waale hain.
+[97:23] Speaker 1: toh one hamari id hogi 14. Hamari age hogi.
+[97:27] Speaker 1: name hoga Adam. Adam ka email hoga hamare paas adam @ yahoo.in is tareeqe se.
+[97:35] Speaker 1: uske baad hamare paas jaise ye saari information hum add karenge.
+[102:51] Speaker 1: toh ab values likh lete hain. Sabse pehle id mein kya aayega?
+[102:54] Speaker 1: Ye saari information hum likhne waale hain. Toh one hamari id hogi 14.
+[102:58] Speaker 1: Hamari age hogi. Name hoga Adam.
+[103:00] Speaker 1: Adam ka email hoga hamare paas Adam @ yahoo.in is tareeqe se. Uske baad hamare paas followers ka count hoga 1 2 3 1 4 5.
+[103:12] Speaker 1: To this is going to be 1 2 3. This is going to be 1 4 5.
+[103:14] Speaker 1: And isi tareeqe se hum saare ke saare yahan par type kar sakte hain. To humne saari values apni type kar di.
+[103:18] Speaker 1: Last mein semicolon laga dete hain. Aur itne part ko hum karte hain execute.
+[103:21] Speaker 1: Jaise hi ise execute karenge ye successful ho gaya. Ab hamari table ke andar ye sara ka sara data jakar enter ho chuka hai.
+[103:26] Speaker 1: Par let's suppose ab ek baar thoda-thoda apne constraints ko check karte hain. Let's suppose hum kal ko koi aur data enter karte hain.
+[103:31] Speaker 1: Yahan likh dete hain. Itna part ek baar copy kar lete hain.
+[103:34] Speaker 1: Ye part humne copy kar liya. Kal ko sabse pehle to hum koshish karte hain ki hum same ID ka koi aur user add kar denge.
+[103:39] Speaker 1: Abhi ke liye sirf ID rakhte hain. Age rakhte hain.
+[103:41] Speaker 1: Name rakhte hain. Kal ko hum same ID ka koi aur user add karne ki koshish kar rahe hain.
+[103:45] Speaker 1: Hamare paas already user number two hai. Two ID wala.
+[103:47] Speaker 1: Aur two ID wala agar hum dobara add karne ki koshish karein. Yahan par likh dete hain ki user ka naam kuch bhi ho sakta hai.
+[103:52] Speaker 1: Let's call the user random. To random jo hai uska random naam hai aur age kya hai?
+[103:56] Speaker 1: Age hai 20. To is tareeqe se koi bhi hum user add kar sakte hain par ID same hai.
+[104:00] Speaker 1: To jaise hi is line ko hum execute karenge select karke hamare paas error aa jayega. Error mein notice karenge toh yahan humein error ke andar dikhayega duplicate entry two for key.
+[104:07] Speaker 1: Iska matlab hai ki hamari jo ID thi uske liye hum duplicate entry enter karne ki koshish kar rahe hain. To is case mein hamare paas error aa jata hai.
+[104:12] Speaker 1: Dusra humne apna constraint define kiya tha name not null. Par kal ko agar hum apne name ko null value ki tarah enter kar rahe hain.
+[104:18] Speaker 1: Matlab name ko humne add hi nahi kiya. Name ko humne add hi nahi kiya.
+[104:21] Speaker 1: To automatically jis cheez ko add jis cheez ko insert nahi karte wo null ho jati hai. To ise jab hum select karke execute karenge to us case mein hamare paas error aa jayega.
+[104:27] Speaker 1: Error kya aa jayega? Field name doesn't have a default value.
+[104:30] Speaker 1: Yaani ye value null ho rahi hai yahan par name ki value. To isliye hum ise enter nahi kar sakte.
+[104:34] Speaker 1: To ye constraint yahan par act kar raha hai. Kal ko agar hum same email ID add karne ki koshish karte hain jo humne already add ki hai.
+[104:39] Speaker 1: Jaise ye wali email ID agar hum enter karne ki koshish karein. Ise copy kar lete hain.
+[104:43] Speaker 1: Yahan par hum koi bhi name likh sakte hain. Yahan par hum email likh sakte hain.
+[104:47] Speaker 1: Name ke andar humne koi bhi ek random value de di aur email ke andar hum already existing email enter kar rahe hain. Yaani duplicate email enter kar rahe hain.
+[104:53] Speaker 1: To ise jab enter karne ki koshish karenge execute kiya to hamare paas error aa jayega. Error aayega duplicate entry two for.
+[104:58] Speaker 1: Achha ek to key ko hum duplicate kar rahe hain. To key ko to yahan pe 10 kar dete hain.
+[105:02] Speaker 1: Ab enter karte hain. Execute duplicate entry for email.
+[105:06] Speaker 1: To yahan par jo hum email enter kar rahe hain wo already exist karti hai. Wo unique nahi hai.
+[105:10] Speaker 1: To phir wo hamare liye ek problem ho jayegi. To is tarike se hume pata hai ki hamare jo constraints hain wo sare ke sare kaam kar rahe hain.
+[105:15] Speaker 1: agar hamne yahan par let's suppose age ko 10 kar diya jo 13 se kam hai to bhi error aa jaega. check constraint user check one is violated.
+[105:25] Speaker 1: yaani hamne jo constraint lagaya hai age greater than 13 ka ye violate ho raha hai. to hum under 13 wali age ko enter nahi kar sakte.
+[105:30] Speaker 1: to is tarike se hamare constraints jo humne database ke upar set kiye the wo sare ke sare kaam kar rahe hain. to hum sirf valid values ko apne database ke andar insert kar sakte hain.
+[114:06] Speaker 1: ab next hum aa jate hain apni select command ke upar. select command ka kaam hota hai to select and show data from the database.
+[114:12] Speaker 1: yaani kisi bhi point par agar hum apne table ki values ko check karna chahte hain to uske liye hum select command ko use karte hain. isko likhne ka syntax hota hai ki hum likhte hain select aur fir un columns ki value jinki wo hum dekhna chahte hain from fir apni table ka naam.
+[114:22] Speaker 1: to agar hume apni table ko abhi dekhna hai to uske liye hum likh sakte hain select. hum sare users ki id dekhna chahte hain.
+[114:27] Speaker 1: unka name dekhna chahte hain aur unki email dekhna chahte hain. from kaun si table?
+[114:31] Speaker 1: from our user table. to ise hum kar sakte hain select and ise hum kar sakte hain execute.
+[114:36] Speaker 1: jaise hi execute kiya hume dikh gaya ki number one id hai. name hai.
+[114:38] Speaker 1: hamare pas email aa gayi. to ye charo users ka data hamare pas aa gaya hai.
+[114:43] Speaker 1: abhi isi tarike se kal ko let's suppose agar hume inki age bhi dekhni hai ki sirf name aur age dekhna hai hume ya id name aur age dekhni hai. email nahi dekhni to usko bhi hum select karke execute kar sakte hain.
+[114:51] Speaker 1: to is bar users ki id name and age hume dikhai de raha hai. ab agar hum chahte hain ki kisi table ke andar sare ke sare columns hum select kar le to uske liye hamare pas ek short form hoti hai which is asterisk.
+[115:01] Speaker 1: ye jo symbol hota hai iska matlab hota hai all. asterisk matlab all.
+[115:05] Speaker 1: yaani jab bhi hum sari ki sari cheeze select karna chahte hain to hum likhte hain select all from table. to star ki jagah hum ise all ki tarah padhte hain.
+[115:12] Speaker 1: to agar hum yahan par likh de select all from user to ise kar sakte hain select execute. execute kiya to hamare pas sara ka sara data aa gaya jo humne puri table ke andar store karwaya hua hai.
+[115:22] Speaker 1: iske saath vaise jab bhi hum koi column use karte hain lets suppose agar hamara age column hai toh age column ke saamne hum ek aur keyword use kar sakte hain SQL ka which is the distinct keyword. Distinct keyword se kya hoga?
+[115:32] Speaker 1: agar maan lete hain bahut saare hamare paas users hain aur saare users ke andar koi common ages hain. Jaise is user ke paas agar age 14 ho jaati hai toh hamare paas sirf unique ages unique ya distinct ages hamare paas display hokar aayengi.
+[115:43] Speaker 1: toh isko select kar lete hain. Execute karenge.
+[115:44] Speaker 1: toh ages mein unique ages kya-kya hai? 14 age hai, 15 age hai, 16 age hai, 17 age hai.
+[115:48] Speaker 1: agar hamare paas do user hote same age ke toh wahan par do baar nahi aata 14. Wahan par ek hi baar 14 hamare paas print hokar aata.
+[115:53] Speaker 1: toh jab bhi humein unique data ko select karna hota hai toh us column ke aage jiska hum distinct value check karna chahte hain unke saamne hum apna distinct keyword use kar sakte hain. Toh is tarike se abhi tak humne apni tables ko create karke dekha hai.
+[116:03] Speaker 1: unke andar data insert karke dekha hai aur humne select command ko use kiya hai. Aapke liye as a homework problem jo ye hamari post hai ye hamari jo post wali table hai iske liye aapko kya karna hai ye saara content apni post table ke andar aapko ek baar enter karke dekhna hai ki kaise hum ise insert kar sakte hain aur kaise hum ise select karke print karwa sakte hain.

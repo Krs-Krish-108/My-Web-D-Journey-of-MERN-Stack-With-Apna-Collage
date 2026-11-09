@@ -1,0 +1,815 @@
+# Building RESTful API with Express
+
+## Summary
+### Flow Summary
+Speaker 1 ne RESTful APIs chapter shuru kiya: REST aur CRUD concepts samjhaye, Quora jaisa posts page banane ke routes plan kiye, aur Express server ka basic setup kiya.
+
+### Chapter ka project
+- Quora/Twitter jaisa posts page banega ("ACORA post" suna gaya, shayad Quora post); har post mein username aur content
+    - Features: saare posts dekhna, individual post detail, naya post, edit, delete
+- UI par focus nahi; chapter ke baad cards ya better styling khud add kar sakte hain
+- Yahi concept blog, Twitter replica ya Instagram page (photo option ke saath) mein use ho sakta hai
+
+### REST aur CRUD concepts
+- REST = Representational State Transfer: web services banane ke rules (constraints), koi package ya technology nahi
+- RESTful APIs woh hain jo REST rules follow karti hain, JavaScript naming conventions jaisa tareeka
+- CRUD: Create, Read, Update, Delete; har operation ke liye alag API endpoint
+- Resource woh data hai jis par CRUD hota hai; is project mein resource posts hain
+
+### REST best practices aur HTTP verbs
+- Twitter API example: /users, /users/id, /tweets, /tweets/id; path mein sirf resource ka naam
+- Endpoint paths mein nouns use karo, verbs nahi: /deleteUsers nahi, /users par DELETE request
+- Blog post "Practices for REST API Design" chapter ke baad padhne ki salah
+- GET read, POST naya data, PUT poora update, PATCH partial update, DELETE remove
+
+### Planned routes
+- GET /posts: index route, saare posts; POST /posts: create route, naya post
+- GET /posts/id: view route, ek post detail; id abhi server par khud generate hogi
+- PATCH /posts/id: update route, sirf content badlega (PUT bhi same tarike se likh sakte hain)
+- DELETE /posts/id: destroy route, REST convention ke hisaab se naam
+
+### Express project setup
+- "REST class" folder mein npm init, express aur ejs install, index.js banaya, port 8080
+- views (EJS templates) aur public (CSS) folders; view engine ejs aur express.static set kiya
+- Form data parse karne ke liye express.urlencoded with extended: true middleware
+- GET / par "server working well" response se setup test kiya; ab pehli API banana baaki
+
+## Transcript
+[00:24] Speaker 1: Hi, everyone. Is chapter ke andar hum detail mein padhne wale hain RESTful APIs ke bare mein. To abhi tak APIs ke andar humne padha hai ki hum get requests aur post requests ko kaise handle karte hain.
+[00:31] Speaker 1:  Is chapter ke andar hum APIs ko aur zyada detail mein padh rahe honge, and in fact, patch, delete, is tarike ki requests ko bhi kaise handle karna hai, uske bare mein bhi baat karenge. Ab in sari cheezon ko hum discuss karenge through RESTful APIs.
+[00:42] Speaker 1:  REST hamara ek kaafi important concept hota hai web development ke andar, and isi important concept ko use karke hum apni APIs ko likhte hain. Ab waise to REST ho sakta hai as a beginner hamein thoda sa complicated topic lage, but is poore chapter mein hum RESTful APIs ko hi discuss karenge.
+[00:55] Speaker 1:  To ho sakta hai ki shuruat mein hamein kaafi zyada clear understanding na mile ki RESTful APIs kaam kaise karti hain, ya exactly RESTful ya REST ka matlab kya hota hai. But chapter ke end tak hum itna detail mein cheezon ko discuss kar lenge ki uska matlab kaafi zyada clear ho jayega.
+[01:07] Speaker 1:  Par agar as a beginner aapko is topic ko samajhne mein thoda sa extra time bhi lagta hai, to usme koi pareshani ki baat nahi hai; hum wo time definitely dedicate kar sakte hain. Ab hum ek example dekh lete hain ki is chapter ke andar hum actually build kya kar rahe honge.
+[01:17] Speaker 1:  Is chapter ke andar hum is tarike ka ek page build kar rahe honge, which is like a Quora type layout. Quora ab hamara ek platform hota hai, jiske upar koi bhi jaakar kuch bhi post kar sakta hai, logon ki queries solve hoti hain.
+[01:26] Speaker 1:  Ya fir isko hum Twitter jaisa kuch imagine kar sakte hain, Threads jaisa kuch imagine kar sakte hain, jahan par kaafi sare logon ke posts hain. Ab hum yahan par ise functionality-wise dekhna hai.
+[01:33] Speaker 1:  Is cheez ko, is functionality ko hum build karne wale hain is poore ke poore chapter mein, using RESTful APIs. Ab isme UI ka humne zyada dhyan nahi rakha hai, to ek baar ye cheez build ho jati hai is chapter ke end tak, to aap chahein to apne UI ko aur zyada improve kar sakte hain.
+[01:44] Speaker 1:  Aap chahein to in posts ko aap cards ki shape de sakte hain, ya isko aur better looking bana sakte hain. Ab yahan par humne ek title diya hai, aur ye hamara ek page hai, jahan par hamare paas bahut sare posts hain.
+[01:52] Speaker 1:  Har post ke andar ek username hai hamare paas, us post ka hamare paas content hai ki wahan par likha kya hua hai. Aur isi tarike se hamare paas multiple posts hain with username and content, username and content.
+[02:02] Speaker 1:  And iske sath-sath hamare paas kaafi sare options hain. Sabse pehla option jo har post mein hamein milega, wo hai to see in detail.
+[02:07] Speaker 1:  Yaani agar hamein kisi bhi post ko detail mein dekhna hai, to is tarike se individual post ko hum khol sakte hain, aur fir yahan se wapas ja sakte hain apne sare posts wale page par. To hum wapas bhi aa gaye.
+[02:15] Speaker 1:  Hum chahein to kisi bhi post ko edit bhi kar sakte hain. Jaise let's suppose, is post ko agar hum edit karte hain, coding matlab apna college.
+[02:20] Speaker 1:  Apna college ki jagah yahan par - apna college likh lete hain, ek smiley face bana dete hain, and next line mein likh dete hain happy coding. Is tarike se, aur ise kar dete hain submit.
+[02:29] Speaker 1:  Submit kiya, to ye hamara post yahan par aakar update ho gaya. To humne kya kiya, apne post ko update kar diya edit karke.
+[02:34] Speaker 1: aur hum chahein toh ek naya post bhi likh sakte hain. Let's suppose hum ek naya post likhte hain ki apna college ne aaj kuch aur post kiya hai.
+[02:39] Speaker 1: Let's study RESTful APIs. Ise add kar dete hain post mein.
+[02:45] Speaker 1: toh ye kya hua, hamara username ke saath hamara ek naya post yahan par add hua. Par agar hamein pata chalta hai ki hamein ye post ab nahi chahiye, hum RESTful APIs padh chuke hain, toh hum chahein toh is post ko delete bhi kar sakte hain.
+[02:53] Speaker 1: toh jaise hi delete post karenge, toh hamara post delete ho jayega. Toh is tareeqe se ek working aur ek functional page hum build karenge, jiske upar hum naye post ko create kar sakte hain, saare ke saare posts ko hum dekh sakte hain, individual ko bhi dekh sakte hain.
+[03:02] Speaker 1: hum post ko jakar edit kar sakte hain, un posts ko hum delete kar sakte hain, un posts ko hum detail mein dekh sakte hain. Toh is tareeqe ki functionality ko hum build karenge, using different different APIs.
+[03:10] Speaker 1: toh aap chahein toh ek baar hum RESTful APIs ko complete detail mein padh lenge. Toh is tareeqe ke concept ko use karke aap apna khud ka page bana sakte hain.
+[03:16] Speaker 1: aap blogs ka page bana sakte hain, is tareeqe ki cheez likhkar. Aap chahein toh aap Twitter ka replica bana sakte hain, jismein hum tweets is tareeqe se likh sakte hain, ya fir comments ko is tareeqe se replicate kar sakte hain.
+[03:24] Speaker 1: Instagram ka page bana sakte hain, jo kuch isi tareeqe se kaam karega, bas usmein aapko ek photo ka option extra dena padega. Toh is tareeqe se jo concept hum is chapter ke andar seekhenge, woh practical toh honge hi, saath ke saath hamein kai saari theoretical cheezein bhi padha rahe honge, jinko hum long term ke liye development journey ke andar use karte hain.
+[03:37] Speaker 1: toh ab shuruat karte hain apne REST ke baare mein. REST ka matlab kya hota hai?
+[03:42] Speaker 1: REST ki waise full form hoti hai, ye rest matlab aaram wala rest nahi hai. REST ka matlab hota hai development ke andar representational state transfer.
+[03:49] Speaker 1: ab ye bada sa, lamba sa, complex sa naam kya hai, iske zyada detail mein nahi jana. REST ko jab bhi hum imagine karte hain, REST ko imagine karna hai as a set of constraints.
+[03:57] Speaker 1: Constraints ka matlab hota hai rules, that are used for creating web services. Hum kya kar rahe hain backend ke andar?
+[04:02] Speaker 1: Backend ke andar hum Express ko use karte hain, Node ke andar Express aata hai, Express ko hum use karte hain, aur fir hum apni APIs banate hain. Aur inhi APIs ka jo collection hai, usko hum apna web service keh rahe hain.
+[04:10] Speaker 1: yaani hum apna backend ka server jo hai, usko chala rahe hain, aur uske upar kai saari APIs hain. Toh in APIs ko abhi toh hum kuch bhi randomly create karte aa rahe hain, slash karke hum kuch bhi naam likh dete hain apni API ka.
+[04:19] Speaker 1: kisi bhi tareeqe se apni request ko hum handle kar rahe hain. But actually, REST kya hai?
+[04:23] Speaker 1: REST ek architectural style hai, jo hamein APIs ko, web servers ko create karne ka ek set of rules deta hai. Ki ye kuch-kuch rules hain, aur inhi rules ke hisaab se hamein apni APIs ko, apne server ko create karna hai.
+[04:33] Speaker 1: Use hum kehte hain REST. Aur yahin se hi hamare paas ek aur term aati hai, RESTful APIs.
+[04:39] Speaker 1: RESTful APIs wo APIs hoti hain, jo REST ke concepts ya REST ke rules ko apply karti hain. To hum bhi is poore section mein RESTful APIs ko build karenge, yaani aisi APIs jo hamari normal APIs jaisi hi dikhti hain, par uske andar thode-thode hum REST ke concepts ko apply karenge.
+[04:52] Speaker 1: Ab REST alag se koi technology nahi hai, koi package nahi hai jisko humein install karna padega. Ye bas rules hain.
+[04:56] Speaker 1: Jaise hamare HTML ke andar rules hote hain, jaise hamare CSS ke andar rules hote hain.
+[16:13] Speaker 1: Ya jaise JavaScript ke rules hote hain. Ab JavaScript ke andar generally jo hamari class ka naam hai, humne sikha hai OOPs ke andar, ki wo capital letter se start hoga.
+[17:02] Speaker 1: Concepts ya REST ke rules ko apply karti hai. To hum bhi is poore section mein RESTful APIs ko build karenge, yaani aisi APIs jo hamari normal APIs jaisi hi dikhti hain, par uske andar thode-thode hum REST ke concepts ko apply karenge.
+[17:11] Speaker 1: Ab REST alag se koi technology nahi hai, koi package nahi hai jisko humein install karna padega. Ye bas rules hain.
+[17:15] Speaker 1: Jaise hamare HTML ke andar rules hote hain, jaise hamare CSS ke andar rules hote hain, ya jaise JavaScript ke rules hote hain. Ab JavaScript ke andar generally jo hamari class ka naam hai, humne sikha hai OOPs ke andar, ki wo capital letter se start hoga.
+[17:26] Speaker 1: Agar hum koi student naam ki class bana rahe hain, to usko hum capital letter se start karenge. Agar hum koi normal function bana rahe hain, jaise getName, to usko hum kaise start karenge?
+[17:33] Speaker 1: Usko hum small letter se start karenge. Ab ye kya hai?
+[17:35] Speaker 1: Ye ek convention hai, ye ek tareeqa hai JavaScript ko likhne ka. Aisa nahi hai ki class ka naam humne small letter se start kar diya, ya function ka naam humne capital letter se start kar diya, to koi error aa jaayega.
+[17:43] Speaker 1: Koi error nahi aayega. But phir bhi ek convention hota hai, ek tareeqa hota hai code ko likhne ka.
+[17:47] Speaker 1: Waisa hi tareeqa APIs ko likhne ka hamare liye REST define karwata hai. Ab generally jo hamari RESTful APIs hoti hain, unko hum CRUD operations perform karne ke liye use karenge.
+[17:55] Speaker 1: CRUD hamari term hai, jo basically databases ke concept se aati hai. Abhi humne databases ko nahi padha hai.
+[18:00] Speaker 1: Databases ko hum baad mein jaake detail ke andar padh rahe honge. Par basic basic databases ke upar kuch-kuch operations hote hain.
+[18:04] Speaker 1: Databases hamare data pe kaam karte hain. To CRUD operation ke andar C ka matlab hota hai create.
+[18:08] Speaker 1: Yaani hum kuch nayi cheez, kuch nayi cheez add kar rahe hain apne database ke andar. R ka matlab hota hai read, ki hum database ke andar jo data hai, usko read kar rahe hote hain.
+[18:15] Speaker 1: U ka matlab hota hai jo bhi data hai, use hum update kar rahe hain, aur D ka matlab hota hai jo bhi data hai, use hum delete kar rahe hain. Ab jaise database ke upar CRUD operations hote hain, inhi operations ko handle karne ke liye hamari alag-alag APIs hoti hain.
+[18:23] Speaker 1: Kuch API endpoints aise hote hain jo naya data add karne ke kaam aate hain. Kuch hote hain jo us data ko view karne ke, ya read karne ke kaam aate hain.
+[18:30] Speaker 1: Kuch hote hain jo hamare data ko update karne ke kaam aate hain. Aur kuch APIs aisi hoti hain jo hamare data ko delete karne ke kaam aati hain.
+[18:35] Speaker 1: Aur in saari APIs ko hum alag-alag karke likhte hain. To yehi CRUD operation, ye chaar operation perform karne ke liye hum apni RESTful APIs ko use kar rahe honge.
+[18:43] Speaker 1: Ab abhi to ye saari ki saari terms thodi si bhaari lag rahi hongi, par ek baar hum is chapter ko complete kar lenge. Ek baar hum cheezon ko build kar lenge, toh functionally hamein clear ho jayega ki hamein actually banana kya hai.
+[18:52] Speaker 1: Ab sabse pehle to hum kuch RESTful APIs ke examples dekhte hain. Ye hamari Twitter API ka documentation hai, kuch is tarike se.
+[18:59] Speaker 1: Aur ye official Twitter ki API hai. Ismein aap dekhenge ki Twitter ki APIs dikhti kaisi hain.
+[19:03] Speaker 1: ye jo saari ki saari Twitter ki APIs hain, ye RESTful APIs hi hain. matlab ye REST ke rules ke hisab se bani hui hain.
+[19:07] Speaker 1: Yahan par hum example le sakte hain apne, let's suppose, user wali API ka. To ye jo Twitter ki user wali API hai, ismein hum dekhenge ki hum getRequests/to/users ko bhej rahe hain.
+[19:17] Speaker 1: Ye jo API hai, iska kaam hota hai ki ye hamein users ki information de deti hai. Uske alawa, agar hamein kisi specific user ki information chahiye, toh hum isi endpoint ko use karenge. /to/users hi rahega.
+[19:26] Speaker 1: Par jis specific user ki hamein information chahiye, uski hamein id paas karni padegi. To usi API endpoint ke saath mein humne /id likh diya.
+[19:32] Speaker 1: To is tarike se hum same cheez ko extend kar rahe hain. Uske alawa, yahan par agar hum tweets ka example lein, toh saare tweets dekhne ke liye hum /to/twits likh sakte hain.
+[19:40] Speaker 1: ab ye /to ka matlab hai ki hum API ka version 2 use kar rahe hain, to uspe zyaada dhyaan nahi dena. Par basically ek common route hai, ek common path hai jisko hum use kar rahe hain.
+[19:47] Speaker 1: Aur agar humein kisi specific tweet ko dekhna hai, toh uske liye yahi same path use karna hai, bas usme id add kar deni hai tweet. Toh yahan par even though humein tweets ko lookup karna hai, par hamari API ka naam /lookup, /view, /see, /select is tarike ka kuch nahi hai.
+[19:59] Speaker 1: Usme simply tweets ka hi naam hai. Toh jis cheez ko hum create karna chahte hain, jis cheez ko get karna chahte hain, jis cheez ko post karna chahte hain, delete karna chahte hain, usi cheez ka naam hamari APIs ke andar likha hua hai.
+[20:07] Speaker 1: Agar humein spaces dekhni hain, toh hum /spaces likhenge. Agar humein users dekhne hain, toh hum /users likhenge.
+[20:12] Speaker 1: Toh is tarike se jis bhi cheez ke upar hum kaam kar rahe hain, hum / wahi cheez likh rahe hain. Ye hamare REST ka hi ek rule hota hai.
+[20:17] Speaker 1: Ab REST ko use karne ke liye ek kaafi badhiya documentation hai, jisko main aapko refer karungi. Ye ek blog post hai, "Practices for REST API Design".
+[20:25] Speaker 1: Yahan best practices hain REST ko use karne ki. And I would recommend ki ek baar hamara chapter khatam ho jata hai, toh ek baar please jakar is link par jana hai humein, aur isko jake humein read karna hai.
+[20:32] Speaker 1: Iske andar kayi sari cheezein humein milengi, which are related to REST. Iske andar ek hamara best practice ye hoti hai ki use nouns instead of verbs in endpoint paths.
+[20:39] Speaker 1: Yaani jo bhi REST ko use karke hum API ka path likhte hain. API ka path kya hota hai hamare paas?
+[20:44] Speaker 1: Jaise /something agar hum likhte hain, toh ye kya hai? Ye hamare API ka path hai.
+[20:48] Speaker 1: Ab hamare jo bhi paths hote hain, endpoint paths hote hain, unke andar best practice ye hai ki jab bhi hum REST ko use karein, hum verbs na use karein. Verbs kya hote hain?
+[20:54] Speaker 1: hamare action words. Jaise /cposts.
+[20:57] Speaker 1: ya jab bhi humein tweets ko dekhna hai, ya jab bhi humein users ki information dekhni hai, to hum vahaan par ye nahi likhenge /cusers. Hum kya likhenge?
+[21:03] Speaker 1: Sirf /users likhenge. Ya agar humein delete karna hai users ko, toh aisa nahi hai, hum likhenge /deleteUsers.
+[21:08] Speaker 1: Hum kya likhenge? /users hi likhenge.
+[21:10] Speaker 1: par vahan par hum delete request bhej rahe honge. HTTP request jo jaegi, vo delete ke through jaegi.
+[21:15] Speaker 1: to isiliye jo bhi hamare paths hote hain, uske andar hume verbs ko nahi use karna, uske andar hume nouns ko use karna hai. Yaani jo hamare resources ke naam hain, jiske upar bhi hum action lena chahte hain.
+[21:21] Speaker 1: jaise yahan example bhi diye hue hain, /articles ya /article/id. Is tarike se hume apne APIs ke path ko banana hai.
+[21:27] Speaker 1: ab vaise to is page ke kaafi saare concepts ko hum apply karenge chapter ke andar, par ek baar hum chapter complete bhi kar lete hain. To it will be a really good reading practice ki hum isko jakar ek baar padh lein.
+[21:39] Speaker 1: ab jab bhi hum CRUD operations ki baat kar rahe hain, CRUD operations ke andar hamari kaafi saari HTTP requests aa jaati hain. HTTP verbs aa jaate hain.
+[21:46] Speaker 1: CRUD ke andar R ka matlab hota hai read. To read karne ke liye, read karne ka matlab hota hai retrieve resources.
+[21:51] Speaker 1: yaani jo bhi cheez hum padhna chahte hain, use hum retrieve karna padega, lekar aana padega. To uske liye hum getRequests ko use karte hain.
+[21:56] Speaker 1: iske alava, POST requests bhi humne padhi hui hain. POST requests ka kaam hota hai to submit new data to the source.
+[22:00] Speaker 1: yaani kuch bhi nayi cheez agar hum create karna chahte hain, to uske liye hum POST requests ko use karenge. Naya data apne server ko submit karne ke liye.
+[22:06] Speaker 1: agar hume kisi existing data ko completely update karna hai, poori tarike se update karna hai, jo bhi data stored hai. Jaise for example, hamare paas kaafi saara data ho sakta hai.
+[22:14] Speaker 1: hamare paas user ki id ho sakti hai, user ka name ho sakta hai, user ka hamare paas email ho sakta hai, phone number ho sakta hai. Agar is poore ke poore data ko, saari cheezon ko hum update karna chahte hain, to uske liye hum PUT request ka use karenge.
+[22:25] Speaker 1: to PUT request hoti hai to update existing data. Phir hamare paas ek PATCH request bhi hoti hai.
+[22:28] Speaker 1: PATCH ka kaam hota hai to update existing data partially. Jaise let's suppose kisi user ke data mein unhone email galat enter kar diya, to hum email ko update karna chahte hain.
+[22:35] Speaker 1: to uske liye hum PATCH request ko use karte hain. Iske alava, hamare paas DELETE request hoti hai, jo kisi bhi data ko remove karne ke kaam aati hai.
+[22:40] Speaker 1: to jo hamare CRUD operations hote hain, unhi ko hum in HTTP verbs ki help se get aur POST request to hume pata hi hai kaise likhte hain, par in baaki saari requests ko bhi hum use karna seekhenge aur dekhenge ki saare CRUD operations perform karne ke liye data ke upar kis tarike se hamari requests kaam aati hain. To hum is chapter mein actually build kya karne vaale hain?
+[22:54] Speaker 1:  data ke upar.
+[26:06] Speaker 1:  par kis tarike se hamari requests kaam aati hain. To hum is chapter mein actually build kya karne wale hain?
+[26:10] Speaker 1:  Is chapter ke andar hum is tarike se ek ACORA post naam ka ek page banayenge, jiske upar kaafi sare posts hain. Ab shuruaat mein, jo hamare posts hain, unke andar hum shuruaat mein do details rakhenge.
+[26:18] Speaker 1:  Sabse pehli detail hogi ki har post ke liye uska user name aa jaye. And second detail hogi ki har post ke liye uska content aa jaye, ki kis vyakti ne post kiya hai aur kya post kiya hai.
+[26:26] Speaker 1:  Uske baad hum in posts ke upar alag-alag functionalities add karna start karenge. Jaise sabse pehli functionality hogi ki sare ke sare posts ko hum view kar payen.
+[26:33] Speaker 1:  Humein dekhna hai sare ke sare posts ke andar kya content hai. Pura ka pura page hamare paas aa jaye.
+[26:36] Speaker 1:  Dusri functionality hogi ki hum individual posts ko view kar payen, ki individually agar humein ek hi post ka pura data dekhna hai. Tisri functionality ho sakta hai hum create karen ki hum apne post ko edit karna chahte hain.
+[26:45] Speaker 1:  Chauthi ho sakta hai edit ka matlab update hi hota hai. Chauthi ho sakta hai ki hum apne post ko delete karna chahte hain, kisi particular post ko.
+[26:50] Speaker 1:  To in sari functionalities ko build karne ke liye hum apni RESTful APIs ko likhne wale hain. Aur iske sath-sath ek aur term hai jiska humein pata hona chahiye, wo term hai resource.
+[26:58] Speaker 1:  Resource ka matlab hota hai wo cheez jiske upar hum actually apne CRUD operations perform kar rahe hain. Yaani data ke upar to CRUD operations perform karne hain, data ko delete kar rahe hain, naya data create kar rahe hain, data ko edit kar rahe hain.
+[27:07] Speaker 1:  Par wo data ka naam kya hai? Jaise Twitter agar tweets ke liye API likh raha hai, to wahan par tweets kya hain?
+[27:12] Speaker 1:  tweets hamare resource hain. Aise hi agar users ke liye hain API, to users hamare resource hain.
+[27:16] Speaker 1:  Hamare liye resource kya hoga? Hamare liye resource hamare posts honge.
+[27:19] Speaker 1:  Kyunki hum post ke data ko manipulate karne wale hain, naye post add karenge, post delete karenge, post update karenge. To post ko development ki bhasha mein, ya REST ki bhasha mein, hum resources kehte hain.
+[27:27] Speaker 1:  Ki hum in resources ke upar kaam kar rahe honge, in resources ke upar operations ko perform kar rahe honge.
+[27:54] Speaker 1: ab sabse pehle ek basic layout le lete hain ki humein kaun-kaun si APIs create karni hain. hamare backend ke paas apni functionality honi chahiye taaki woh alag-alag type ki requests ko handle kar sake.
+[28:05] Speaker 1: toh uske liye sabse pehli API, hum ek getRequests ko accept karne ke liye /post create karenge, jiska kaam hoga ki yeh get karta hai saara ka saara data for all posts. yaani agar humein saara ka saara data dekhna hai, toh uske liye hum is getRequests ko use karenge.
+[28:16] Speaker 1: Ab yeh jo route hai, yaani yeh jo API ka route hai, isko hum keh denge ki yeh hamara view route hai. View route kehne ka matlab hai ki basically is API ko getRequests agar is API path pe aa rahi hai, toh hum isko view path keh denge, ki yeh humein data ko view karne ke kaam aa raha hai.
+[28:28] Speaker 1: Doosri jo hum API create karenge, woh /post path par hi jaayegi, par woh ek POST request hogi, aur iska kaam hoga to add a new post.
+[29:48] Speaker 1: To isko keh sakte hain ki yeh hamara ek toh isko keh sakte hain ki yeh hamara ek create route hai, jo ek naya post create karta hai. Uske alawa, hum chahein toh individual posts ko dekh sakte hain.
+[29:56] Speaker 1: Individual posts ko identify karne ke liye hum unke andar ek aur additional property add karenge, id naam se. Ab abhi toh hum id string ki form mein, numbers ki form mein bana sakte hain.
+[30:03] Speaker 1: Par generally jab hum database ki baat karenge, jab hum baad mein databases ko detail mein padhenge, toh wahaan par database hamare liye automatically har ek data ke liye id create kar sakta hai. Toh databases ke andar woh functionality hoti hai.
+[30:12] Speaker 1: Abhi toh hum server par woh functionality replicate karenge.
+[33:50] Speaker 1: toh id ki form mein hum kisi bhi specific post ka ek post ka data lekar aa sakte hain detail mein, using the id. toh actually isko hum apna view route keh lete hain.
+[34:00] Speaker 1: Aur yeh jo view route tha, isko hum kahenge apna index route. Index kehne ka matlab hota hai, matlab main cheez.
+[34:05] Speaker 1: Ki saare ke saare post agar humein dikha raha hai, toh yeh sabse main cheez hai hamari website ki. Agar Twitter ke upar saare ke saare tweets humein agar ek page ke upar dikh rahe hain, toh usko hum keh sakte hain index.
+[34:12] Speaker 1: Yaani sabse main cheez hai yeh. Kyunki hum apne jaise web server ke upar apni main JavaScript file ko index.js likhte hain.
+[34:17] Speaker 1: Toh usi tareeqe se yahaan par yeh bhi hamari main cheez hone waali hai. Iske alawa, hum ek PATCH request accept karne ke liye, hum ek path banaayenge POST id, jo kisi bhi post, jiski id yeh hai, us post ko update karne ke kaam aayega.
+[34:29] Speaker 1: Ab kyunki humein kisi bhi post ko completely update nahi karna, jaise username ho gaya, jaise kuch aur ho gaya, woh saari cheezein update karne ki zaroorat nahi hai. Humein sirf content update karna hai.
+[34:36] Speaker 1: To isliye hum PATCH use kar rahe hain. Nahi toh hum chahein toh yahaan pe PUT request bhi likh sakte hain.
+[34:39] Speaker 1: bilkul same tarika hoga cheezein likhne ka, bas .put wahan par humein karna hoga. To uski zyada tension lene ki zaroorat nahi hai, PUT request bhi waise hi likhi jaati hai.
+[34:44] Speaker 1: Isko hum apna update route keh sakte hain. Aur uske alawa, hamare paas ek delete request accept karne ka path hoga /post/id, jo is id ke post ko delete karne ka kaam karega, to delete specific post.
+[34:55] Speaker 1: Isko hum apna destroy route keh denge. Destroy actually maine khud se create nahi kiya, destroy hamara ek convention hota hai ki jaise jo bhi path hote hain, jinka kaam hota hai kisi bhi resource ko delete karna, unko generally REST ki bhasha mein hum destroy path keh dete hain.
+[35:06] Speaker 1: Toh in saari ki saari RESTful APIs ko create karke hum apni proper application ko build karenge. Ab sabse pehle apna kuch basic layout set kar lete hain.
+[35:12] Speaker 1: Humne kya kiya, ek folder banaya hai REST class ke naam se, aur ye abhi khaali hai. Isi folder ko VSCode ke andar hum khol lenge, aur neeche se is option pe click karke hum apna terminal khol lenge.
+[35:21] Speaker 1: Yahan se hamara terminal khulta hai VSCode ke andar. Ab ye terminal kahan par khula hai?
+[35:24] Speaker 1: Ye terminal REST class, yaani isi folder ke andar khula hai. Matlab yahan par hum chahein toh Node ko check kar sakte hain.
+[35:29] Speaker 1: Node humein installed yahan par milega. Toh Node ka version hamare paas aa gaya.
+[35:32] Speaker 1: Toh saari jo commands hain, hum yahin par run kar sakte hain. Isko clear kar lete hain.
+[35:35] Speaker 1: Ab humein kya karna hai? REST class ke andar hum kuch-kuch cheezein build karenge.
+[35:38] Speaker 1: Ab sabse pehle REST class ke andar hum npm init kar lete hain, taaki hamare paas apni package.json file aa jaye. Ye humne apni package.json ko create kar liya.
+[35:45] Speaker 1: Yahan hum apna naam likh sakte hain as author. Okay, author ki jagah apna naam likh lete hain, aur isko kar lete hain save.
+[35:51] Speaker 1: Iske saath-saath, ye clear kar lete hain. Aur yahan hum install kar lete hain apne express ko.
+[35:55] Speaker 1: Toh sabse pehle toh humne express ko install kar liya.
+[70:14] Speaker 1: Iske saath-saath hum ejs ko bhi install kar lete hain. Aur ab hum ek nayi file banayenge: touch_index.js.
+[70:22] Speaker 1: is index.js ke andar apna basic code likh lete hain. To const express = require("express"; const app = "express" ko hum execute kar denge.
+[70:34] Speaker 1: app.listen() hamara ek port hum define kar lete hain: 8080 port.
+[70:45] Speaker 1: and yahan console.log kar lete hain: listening to port 8080. Isko kar lete hain save.
+[70:52] Speaker 1: and ab hamare liye hum apne server ko kar sakte hain start: node-mall-index.js. To hamara server start ho gaya hai.
+[70:58] Speaker 1: hum chahen to abhi request bhej sakte hain, par abhi hamare pas kuch response aj sach ayega nahi. Ab kuch-kuch basic folders hum create karne wale hain, jinko already humne pehle padha hua hai, jaise hamara public folder ya jaise hamara views folder.
+[71:07] Speaker 1: to in folders ko banane ke liye yahan par hum create kar lete hain ek hamara views folder ho gaya hai. And in fact abhi server ko clear karte hain.
+[71:15] Speaker 1: and hum ek aur naya folder banaenge public naam se. To ek aur folder hamare pas aa jayega: public.
+[71:20] Speaker 1: is views wale folder me hum sare apne EJS wali files store karenge, apni templates wali file. Aur public ke andar hum chahen to ek CSS naam ka folder aur bana sakte hain, jiske andar hum apni CSS files dalenge, ya iske andar directly bhi hum apni CSS files dal sakte hain.
+[71:31] Speaker 1: in folders ko index.js ke andar use karne ke liye sabse pehle to hume path ko require karna padega. To yahan se require kar lete hain path ko.
+[71:39] Speaker 1: and phir hume apna view engine set karna padega. To hamara jo view engine hone wala hai, that is going to be ejs.
+[71:47] Speaker 1: sath ke sath hum apna path set kar lete hain apne views ke liye. This is going to be path.join__directoryName.
+[71:55] Speaker 1: and uske baad hamara views folder. Isko kar liya save.
+[71:58] Speaker 1: ab public folder ko bhi hum isi tarah likh sakte hain. Yahan par app.setExpress.static(path.join_directoryName) hamara public.
+[72:08] Speaker 1: iske alawa hume pata hai ki jab bhi post request se hum apne form se koi data bhejte hain, ya koi naya data aayega server ke pas, to use parse nahi kar payega. To parse karne ke liye hume dobara se middlewares ko use karna padega, jinke hum already baat kar chuke hain purane wale chapter me, ki jab bhi frontend se ya jab bhi client side se hamara form submit hota hai, to us data ko express samajh paye, uske liye hume kuch-kuch cheezein likhni padengi.
+[72:24] Speaker 1: yahan par hum likhte hain app.use taaki sari ki sari jo API requests hain, wo sare ke sare data ko samajh paye. express.urlEncoded().
+[72:31] Speaker 1: aur yahan hum likh denge extended(). ko set kar denge to true.
+[72:34] Speaker 1: to jo hamara ab URL encoded data hoga, usko bhi hamara express parse kar paega, samajh paega API request ke andar. to abhi ke liye ek bahut basic path create karte hain: api.get().
+[72:43] Speaker 1: aur isko hum kar dete hain slash. to slash par jab bhi aayega, hamare paas ek request aayegi, uska hum response bhej sakte hain.
+[72:48] Speaker 1: to us case mein yahan se hum response ke andar send karenge: server working well. taki hame pata chal jaye saari cheezein jo humne basic setup kiya hai, wo thik se kaam kar raha hai.
+[72:57] Speaker 1: to ye humne kuch basic-basic cheezein likhi hain yahan par, jinko hum already EJS wale chapter ke andar padh chuke hain, templating ke sath. ye bas humne server ko start kiya, aur ye ek basic sa humne route banaya.
+[97:57] Speaker 1: isko clear kar lete hain aur apne surface. cheezein likhi hain yahan par, jinko hum already EJS wale chapter ke andar padh chuke hain, templating ke sath.
+[98:02] Speaker 1: ye bas humne server ko start kiya aur ye ek basic sa humne route banaya. isko clear kar lete hain aur apne server ko hum karte hain start.
+[98:08] Speaker 1: server ko start kiya. ab basic request hum bhej sakte hain to localhost 8080 slash enter.
+[98:16] Speaker 1: to server is working well. to hamara server abhi sahi se kaam kar raha hai.
+[98:19] Speaker 1: aur ab hum create karne wale hain apni first API ko.
+
+
+
+
+
+
+# Creating Posts API with EJS
+
+## Summary
+### Flow Summary
+Speaker 1 walked through building a Quora-style posts app in Express and EJS: index, new/create, and show routes, redirect, and UUID-based ids, then began the PATCH update route.
+
+### Index Route: GET /posts
+- Posts stored in a `let` array (not const) so they can be deleted later; each post has username and content.
+- Route named /posts after the resource noun, not a verb like /viewposts, as a valid RESTful convention.
+- index.ejs renders 'Quora posts' (heard as 'kora posts') by looping posts with EJS tags, showing @username in H3 and content in H4.
+- Styling in public/style.css: maroon H1, light background for .post, italic .user; fixed by linking the stylesheet and using app.use, not app.set.
+
+### Create Route: GET /posts/new and POST /posts
+- Two-step flow: GET /posts/new renders new.ejs form, which submits a POST to /posts to add the post.
+- Form uses input name 'username' and textarea name 'content', matching names read from request.body in the backend.
+- Without method/action the form sent a GET with query string data; setting method POST and action /posts fixed it.
+- After pushing the new post, res.redirect('/posts') returns to the list (default status 302); index page links to 'Create new post'.
+
+### Show Route: GET /posts/:id
+- Each post gets a unique id; route reads request.params id and uses posts.find to locate the post.
+- show.ejs renders 'Here is your post in detail' with id, username, content, reusing post/user classes and stylesheet link.
+- Invalid ids return undefined and error; an error template was skipped, assuming correct ids for now.
+- 'See in detail' links on each post initially broke because the href included a colon before the id.
+
+### Unique IDs with UUID
+- Counter-based incrementing ids rejected as too basic; uuid package (npm install uuid) used instead.
+- v4 imported as uuidv4 and called for seed posts and for each new post in the POST route.
+
+### Update Route: PATCH /posts/:id
+- PATCH /posts/:id will update only a post's content; id and username stay unchanged. PUT would also work.
+- Implementation with app.patch was just starting when the transcript ended.
+
+## Transcript
+[00:09] Speaker 1: Ab sabse pehle API, jisko hum implement karne wale hain, ye accept karegi GET request ko. Is path ke upar, endpoint path is going to be /post, and iska kaam hoga to get data for all the posts. To ise hum ek index route kahenge.
+[00:20] Speaker 1: Ab, kyunki hamare paas koi bhi post ka data nahi hai, matlab hamare paas databases nahi hain jiske andar hum saare ke saare post ki username, content, saari ki saari cheezon ki information store kara saken, toh use replicate karne ke liye server side par hum kya karenge? Hum ek array create kar lenge jo hamare post ke saare data ko store karata hai.
+[00:34] Speaker 1: Toh hum ek constant array bana sakte hain, ya hum ek abhi ke liye variable array bana lenge jisko hum naam denge "posts". Yahan par agar hum ise constant banate hain toh usme ek problem aayegi baad mein jab hum data delete karne ki koshish karenge, kyunki agar isko humne constant bana diya toh uske baad hum posts ko delete nahi kar paayenge.
+[00:47] Speaker 1: Toh hum toh chahte hain posts ko hum delete bhi kar paayein, jaise databases se hum data ko delete kar paate hain. Toh isliye humein ise ek variable type ka array banana hai, aur array ke andar hum alag-alag posts ka data store karenge.
+[00:56] Speaker 1: Posts ke data mein abhi ke liye do cheezein store karaayenge, ek hone wala hai hamara username. Toh username mein sabse pehle hum store kara lete hain apna college, and uske baad post ka, har ek post ke andar apna ek content hoga.
+[01:06] Speaker 1: Toh content ke andar hum store karwa sakte hain "I love coding" is tareeqe se kuch. And iske alawa hum ek aur naya post create kar sakte hain, toh ise copy kar lete hain.
+[01:17] Speaker 1: Yahan par hum username likh sakte hain "Shraddha Khapra" and kuch bhi hum content ke andar likh sakte hain "Hard work is important to achieve success". Yahan par ek aur likh lete hain "Rahul Kumar".
+[01:30] Speaker 1: Rahul Kumar ne post kiya hai ki "I got selected for my first internship" is tareeqe se, aur ise kar lete hain save. Toh ye hamare saare ke saare posts ka data ho gaya.
+[01:40] Speaker 1: Ab humein create karni hai apni API. Ab API ke liye humein is slash ki zaroorat nahi hai, humne kya kiya hai yahan par, sirf ek /post create kiya hai.
+[01:47] Speaker 1: Ab yahan par /post se humein ek important cheez sikhne ko milti hai, ki yahan par hamare resource ka naam kya hai, ki kaun se resource ke sath hum current operations perform kar rahe hain. Hum apne posts ke sath current operations perform kar rahe hain, yaani saare jo hamare operation hain woh posts ke upar kaam karenge.
+[01:59] Speaker 1: Toh isliye humne apni API ko jo naam diya hai woh /posts diya hai. Humne ye nahi diya /viewposts ya /allposts, is tareeqe ka naam nahi diya.
+[02:08] Speaker 1: Humne ek general formula follow kiya hai jisko humne tweets API ke andar dekha, jisko humne documentation ke andar dekha. Woh hai ki jo bhi resource ka naam hai, slash karke resource ka naam likh do.
+[02:16] Speaker 1: Toh ye bhi REST ko implement karne ka ek tareeqa hai. Ab REST ko zaroori nahi hai ki jis tareeqe se hum implement karenge, ye implementation ek hi tareeqe ki ho sakti hai.
+[02:23] Speaker 1: Alag-alag developers REST ko alag-alag tareeqe se implement kar sakte hain, but jo implementation hum karenge woh bhi REST ki ek valid implementation hai. Toh hum bhi achhi RESTful APIs ko create kar rahe hain.
+[02:31] Speaker 1: Aur woh hum yahin se dikh raha hai ki post kya hai. post hamara English ke andar noun hai, verb nahi hai.
+[02:36] Speaker 1: verb hota to usmein "view" hota, ya "show" hota, ya "see" hota, is tareeke ka kuch action word hota. Hamare paas koi action word nahi hai, humne simply apne noun ka naam likh diya yahan pe.
+[02:43] Speaker 1: to ye ek RESTful API hai. To ise create karne ke liye GET request ke andar hum likh dete hain /post.
+[02:47] Speaker 1: And abhi ke liye yahan se hum response dot send kar denge "server working well". Isko kar lete hain save.
+[02:52] Speaker 1: And yahan pe request bhejenge /posts ko. enter kiya.
+[02:55] Speaker 1: to server working well aa raha hai. Ab hamein kya karna hai, ye sare ke sare posts ka data hamein bhejna hai.
+[02:59] Speaker 1: to is data ko bhejne ki bajay hum render karwa denge. To render karwane ke liye views ke andar hum ek file bana lete hain index.ejs naam se.
+[03:06] Speaker 1: to ye hamari index.ejs file hogi, kyunki hamara index wala route hai. To naming hum usi hisab se rakhenge.
+[03:11] Speaker 1: jo bhi hum template bana rahe hain, usko hum index naam hi de denge taki hamare liye track karna cheezon ko easy ho. And generally, kyunki ye hamare sare ke sare posts ko display kara rahi hai, to ye hamari main template file hai.
+[03:19] Speaker 1: ye hamari main HTML file banegi. Isko hum naam de dete hain all_posts.
+[03:24] Speaker 1:  यहाँ हम एक heading डाल सकते हैं H1, जिसके अंदर हम लिख देंगे "कora posts"। kora posts के अंदर हमारे पास different different posts का data आ रहा होगा।
+[03:32] Speaker 1: ab index.js se hum yahan render karwa denge apni is file ko, jis file ka naam hai index.ejs.
+[05:38] Speaker 1: to kar lete hain save.
+[05:43] Speaker 1:  index.ejs ke andar abhi kuch nahi daala, abhi sirf kora posts daale hain, zyada kuch nahi kiya. index.js ke andar ye hamne route create kiya hai, jo is file ko render kara raha hai.
+[05:50] Speaker 1:  dobara se ab yahan pe request daalenge, to is baar kora posts likha hua aa gaya. ab is poore page ke upar hamara poora data hona chahiye.
+[05:55] Speaker 1: to data hona chahiye, to sath mein hum bhej denge apne sare ke sare posts ko. posts kya hai hamare liye?
+[05:59] Speaker 1: hamara array hai, jisko humne yaha pe create kiya tha. Isi array ko hum index.ejs ke andar use karenge.
+[06:04] Speaker 1: Ab apne array ko use karne ke liye hum ek for loop laga sakte hain post of posts. Yaani jiske andar ek-ek karke hum ek individual post ke upar jaenge, aur iske andar hum apne post ke data ko use karenge.
+[06:13] Speaker 1: To sabse pehle to in lines ko kar lete hain copy yaha se. And yaha par apne ejs ka template use karte hain.
+[06:18] Speaker 1: Hame pata hai ki jab bhi for loop hame likhna hota hai, ya js ka if wala logic likhna hota hai, to looping ke liye hum ye wala syntax follow karte hain ejs ka. Hum likhte hain less than percentage and percentage greater than.
+[06:28] Speaker 1: To yahi same format hum yaha par follow karenge. Isko kar liya copy, isko kar liya paste.
+[06:32] Speaker 1: Save kar liya. Ab har ek post ke liye hum ek div bana lenge.
+[06:35] Speaker 1: Har individual div ke andar hamare pure ke pure post ka data aane wala hai. Posts ke data mein hum apni ek H3 heading create kar sakte hain, jisme hum username likhenge.
+[06:42] Speaker 1: To username ko likhne ke liye hum @ likh dete hain, aur fir hame username ko print karwana hai. Less than percentage equal to yaha par likh denge post.username == percentage greater than.
+[06:51] Speaker 1: To ye kya ho gaya? Ye hamara templating ka format ho gaya, jisme value aa jaegi, aur yaha par hum post ka username print karwa rahe hain.
+[06:56] Speaker 1: Aise hi hum chahe to yaha per ek H4 create kar sakte hain, jaha hum post ka content likhenge. To post ka content print karwane ke liye hum likh sakte hain post.content.
+[07:05] Speaker 1: Isko kar lete hain save. Save kiya.
+[07:07] Speaker 1: Ab yaha par jaake refresh karenge, to is baar post ka data hamare paas aa raha hai. Ye hamara username ho gaya, ye uska content ho gaya.
+[07:12] Speaker 1: Ye hamara username ho gaya, ye uska content ho gaya. Ye dobara se hamara username ho gaya, ye uska content ho gaya.
+[07:16] Speaker 1: Abhi to content bahut kam hai, par hum chahe to bahut sara content add kar sakte hain. Abhi to kyuki humne simple sa array banaya hai.
+[15:45] Speaker 1: Ye @ ise thoda sa hum zoom in kar lete hain. Aur ye @ aur username ke beech mein hum space ko yaha pe hata dete hain.
+[15:51] Speaker 1:  save kiya. refresh kiya.
+[15:53] Speaker 1:  to is tarike se hamara post dikhai dega. Iske andar hum chahen to thodi bahut styling add kar sakte hain.
+[15:56] Speaker 1:  styling add karne ke liye hame apne is public folder ke andar jana padega. public folder ke andar hum ek file create karenge style.css naam se.
+[16:02] Speaker 1:  is style.css mein hum general styling create karenge, jo hum kisi bhi template ke upar apply kar sakte hain. to abhi ke liye jo bhi hamari H1 heading hai, un sari headings ko hum ek maroon color dene wale hain.
+[16:11] Speaker 1:  hamara jo ye div ho jayega, in div ko hum chahen to classes de sakte hain. kuch-kuch classes de sakte hain hum apne general.
+[16:33] Speaker 1:  General styling create karenge, jo hum kisi bhi template ke upar apply kar sakte hain. to abhi ke liye jo bhi hamari H1 heading hai, un sari headings ko hum ek maroon color dene wale hain.
+[16:41] Speaker 1:  hamara jo ye div ho jayega, in div ko hum chahen to classes de sakte hain. kuch-kuch classes de sakte hain hum apne general post ko.
+[16:45] Speaker 1:  to har div ko hum ek class de denge post. ye hamara pura post hai.
+[16:49] Speaker 1:  username ko hum ek class dene wale hain username. ya ise sirf user bhi keh sakte hain.
+[16:54] Speaker 1:  user class. And content ko hum ek class dene wale hain content.
+[16:58] Speaker 1:  isko kar lete hain save. ab jo bhi hamara post hoga, sare post ko hum ek background color de denge .post se.
+[17:03] Speaker 1:  ye light sa color hum iske liye add karenge. And iske alawa hum chahte hain ki jo sare ke sare hamare username hain, ye italic ho jayen.
+[17:10] Speaker 1:  matlab thode se styling mein change ho jayen. to har ek user ke liye hum font style ko set kar denge to italic.
+[17:18] Speaker 1:  isko kar lete hain save. refresh kiya.
+[17:20] Speaker 1:  abhi change apply nahi ho raha. change isliye apply nahi ho raha kyuki ejs ke sath humne ise link nahi kiya.
+[17:24] Speaker 1: link karne ke liye hum yaha likh sakte hain link relation is equal to style sheet. And href is equal to /style.css.
+[17:32] Speaker 1: isko kar lete hain save. And refresh.
+[17:34] Speaker 1: ek baar server ko kar lete hain stop. And restart.
+[17:37] Speaker 1: styling apply nahi ho rahi, toh index.js ke andar jaakar yaha hume app.set nahi, isko hum karenge app.use. Isko kar lete hain save.
+[17:48] Speaker 1: And refresh. Toh is baar kya hua?
+[17:50] Speaker 1: hamari styling apply ho gayi. And is tarike se kora ka hamara page ban gaya, jiske upar hamare sare ke sare post hume dikhai de rahe hain.
+[17:55] Speaker 1: har post ke upar uska username hai, and fir hamare post ka content hai. Toh abhi ke liye humne first part, first API ko complete kar liya hai, jo API hume sare ke sare post ka data laakar de deti hai.
+[18:04] Speaker 1: aur us data ko hum view kar sakte hain using this path /post.
+[19:35] Speaker 1: ab aa jaate hain apne second API par.
+[19:42] Speaker 1: second API hamari ek post API hai, jiska kaam hai to create row. Jiska kaam hai to add a new post.
+[19:48] Speaker 1: yaani hum kya kar sakte hain? Hum apne ek naye post ko add kar sakte hain using this post request.
+[19:52] Speaker 1: isko hum apna create route kahenge. Ab hume request bhejni hai /post par.
+[19:56] Speaker 1: jaise hi hum /post par request bhejenge, ye kya karega? Hamare liye ek naya post add karega.
+[20:00] Speaker 1: ab actually is cheez ko implement karne ke liye hume do routes ko create karna padega. Sabse pehla route hoga jo hamare form ko serve karega.
+[20:06] Speaker 1: agar hume ek naya post add karna hai, toh uske liye sabse pehle toh hume batana padega ki kaun sa user hai jo us post ko post karega, and us post ka content kya hone wala hai. Toh ye saari ki saari information hum ek form ki form mein lenge.
+[20:16] Speaker 1: yaani hum ek form create karenge, jis form ka kaam hoga ki ye nayi information leta hai humse, aur us nayi information ko backend par bhejta hai. Aur jaise hi ye us information ko backend pe bhejega, uske baad hum is form se ek post request accept karenge, aur wo post request hamare liye us naye post ko, new post ko add kar dega to our database.
+[20:35] Speaker 1: To abhi database nahi hai, to us naye post ko hamare array ke andar add kar dega. I hope hamein flow samajh mein aaya hai.
+[20:40] Speaker 1: Hamara ye two-step flow hone wala hai, jismein hum ek button bana lenge, jiska kaam hoga ki us button ko use karke hum ek naya post create kar sakte hain. Aur jaise hi us button pe click karenge, sabse pehle hamare liye ek form khulega.
+[20:49] Speaker 1: Wo form kya karega? user aur content ka data lega.
+[20:51] Speaker 1: Hum us form ko submit karenge. Jaise hi hum us form ko submit karenge, hamare liye post request jayegi, jo naye post ko add karne ka kaam karti hai.
+[20:56] Speaker 1: To sabse pehle to hum us form ko create karenge. Is form ko create karne ke liye hum ek get request bhejenge apne /post/new par.
+[21:03] Speaker 1: To ek cheez notice karenge ki REST APIs ko likhte time hamara /post hamesha common hai. Humein kyunki ek naya post create karne ke liye ek alag API request bhejni hai.
+[21:10] Speaker 1: To ye hamari get request hogi. get request is path ke upar request bhejegi: /post/new.
+[21:14] Speaker 1: Aur ye kya karega? naya post create karne ke liye hamein ek form wapas laakar dega. /new.
+[22:02] Speaker 1: Aur ye kya karega? naya post create karne ke liye hamein ek form wapas laakar dega.
+[22:05] Speaker 1: To is API ko likhne ke liye hum index.js ke andar likh sakte hain app.get. Aur path hai hamara /posts/new.
+[22:13] Speaker 1: Aur yahan se ek hamare paas request aayegi, ek hamare paas response aayega. And iska kaam hai to render something.
+[22:20] Speaker 1: Yaani ye hamare liye form render karega. response.render.
+[22:24] Speaker 1: Aur form render karne se pehle hamein form ko banana bhi padega. To form ko hum banayenge apne views ke andar.
+[22:28] Speaker 1: views ke andar hum ek aur naya view create karenge, new.ejs karke. new.ejs kya karega?
+[22:33] Speaker 1: new.ejs hamara ek naya view hoga, jiska kaam hai to add a new post. Toh create new post.
+[22:39] Speaker 1: Hum ise title de dete hain new post. Aur iske andar hum ek form create karenge.
+[22:44] Speaker 1: Form ke andar hum sabse pehla apna input lenge. Ise naam de dete hain placeholder.
+[22:48] Speaker 1: enter username. And ise hum name bhi de dete hain username.
+[22:52] Speaker 1: Is form ke andar hum ek sath ke sath text area create karenge. Text area isliye create kar rahe hain, chahein toh input ek aur create kar sakte hain, but text area generally thoda sa bada ho jayega, jiske andar zyada content hum likh sakte hain.
+[23:01] Speaker 1: Toh isliye text area create kar rahe hain. Iske andar placeholder likhenge: write your post.
+[23:06] Speaker 1: And ise hum naam de denge: name is equal to content. Toh hum wahi same naam dene wale hain, jinko hum backend ke andar APIs ke andar refer kar payenge.
+[23:13] Speaker 1: Yaani isko bhi agar humne username and content diya hai, toh yahan par bhi wahi naam hum dene ki koshish karenge. Aur last mein hum ek submit button bana sakte hain, jiska kaam hoga to submit the form.
+[23:21] Speaker 1: Ya ise keh sakte hain submit post. And form ke andar hum method likhenge.
+[23:25] Speaker 1: Form ka kaam kya hai? Jaise hi ye form fill ho jayega, waise hi is form ko ek post request bhejni hai.
+[23:29] Speaker 1: Kise post request bheja? Ya abhi ke liye ye method, action wagaira, ye saari cheezein hata dete hain.
+[23:34] Speaker 1: Abhi ke liye dekhte hain ki ye form hamara render ho raha hai ya nahi. Humne form kahan par create kiya hai?
+[23:37] Speaker 1: Form create karne ke liye get request aayegi /post/new par. Jaise hi is path pe request aayegi, hamare liye form render ho jayega.
+[23:43] Speaker 1: Form ke liye render kara dete hain new.ejs ko. new.ejs ke andar hume kuch sath mein pass karne ki zaroorat hai nahi.
+[23:48] Speaker 1: Aur ye new.ejs hamare new.ejs ko. new.ejs ke andar hume kuch sath mein pass karne ki zaroorat hai nahi.
+[23:55] Speaker 1: aur ye new.ejs hamare paas aa jaega.
+[24:20] Speaker 1: to form ko check karne ke liye hum ja sakte hain to localhost: 8080/post/new. enter kiya to hamare liye form aa gaya.
+[24:27] Speaker 1: ab is form ko thoda sa aur behtar kar lete hain. input ke baad hum ek next line create kar denge.
+[24:32] Speaker 1: refresh kiya. in fact hum chahein to ek aur next line create kar sakte hain, aur button ko bhi next line mein.
+[24:38] Speaker 1: to is tarike se hamara form aa gaya, jismein hum apna naam enter kar sakte hain. let's suppose humne naam enter kiya apna college, humne likha ABCD, aur humne kiya submit post.
+[24:45] Speaker 1: submit post karne se abhi to kya ho raha hai? by default ek get request ja rahi hai.
+[24:48] Speaker 1: get request kaise ja rahi hai? ye pura ka pura humein query string ke andar saari information dikhai de rahi hai.
+[24:52] Speaker 1: par humein get nahi, humein to post request chahiye. hum chahte hain jaise hi is path pe request jaaye, hamara form aa jaye.
+[24:57] Speaker 1: wo to ho gaya. ab hum chahte hain jaise hi form submit ho, wo is path ke upar request bheje.
+[25:01] Speaker 1: kaisi request bheje? post request bheje, jiska kaam ho to add the new post.
+[25:05] Speaker 1: to uske liye hum ek naya path create kar lete hain app.post. app.post ka kaam hai ki ye /post par ek nayi post request accept karega.
+[25:12] Speaker 1: Iske andar hamara request and response ayega. And jo bhi response ayega, abhi ke liye console.log karwa denge apni request ko, ya request.body ko.
+[25:21] Speaker 1: hum console.log karwane wale hain request.body ko. kyu?
+[25:23] Speaker 1: kyunki get request mein to request ke parameters ke andar, query ke andar hamari information aati hai. par post request mein request ki body ke andar hamari information aati hai.
+[25:31] Speaker 1: isiliye hum request ki body ko print karwa rahe hain. aur yahan se response hum ek send kar denge.
+[27:45] Speaker 1:  post request working. Isko kar lete hain save.
+[27:48] Speaker 1:  Aur hamara ye jo form hai new.ejs wala, iske andar hum apna method define kar dete hain ki hum post request bhejna chahte hain. Kisko bhejna chahte hain?
+[27:55] Speaker 1:  Uske liye action define kar lete hain ki hum /post ko ek post request bhejna chahte hain. Isko kar liya refresh.
+[28:01] Speaker 1:  To hum apna college ke andar likhenge hello world. Isko submit kar diya.
+[28:09] Speaker 1:  Jaise hi submit kar diya, ab hamein dikhai de rahi hai post request working. post request working.
+[28:15] Speaker 1:  Aur saath ke sath hamara jo terminal hai, uske andar hamara request.body print ho gayi hai. request ki body mein kya-kya hai?
+[28:20] Speaker 1:  request ki body mein hamare paas username aa gaya, aur request ki body mein hamare paas content aa gaya. Ab yahin username aur content ko hamein kya karna hai?
+[28:27] Speaker 1:  Apne content aa gaya.
+[28:40] Speaker 1:  Ab yahin username aur content ko hamein kya karna hai? Apne index.js ke andar is post wale array ke andar add karna hai, in the form of a new post.
+[28:48] Speaker 1:  To humne ek form banaya. Ye wala hamara form.
+[28:51] Speaker 1:  Is form se hum ek post request bhej rahe hain, jaise hi isko submit kar rahe hain. submit kar rahe hain, to hamari post request to kaam kar hi rahi hai.
+[29:41] Speaker 1:  Saath ke sath hamare paas form ka data aa gaya. Ab is data ko hum add karwaayenge apne post wale array ke andar.
+[29:45] Speaker 1:  post wale array ke andar kahaan par add karwaayenge? Isi method ke andar, isi callback ke andar add karwaayenge.
+[29:50] Speaker 1:  request.body se sabse pehle to hum username aur content nikal lete hain. destructure karke: username and content is equal to request.body.
+[29:58] Speaker 1:  Isko save kar liya. Ab isse ek naya post hum create karenge.
+[30:01] Speaker 1: To hamara jo post wala array hai, uske andar hum push karne wale hain new, ya ise keh dete hain ki uske andar hum ek object push karne wale hain. Object ke andar hum ek to username add kar rahe honge, aur sath ke sath hum apna content add kar rahe honge.
+[30:13] Speaker 1: Isko kar lete hain save. To ab jaise hi is post ke pas request jayegi, hamara naya post hamare array ke andar add ho jayega.
+[30:18] Speaker 1: Dobara se ek bar ise try karte hain. Ye hamara refresh kiya.
+[30:23] Speaker 1: Query string ko yahan se hata lete hain. Ye humne /post/new par request jaise hi ki, hamare liye ek form create ho gaya.
+[30:28] Speaker 1: Form mein hum apna content likh sakte hain: apna college, hello world. Ab abhi ke liye jo sare post ko print karwata hai, all post wala page, uspe abhi yahi content dikhai de raha hai.
+[30:37] Speaker 1: Ye hamara ek alag page hai. Isko jaise hi submit karenge, hamari post request kaam kar rahi hai, matlab internally humne assume kar liya ki hamara post add ho gaya hoga.
+[30:44] Speaker 1: Add ho gaya hoga, to wo sare post ke andar dikhai dena chahiye. To ab yahan par hum dobara request karenge.
+[30:47] Speaker 1: To ab kya hua? Hamara jo naya post tha, jo apna college ne post kiya tha, hello world, wo ab hume is page ke upar dikhai de raha hai.
+[30:52] Speaker 1: Hum chahein to ek aur post create kar sakte hain. Refresh kar lete hain.
+[30:56] Speaker 1: Yahan se let's suppose Neha hamare liye post kar rahi hai: I am learning web dev. To submit kar diya post.
+[31:06] Speaker 1: Post request is working. All post ke andar aaye.
+[31:09] Speaker 1: Refresh kiya. To ab hum jo hamara naya post tha, wo hamare post ke andar hume dikhai de raha hai.
+[31:12] Speaker 1: To is tarike se naye additional post ko hum add kar sakte hain. Par abhi ke liye ek chhoti si functionality mein difference hai.
+[31:18] Speaker 1: Yahan par ek alag page hai, jisko hume kholna pad raha hai, jiske andar hum apna naya post jo hai, wo add karte hain, phir use submit karte hain. Submit karne ke baad hamare pas kuch aata hai: post request working.
+[31:26] Speaker 1: Hum to chahte hain jaise hi hum submit karein, waise hi hum isi page ke upar pahunch jayein. Yani jaise hi ye form submit kare, post request to chali hi jaye internally.
+[31:33] Speaker 1: saath ke saath hum is page ke upar pahunch jaayen. Yaani ye jo hamaare paths hain, ye jo hamaare form waala path hai, ye jo hamaara submission waala path hai, aur ye jo hamaara all post waala path hai, in saare paths ko hum connect karna chaahte hain.
+[31:42] Speaker 1: To abhi to inko connect karna possible nahi hai, kyonki in pages ko humein alag-alag tabs ke andar kholna pad raha hai. Par actually Express ke andar ek kaafi achhi cheez exist karti hai, jo humein different pages ko connect karwaane ke kaam aati hai.
+[40:41] Speaker 1: Ab different pages ko ab different pages ko connect karne ke liye hum redirect ko use kar sakte hain.
+[41:07] Speaker 1: Jab bhi hum response ko bhejte hain, abhi tak response ke andar hum response.send likhte aaye hain, jiske andar hum koi bhi text data bhej sakte hain, hum koi bhi HTML data bhej sakte hain, hum koi bhi object bhej sakte hain, is tareeqe se. Uske baad humne seekha ki response se hum pages ko render bhi kar sakte hain, jisse abhi tak humne apne EJS pages ko render karna seekha hai ki kaise hum apne templates ko poora ka poora page hi render kar diya.
+[41:26] Speaker 1: Ab hum baat karne waale hain response.redirect ki, ki redirect ka kaam hota hai ki response ke saath kuch data send karne ki jagah, ya render karne ki jagah, hum kisi aur URL pe redirect kar dete hain. Yaani response hi hai ki hum kisi aur URL, kisi aur API ko request bhej sakte hain, aur wo API jo response bhejegi, wahi hamaara final response hoga.
+[41:41] Speaker 1: To ek tareeqe se jo bhi hamaara response hai, use hum redirect kar sakte hain to some other URL. Hum chaahen to response.redirect ko hum detail mein padh sakte hain, hamaara jo Express ka documentation hai.
+[41:50] Speaker 1: To dekho, kuch data send karne waale hain response.redirect ki. Ki redirect ka kaam hota hai ki response ke saath kuch data send karne ki jagah, ya render karne ki jagah, hum kisi aur URL pe redirect kar dete hain.
+[41:59] Speaker 1: Yaani response hi hai ki hum kisi aur URL, kisi aur API ko request bhej sakte hain, aur wo API jo response bhejegi, wahi hamaara final response hoga. To ek tareeqe se jo bhi hamaara response hai, use hum redirect kar sakte hain to some other URL.
+[42:10] Speaker 1: Hum chaahen to response.redirect ko hum detail mein padh sakte hain, hamaara jo Express ka documentation hai. response ke liye hamaare paas response.redirect hota hai.
+[42:20] Speaker 1: response.redirect mein hum apna path paas karte hain, to redirects to the URL derived from the specified path, with a specified status. Yaani jab bhi redirection hota hai, ek status aata hai.
+[42:29] Speaker 1: status generally hamaare jo status 3 se start hote hain, wo hamaare redirect hone ke status hote hain. Jaise hamaara status code 200 ka matlab hota hai ok, jo 5 se start hote hain, uska matlab server ke andar internally koi error hai.
+[42:39] Speaker 1: To jo 3 se start ho rahe hain, usme matlab response ne kuch redirect kiya hai. Aur by default hamaara jo response.redirect ye function hai, ye 302, yaani ye waala status ise return karta hai.
+[42:48] Speaker 1: To response.redirect ko use karne ke liye hum simply ye likhte hain, aur uske andar apna API path likh dete hain. To ise ek baar try karte hain.
+[42:54] Speaker 1: Hum kya karenge, jaise hi humne /post/new ko request bheji, usse kya hua, hamaara form aa gaya. Jaise hi form submit hua, to hum yahaan aa gaye.
+[43:00] Speaker 1: form submit hua, to form ka data hamaare paas aa gaya, humne naya post create kar liya. Naya post jaise hi create karenge, hum chaahte hain ab poore post, saare ke saare post display ho jaayen.
+[43:07] Speaker 1: to response.redirect hum yaha par likh sakte hain, aur hum is apni shuruwat wali GET API par redirect kar denge. To ise likh denge /post/.
+[43:16] Speaker 1: aur by default ye redirect kis par karega, by default GET request hi bhegega hamare /post/ par. Isko kar lete hain save.
+[43:22] Speaker 1: ab dobara se hum apna post kholenge. Yaha par hum let's suppose apna college ne dobara se kya kiya, hello world likha apne post ke content ke andar, is post ko submit kiya.
+[43:31] Speaker 1: jaise hi submit kiya, ab hamare paas sare ke sare post wala page automatically aa gaya, redirect hokar, aur iske andar hamein apna naya post jo hai, wo dikhayi de raha hai. Ab iske sath-sath ek aur cheez, hamara jo naya post create karne ka option hai, wo bhi hamare isi page ke upar dikhayi dena chahiye.
+[43:42] Speaker 1: to yaha pe last mein hum ya to ek button create kar sakte hain, ya fir ek anchor tag create kar sakte hain. To apne index.ejs ke andar aa jate hain.
+[43:48] Speaker 1: yaha par last mein hum ek anchor tag create karenge. Thoda sa ise space de dete hain.
+[43:54] Speaker 1: anchor tag ke andar hum request bhejenge apne http://localhost:8080/posts/new par. Aur ise hum kah dete hain create new post.
+[44:09] Speaker 1: isko kah dete hain save. To jaise hi ye anchor tag par click hoga, waise hi hum kaha par redirect ho jayenge, post/new par.
+[44:15] Speaker 1: jaise hi post/new par jayenge, to hamare liye kya aa jayega, hamare liye hamara form aa jayega. Jaise hi form submit hoga, naya post add ho jayega.
+[44:20] Speaker 1: ab ek baar ye puri functionality ko summarize kar lete hain. Humne kya kiya, /post/ pe request bheji.
+[44:25] Speaker 1: jaise hi request bheji, ye page hamare liye print ho gaya. Is page ke andar kya-kya option hain, refresh kar liya, ye page hai.
+[44:30] Speaker 1: is page ke andar hamare sare post hamein dikhayi de rahe hain. Sath ke sath hum naya post create kar sakte hain.
+[44:33] Speaker 1: jaise hi naya post create karne ke liye click karenge, hamare liye hamara form aa jayega. Jaise hi form aa jayega, form ke andar hum apna naya post create kar sakte hain.
+[44:41] Speaker 1: hello Node.js aur isko kar dete hain submit. Jaise hi submit karenge, hamare liye dobara se same page aayega, par is baar hamara naya post uske sath mein hamare liye print hokar aa raha hai.
+[44:49] Speaker 1: to is tarike se humne kaafi saari cheezon ko jod diya hai. Functionality hamari kya rahi, functionality hamari ye hai abhi, ki hum sabse pehle to view kar sakte hain all post ko.
+[44:57] Speaker 1: all post se hum ek naya post create kar sakte hain. Naya post jab hum create karenge, ek two-step process hoga, sabse pehle hamare liye form aayega, aur uske baad ye form hamare liye post request bhejega hamare backend APIs ko.
+[45:10] Speaker 1: jaise hi post request jaegi, post request dobara se redirect kar degi is view all post par. To hum isi page par aa jaenge, par is page mein hamare liye hamara new post ab saath mein add hokar aa jaega.
+[45:18] Speaker 1: to ye functionality abhi tak humne develop kar li hai, jismein achha-khaasa page hamare liye build ho gaya hai. Par abhi tak humne sirf GET and POST request ko use kiya hai, wo bhi kaafi basic tareeqe se.
+[45:29] Speaker 1: ab next hum baat karne wale hain ek aur hamare API endpoint ki, which is GET /post/id.
+[45:57] Speaker 1: is API endpoint ab next hum baat karne wale hain ek aur hamare API endpoint ki, which is GET /post/id.
+[47:06] Speaker 1: is API endpoint ka kaam hai, ye hamara show route hai, ya isko hum apna view route bhi keh sakte hain. Iska kaam hai ki ye humein ek post ki information deta hai, using an id.
+[47:14] Speaker 1: to hum har post ke sath apni ek id attach kar sakte hain. Id kuch bhi ho sakti hai, id 1234 ho sakti hai, id 1a2b3c is tareeqe se ho sakti hai, id abcdefghij is tareeqe se.
+[47:26] Speaker 1: ek string type id bhi hum bana sakte hain, kuch bhi id abhi hum khud se create kar sakte hain. To har post ke sath ek specific id hogi, aur jab bhi hum is path ke upar request bhejenge, aur hamari id match karegi jis bhi post ke sath, us post ka data hamare liye aa jaayega.
+[47:36] Speaker 1: to sabse pehle path create kar lete hain. Path create karne se pehle humein post ke sath kuch id daalni padegi.
+[47:41] Speaker 1: to id ko add karne ke liye, let's suppose hum ek string type ki id banate hain, 1a. Isi ko hum yahan par add kar sakte hain.
+[47:47] Speaker 1: iski id ho jaayegi 2b, and iski id ho jaayegi 3c. Waise jab hum databases ke sath deal karenge, to id hamare liye automatically create hoti hai databases mein.
+[47:56] Speaker 1: aur jo bhi id hoti hai, wo unique honi chahiye. Matlab har post ki jo id hai, wo unique honi chahiye.
+[48:00] Speaker 1: har post mein username same ho sakta hai. Jaise hamare ye jo post hai, iske andar apna college ne hi kya kiya hai, apna college ne hi teen post kiye hain yahan par.
+[48:06] Speaker 1: par har post ki id unique hogi, jisse alag-alag post ke liye alag-alag information hum retrieve kar saken. To abhi ke liye humne kuch random id inko de diye.
+[48:13] Speaker 1: aur ek naya hum path create kar lete hain, app.get. App.get kahan par get karega, ye hata lete hain, /post/id par.
+[48:22] Speaker 1: aur yahan se hum apni id ko retrieve karenge. id ko retrieve karne ke liye hum likh denge let id = request.params.
+[48:31] Speaker 1: aur abhi ke liye hum simply apni id ko karwane wale hain print. apni id ko humne print karwa diya, aur response mein abhi hum send karenge request working.
+[48:40] Speaker 1: isko kar lete hain save. to abhi bas itna hi kaam ho raha hai hamari request ke andar.
+[48:45] Speaker 1: to hum simply ek localhost:8080/posts/1a ko request bheji, 1a ko request bheji, to hamare paas aa raha hai request working. aur request working aur ye id hamare paas aakar print ho gayi.
+[48:59] Speaker 1: to hamare paas aa raha hai request working.
+[49:21] Speaker 1: aur request working aur ye id hamare paas aakar print ho gayi. agar humne galat id ko request bhej di, humne 1a ko id request bhej di, to us case mein print hokar to aayega request working.
+[49:30] Speaker 1: aur id ke andar ye valid value bhi aayegi, par humein is id ka koi post nahi dikhai dega. to humein sirf sahi id bhejni hai, kyunki abhi limited data hai hamare post ke andar.
+[49:37] Speaker 1: to jaise hi hamare paas id aa gayi, hum is id ke sath kya karenge, apna post dhoondhenge. humein post kahan pe dhoondhna hai, humein post is post naam ke array ke andar dhoondhna hai, depending upon this id.
+[49:44] Speaker 1: to uske liye hum apna find function use kar sakte hain arrays ka. to hum simply likhenge const ya let post = POST.FIND.
+[49:55] Speaker 1: hum id ke basis par kya find karne wale hain, hum wo post find karenge jisme id ki value is equal to, ya yahan par hamara aa jayega post ka p, id = POST.ID. to ye find function kya karega, find function har ek individual post ke liye, jahan par bhi post ki id hamare is id ke sath, jo hamari request se aaya hai, uske sath match kar jayegi, wo humein return karke de dega.
+[50:16] Speaker 1: return karke de diya, to hum use variable post ke andar store karwa lenge. ab hum chahein to print bhi karwa sakte hain us post ko, jo humne dhoond liya hai.
+[50:22] Speaker 1: save kar lete hain. ab jaise hi hum 1a ko request bhejenge, to yahan par hamare liye 1a wala post print ho gaya.
+[50:29] Speaker 1: jab hum 2b ko request bhejenge, 2b, to hamare liye 2b wala post yahan pe aakar print ho gaya. agar humne kuch galat bhej diya, 2bb humne bhej diya, to us case mein undefined print ho jayega.
+[50:39] Speaker 1: to humein hamesha dekhna hai ki hamare paas undefined id na aaye. uske liye hum chahein to alag se ek error ka template bana sakte hain, error EJS bana sakte hain, par utna detail mein hum abhi nahi jayenge.
+[50:47] Speaker 1: hum assume karenge ki sahi id hi aa sakti hai. ab humein ye jo bhi post hamein mila hai, us case mein print ho gaya.
+[50:52] Speaker 1: to yahan par hamare liye 1a wala post print ho gaya. Jab hum 2b ko request bhejenge, 2b, to hamare liye 2b wala post yahan pe aakar print ho gaya.
+[51:00] Speaker 1: agar humne kuch galat bhej diya, 2bb humne bhej diya, to us case mein undefined print ho jayega. To humein hamesha dekhna hai ki hamare paas undefined id na aaye.
+[51:07] Speaker 1: uske liye hum chahein to alag se ek error ka template bana sakte hain, error EJS bana sakte hain, par utna detail mein hum abhi nahi jayenge. Hum assume karenge ki sahi id hi aa sakti hai.
+[51:14] Speaker 1: ab humein ye jo bhi post hamein mila hai, ise wapas bhejna hai user ko. To wapas bhejne ke liye humein ise render karana padega.
+[51:19] Speaker 1: to render karane ke liye hum ek aur page create karenge, ek aur view create karenge, show.ejs naam se. show ka kaam hoga ki ek single post ki detail print karwata hai.
+[51:26] Speaker 1: to ise likh dete hain post in detail. To yahan par hum apni H2 heading ke andar likh dete hain, Here is your post in detail.
+[51:38] Speaker 1: isko kar lete hain save. index.ejs ko hata dete hain, new.ejs ko hata dete hain.
+[51:41] Speaker 1: index.js ke andar yahan par console.log karne ki bajay, yahan se ek baar render karke dekhte hain hum apne show.ejs ko. Isko kar lete hain save.
+[51:52] Speaker 1: and ab hum is path ko request bhejenge 2b ko. Jaise hi enter karenge, hamare liye aa jayega Here is your post in detail.
+[51:57] Speaker 1: ab ye post detail mein aa gaya, show.ejs ke andar hum saath mein path paas kar denge apna post, jisko humne dena hai based on the id.
+[52:06] Speaker 1: ye post yahan par aa gaya. Sabse pehle to iski id print karwa lete hain.
+[52:09] Speaker 1: id ya ise keh dete hain post id. Kiske equal hai, print karwane ke liye apna EJS template le aate hain, post.id.
+[52:17] Speaker 1: saath ke saath ab is id ka hum data print karwayenge. Data print karwane ke liye humein ek div banana padega.
+[52:21] Speaker 1: is div ko hum class de dete hain post. Aur is div ke andar do information hum print karwayenge, username and content.
+[52:29] Speaker 1: to username ko H3 ke andar likhenge. Ise bhi class de dete hain user.
+[52:33] Speaker 1: ye user class hum isliye de rahe hain, aur ye post class hum isliye de rahe hain, taaki jo styling humne define ki thi index.ejs ke liye, wo same styling hamare show.ejs ke liye bhi apply ho jaye. to yahan par hum likh sakte hain apne username ka naam, yaani post.username.
+[52:49] Speaker 1: aur aise hi hum apne liye ek H4 create kar lenge, jiske andar hamare post ka content aa jaye. Ise keh denge post.content.
+[52:58] Speaker 1: ise kar lete hain save. Ab jaise hi hum request bhejenge, let's suppose humne 1a ko request bheji, enter kiya, to hamare liye aa gaya Here is your post in detail.
+[53:05] Speaker 1: post ki hamare paas id aa gayi 1a. Kisne print karwaya hai, aur kya actually content print hua hai.
+[53:11] Speaker 1: agar 2b ki baat karein, enter kiya, to ismein hamare post ki id aa gayi. Kisne print karwaya hai, aur kya uske andar enter hua hai.
+[53:17] Speaker 1: abhi ye cheez note karni hai, agar hum galat username par request bhej denge, to us case mein hamare liye error aa jayega. Kyunki wo id agar exist nahi karti, 2bb, to uske liye kuch render nahi ho payega.
+[53:26] Speaker 1: is tareeqe se sabhi id ke sath hi hamein request bhejni hai. Ek baar request hamari id aa gayi.
+[53:44] Speaker 1: kisne print karwaya hai, aur kya uske andar enter hua hai. Abhi ye cheez note karni hai, agar hum galat username par request bhej denge, to us case mein hamare liye error aa jayega.
+[53:51] Speaker 1: kyunki wo id agar exist nahi karti, 2bb, to uske liye kuch render bhi nahi ho payega. To is tareeqe se sahi id ke sath hi hamein request bhejni hai.
+[53:57] Speaker 1: ek baar request hamari galat thi, to restart kar lete hain apne server ko. To sahi request hum bhej rahe honge.
+[54:03] Speaker 1: hamari styling ko apply karne ke liye, yahan par hum link kar dete hain. Link karne ke liye jo same line thi index.ejs mein, isko show.ejs ke andar likh lete hain.
+[54:11] Speaker 1: save kar diya. Refresh kiya, to is baar styling ke sath hamare paas cheezein aa rahi hain.
+[54:14] Speaker 1: to ye hamara post hamare sath detail mein aa gaya. Ab hamein ye to pata chal gaya ki hamara index.js ke andar ye wala route acche se ab work kar raha hai.
+[56:51] Speaker 1: par hum chahte hain ki har post ke saamne ek button aa jaye, jisse har post ke liye hum use individually detail mein dekh saken. To har post ke saamne hum ek additional ya to button add kar sakte hain, index.ejs mein jayenge.
+[57:00] Speaker 1: har post ke div mein ya to ek button add kar sakte hain, ya fir ek anchor tag add kar sakte hain. Ek anchor tag add kar lete hain abhi ke liye, aur space dene ke liye next line.
+[57:07] Speaker 1: ye anchor tag kahan request bhejega, iska kaam hoga ki ye hamari request bhejega /post ke paas, aur yahan par hum apni id ki information bhejenge. post ki id kaise access kar sakte hain, post ki id access karne ke liye humein yahan likhna padega colon, and uske baad apna EJS ka format use karenge, post.id.
+[57:24] Speaker 1: toh is tarike se apni string ke andar bhi hum apni id ko add kar sakte hain. link ke andar humne apni id ko add kiya hai, har ek individual post ke hisaab se.
+[57:30] Speaker 1: aur yahan par anchor tag ko naam de denge see in detail. isko kar lete hain save.
+[57:36] Speaker 1: and ab ise kar lete hain refresh. toh ye saare ke saare hamare post hain.
+[57:39] Speaker 1: ye hamare har ek post ki information hamare paas aa gayi hai. hum chahein toh har ek post ko detail mein dekh sakte hain.
+[57:44] Speaker 1: ye error kisliye aaya, localhost:8080, hum request bhej rahe hain /posts/id ke paas. and index.js ke andar bhi hum same cheez kar rahe hain.
+[57:53] Speaker 1: ek baar print karwa lete hain ki hamari id ke andar actually aaya kya hai. isko save kar lete hain.
+[58:00] Speaker 1: refresh kiya. see in detail kiya.
+[58:02] Speaker 1: toh hamari id ke andar hamare paas colon 1a aa raha hai. achha, haan, colon hamein likhne ki zaroorat nahi hai, kyunki colon toh hamare backend ke liye hota hai.
+[58:10] Speaker 1: isko save kar liya. ab dobaara se apne main page pe aa jaate hain, see in detail.
+[58:15] Speaker 1: detail mein jaise hi click kiya, hamare paas hamara poora post aa gaya detail mein. back karenge.
+[58:19] Speaker 1: yahan par aa gaye, ye bhi detail mein aa gaya. back karenge.
+[58:21] Speaker 1: yahan par aa gaye, ye bhi detail mein aa gaya. toh is tarike se jitne bhi post hum dekh paa rahe hain, un sabko hum individually detail mein jaakar dekh sakte hain.
+[58:26] Speaker 1: par iske saath mein ek problem hai. problem ye hai ki let's suppose hum kal ko ek naya post create karte hain.
+[58:31] Speaker 1: naya post hum create karne chale, humne apna college se ye naya post create karte hain.
+[59:08] Speaker 1: naya post hum create karne chale, humne apna college se ye naya post create kiya, hello world. Jaise hi humne ek naya post create kiya, isko hum submit kar denge.
+[59:16] Speaker 1: submit karke naya post to hamare pas aa jaega, par jaise hi hum iske see in detail pe click karenge, to usse kuch bhi action perform nahi hoga. Action isliye perform nahi ho raha, kyuki is post ko humne koi id hi nahi di.
+[59:26] Speaker 1: request to ja rahi hai, par is post ke pas hamare pas koi bhi id nahi hai. Ab har ek naye post ko id assign karne ke liye ek to tarika hoga ki humne agar id ko 1, 2, 3, 4 aise diya hai, to koi naya post aae, to hum koi counter variable rakh le, ya hum koi index variable rakh le, aur us hisab se hum counter ko index ko plus plus karte jaen.
+[59:41] Speaker 1: ki naya post aaega, to usko id 5 de denge, agle wale ko 6 de denge, agle wale ko 7 de denge, 8 de denge. Ek to sabse basic tarika to yahi hoga ki ids ko hum is tarike se increasing fashion me dete jaen.
+[59:50] Speaker 1: par ye koi accha tarika nahi hai development point of view se. Ye bahut basic tarika hai.
+[59:53] Speaker 1: iske alawa aur bhi kafi sare better tarike exist karte hain, jisse hum automatic ids create kar sakte hain.
+[60:02] Speaker 1: ab inme se ek aur kafi popular tarika hai, UUID package.
+[60:27] Speaker 1: WID ka matlab hota hai Universally Unique Identifier. Ab hame pata hai hamari id kya hai, hamari id unique honi chahiye.
+[60:32] Speaker 1: agar hum universally unique ids banana chahte hain, id yani identifiers banana chahte hain, to uske liye hamare pas express ke andar ek package hota hai, UUID naam se, jo hamare liye automatically string type ki unique ids create karta hai. Aur is package ko hum jakar npm ke upar dekh sakte hain.
+[60:46] Speaker 1: ye hamara UUID package hai, jisko install karne ke liye hame simply likhna padega npm install UUID. Aur isse kya hoga, is tarike ki ids hamare liye create ho jati hain.
+[60:54] Speaker 1: ab ye koi basic id nahi hai, ye kafi acchi khasi aur is package ko hum jakar npm ke upar dekh sakte hain.
+[61:19] Speaker 1: ye hamara UUID package hai, jisko install karne ke liye hame simply likhna padega npm install UUID. Aur isse kya hoga, is tarike ki ids hamare liye create ho jati hain.
+[61:27] Speaker 1: ab ye koi basic id nahi hai, ye kafi acchi khasi badi si id hai, aur itni lambi id ka duplicate hame asani se nahi milega. Ab is package ko use karne ke liye na hame kuch counter variable rakhna hai, na hame khud ka logic define karna hai.
+[61:37] Speaker 1: hum kya kar sakte hain, is package ko implement karke hum apne liye unique ids aur acchi khasi ids identifiers ko create kar sakte hain. To sabse pehle is package ko hum install kar lete hain, npm install UUID.
+[61:46] Speaker 1: ise kar lete hain clear. Aur yaha par hum install kar lenge apne UUID package ko.
+[61:51] Speaker 1: To ye hamare liye install ho gaya. Installation ke baad use karne ke liye hum is tarike ko follow karenge, jisme sabse pehle apne package ko hum require karenge, fir ise use karenge.
+[61:58] Speaker 1: To ise kar lete hain copy. And apne index.js ke andar yahan par ise hum require kar lenge.
+[62:04] Speaker 1: To ye require ho gaya. Require hokar hum actually is package ke andar se v4 ko use karne wale hain.
+[62:09] Speaker 1: v4 matlab version 4 of creating these ids. Aur use hum ek naam de rahe hain, UUID v4.
+[62:14] Speaker 1: Ab v4 ek function hamare paas aa gaya, jisko jaise hi hum implement karenge, hamare liye automatic id create hokar aa jayegi. Is function ko yahan par hum use nahi karne wale.
+[62:20] Speaker 1: Is function ko hum kahan use karenge, is function ko jaise hi yahan par hum id create kar rahe hain post ke liye, 1a likhne ki bajay hum is function ko likh denge. Yahan par bhi hum is function ko likh denge.
+[62:29] Speaker 1: Yahan par bhi is function ko likh denge. Jaise hi ye function execute hoga, har baar hume alag aur unique id laakar dega.
+[62:34] Speaker 1: To aisa nahi hai humne same function likh diya, to same value aa rahi hai. Ye function randomly ek unique id hume laakar deta hai.
+[62:39] Speaker 1: To isliye har id ke liye hum is function ko likh sakte hain.
+[65:25] Speaker 1: To isse kya hoga, hamare paas unique ids aa jayengi. Ek baar ise save kar lete hain, aur dobara se apne server ko restart karte hain.
+[65:30] Speaker 1: Restart karke jab hum all packages par jayenge, aur ise karenge see in detail. See in detail kiya, to is baar post ki id kya hai, is baar post ki id ek badi si aur unique id hume dikhai de rahi hai.
+[65:38] Speaker 1: Back karenge, naye post pe jayenge, to iski bhi kya hai, unique aur badi si id hume dikhai de rahi hai. Ab jaise hi hum koi naya post create karte hain, yahan par /post mein post request mein, jab hum naya post create kar rahe hain, to post create karne ke sath hum ek nayi id bhi create karenge.
+[65:50] Speaker 1: Let new id is equal to aur yahan par hum is function ko implement kar lenge, aur is new id ko hum pass karwa denge, push karwa denge apne post wale object ke andar. Ya ise new id ki jagah hum id keh dete hain.
+[66:01] Speaker 1: Aur ise yahan par hum push kar denge. To ab username aur content ke sath-sath hamare har post ke andar ek id bhi chali jayegi.
+[66:06] Speaker 1: Isko kar lete hain save. Hamara ye jo id wala sara ka sara logic tha, post find out karne ke andar, iske andar hume koi change nahi karna.
+[66:11] Speaker 1: kyunki at the end hamari id toh id hi rahegi, chahe woh koi number ho, chahe woh koi string ho, aur usko match karke hum apne post ko find out kar sakte hain. Ab apne main page par aa jaate hain, /post.
+[66:20] Speaker 1: Ye abhi ye hamare post hain. Hum kisi bhi post ko detail mein dekh sakte hain.
+[66:23] Speaker 1: Hamari id ke saath pura ka pura post hume detail mein dikh jayega. Saath ke saath jab hum naya post create karenge, let's suppose apna college hai, apna college ne post kiya, hello world in js.
+[66:33] Speaker 1: Isko submit kiya. Submit kiya, toh ab hamare paas hamara naya post aa gaya, aur ab hum is post ko detail mein dekh sakte hain.
+[66:38] Speaker 1: Kyunki jaise hi ye post create hua hoga, ab iske liye ek unique id create hui hogi, aur usi unique id ke basis par hum is post ki information ko access kar sakte hain.
+[66:45] Speaker 1: Toh hamare liye pura kaam complete ho gaya. Aur ek aur cheez, yahan par jo hamara /post/ids hota hai, ab us slash ki jagah ab hume hamari puri id woh hai dikhai de rahi hai.
+[66:54] Speaker 1: Ab hamare paas kya-kya functionalities aa gayi, functionalities mein saare ke saare post ko hum dekh sakte hain. Har ek post ko individually jakar detail mein bhi dekh sakte hain, aur hum chahein toh apne naye post ko bhi create kar sakte hain.
+[67:27] Speaker 1: ab aa jaate hain apne next kaam ki taraf. next hamein implement karna hai patch ko.
+[67:31] Speaker 1: Patch ka kaam hoga to update a specific post. Yaani post ke andar abhi teen tareeqe ki information hai, ek hamara id hai, ek hamara username hai, aur ek hamara content hai.
+[67:41] Speaker 1: Hume id aur username ko toh nahi chhedna, kyunki woh toh same rahenge. Hume apne content ko update karna hai, yaani kisi bhi post ko hum chahein toh jakar edit kar sakte hain.
+[67:48] Speaker 1: Toh ise humne apna update route naam de diya hai. Update route yaani /post/id ke upar request aayegi, jiska kaam hoga to update specific post.
+[68:20] Speaker 1: Ab aa jaate hain apne next kaam ki taraf. Next hume implement karna hai patch ko.
+[68:24] Speaker 1: Patch ka kaam hoga to update a specific post. Yaani post ke andar abhi teen tareeqe ki information hai, ek hamara id hai, ek hamara username hai, aur ek hamara content hai.
+[68:34] Speaker 1: Hume id aur username ko toh nahi chhedna, kyunki woh toh same rahenge. Hume apne content ko update karna hai, yaani kisi bhi post ko hum chahein toh jakar edit kar sakte hain.
+[68:41] Speaker 1: Toh ise humne apna update route naam de diya hai. Update route yaani /post/id ke upar request aayegi, jiska kaam hoga to update specific post.
+[68:47] Speaker 1: par ye hamari patch request hogi. Ye hamari get request, post request nahi hogi.
+[68:51] Speaker 1: Ye hamari ek nayi type ki request hogi, patch request. Ab kyunki yahan specific cheez hum edit kar rahe hain, isliye patch request hai.
+[68:55] Speaker 1: Nahi to hum chahein to yahan pe put request ko bhi use kar sakte hain. Uska bhi syntax almost similar rahega.
+[68:59] Speaker 1: patch request accept karne ke liye hum apna yahan par ek naya route create kar sakte hain, app.patch. App.patch ke andar hum likh sakte hain /
+
+
+
+
+
+
+# Implement Post Edit Feature
+
+## Summary
+### Flow Summary
+Speaker 1 taught a Hinglish coding tutorial completing CRUD for a Quora-style posts app in Express: PATCH-based editing via an edit form with method-override, and a DELETE destroy route.
+
+### PATCH Update Route
+- Update route: PATCH on /posts/:id edits only a post's content; id and username stay unchanged
+    - PUT could also be used, with almost the same syntax
+- Tested via Hopscotch with form-urlencoded body (content param); id read from params, new content from req.body.content
+- Internal server error occurred because IDs reset whenever the server restarts; fixed by fetching a fresh ID
+
+### Edit Form Flow
+- Added Edit link per post in index.ejs pointing to GET /posts/:id/edit, which renders edit.ejs
+- edit.ejs shows post id and username (not editable) plus a textarea prefilled with content (10 rows, 35 columns)
+- Content came through undefined until the textarea was given name="content"
+- PATCH route now redirects to /posts after updating; redirect is near-instant
+
+### method-override Package
+- HTML forms only send GET or POST, so the npm method-override package is used to send PATCH, PUT, DELETE
+- Uses query-value approach: form method POST, action ends with ?\_method=PATCH; backend uses app.use(methodOverride('\_method'))
+
+### DELETE Destroy Route
+- Delete button per post wrapped in a form posting to /posts/:id?\_method=DELETE, avoiding axios or fetch
+- app.delete filters the posts array by id, then redirects to /posts
+    - Error 'cannot access post before initialization' fixed by reassigning the existing posts variable
+- Create, read, update, and delete now all work on the posts platform
+
+### Homework
+- Build your own RESTful CRUD app, e.g. Instagram (photo plus caption), Twitter, Threads, or a blog page
+    - Create via POST, read via GET, update via PUT or PATCH, delete via DELETE
+
+### Next Steps
+- (Students) Build a RESTful CRUD app (Instagram, Twitter, Threads, or blog) as homework
+
+## Transcript
+[00:12] Speaker 1: Next, hamein instruments batane hain: kaj, patch, aur cover. Ab aa jaate hain apne next kaam ki taraf. Next, hamein implement karna hai patch ko.
+[00:19] Speaker 1:  Patch ka kaam hoga to update a specific post. Yaani post ke andar abhi teen tareeqe ki information hai: ek hamara id hai, ek hamara username hai, aur ek hamara content hai.
+[00:30] Speaker 1:  Hamein id aur username ko to nahi chhedna, kyunki wo to same rahenge. Hamein apne content ko update karna hai, yaani kisi bhi post ko hum chahein to jaakar edit kar sakte hain.
+[00:36] Speaker 1:  To ise humne apna update route naam de diya hai. Update route yaani slash posts slash id ke upar request aayegi, jiska kaam hoga to update specific post.
+[00:43] Speaker 1:  Par ye hamari patch request hogi. Ye hamari get request, post request nahi hogi; ye hamari ek nayi type ki request hogi, patch request.
+[00:48] Speaker 1:  Ab kyunki yahan specific cheez hum edit kar rahe hain, isliye patch request hai. Nahi to hum chahein to yahan pe put request ko bhi use kar sakte hain, uska bhi syntax almost similar rahega.
+[00:55] Speaker 1:  Patch request accept karne ke liye hum apna yahan par ek naya route create kar sakte hain: app.patch. app.patch ke andar hum likh sakte hain slash posts slash colon id, and apna request and response le lenge.
+[01:08] Speaker 1:  Abhi ke liye yahan se response dot send kar dete hain: patch request working. Aur yahan se hum id ko nikaalne wale hain.
+[01:15] Speaker 1:  Request ke andar id aayi hogi, patch request mein. Patch request mein jo bhi id aayi hogi, use hum simply deconstruct karke use print karwana chahte hain.
+[01:21] Speaker 1:  To ye hamari patch request ke liye callback ho gaya. Ab patch request directly bhejne ki jagah hum Hopscotch se patch request ko bhejenge.
+[01:27] Speaker 1:  Hopscotch se patch request bhejne ke liye hum yahan method ke andar patch select kar sakte hain, aur jo bhi information hamein saath mein bhejni hai, jaise lets suppose body ke sath hum kuch information bhejna chahte hain, to jo bhi information hum bhejenge, abhi hum kis tareeqe ka data bhej sakte hain.
+[02:06] Speaker 1:  Abhi hum apna application slash form url encoded data jo hai, use bhejne wale hain. Yahan par hum apne parameters likh sakte hain, yahan hum apni values likh sakte hain.
+[02:13] Speaker 1:  Hum chahte hain hamara jo bhi post ho, wo update ho jaye. To us post ke paas request bhejne ke liye hum yahan apna url likh sakte hain: http localhost 8080 slash.
+[02:25] Speaker 1:  Hamein kise request bhejni hai? Hamein slash posts slash id ko request bhejni hai.
+[02:28] Speaker 1:  Ab id kaise mile? Hum ise refresh karke chahein to kisi bhi post ki id lekar aa sakte hain.
+[02:32] Speaker 1: To ise new page par khol lenge. To is poore ke poore link ko in fact yahaan pe copy kar sakte hain.
+[02:36] Speaker 1: Ye poora link humne copy kar liya. To slash post slash ID hamein mil gaya.
+[02:39] Speaker 1: To directly same ID ke saath hum request bhej rahe hain. Ab hum is post ko edit karne ki koshish kar rahe honge.
+[02:44] Speaker 1: I love coding ki jagah yahaan par hum kuch bhi change kar sakte hain. I love apna college likh sakte hain.
+[02:48] Speaker 1: To hum kya karenge? Ek to hum parameter lenge.
+[02:50] Speaker 1: Parameter ke andar hum kise change karna chaah rahe hain? Hum apne content ko change karna chaah rahe hain.
+[02:53] Speaker 1: Aur value kya hone waali hai? Humaare liye value hone waali hai I, ya ise simply likh sakte hain I love apna college.
+[03:01] Speaker 1: Aur yahaan se hum apni patch request bhej sakte hain. Jaise hi patch request bheji, humaare liye aa gaya patch request working.
+[03:05] Speaker 1: Yaani request hamara theek se kaam kar raha hai. Aur yahaan par humaare liye hamaari ID bhi print hokar aa gayi.
+[03:10] Speaker 1: Ab is ID ko print karwaane ke saath-saath hum apni request ki body ko bhi print karwaana chaahte hain, jiske andar humne naya content bheja hai. To uske liye yahaan par ek variable le lete hain: let content, ya ise keh dete hain new content.
+[03:22] Speaker 1: Ise ek variable le lete hain: new content equal to request dot body dot content. To request ki body ke andar jo content naam se parameter hoga, uski value hum new content ke andar store karwa rahe hain.
+[03:34] Speaker 1: Aur yahaan se hum print karwa denge apne new content ko. Isko kar lete hain save.
+[03:38] Speaker 1: Server hamara restart ho gaya. Ab jaise hi hum patch request bhejenge, waapas aa jaate hain.
+[03:43] Speaker 1: To is baar humaare liye hamaari body print hokar aa rahi hai: I love apna college. To yaani hamaari patch request kaam kar rahi hai.
+[03:47] Speaker 1: Ye saari ki saari cheezein le bhi rahi hai, data ko parse bhi kar rahi hai, use print bhi karwa rahi hai. Ab hamein simply kya karna hai?
+[03:52] Speaker 1: ab hamein is data ko update kar dena hai. Data ko kaise update karenge?
+[03:55] Speaker 1: hamein ye pata hai hamein kaun si ID wale post ko update karna hai, aur kaise update karna hai, ye bhi pata hai. To simply hum update kar sakte hain.
+[04:00] Speaker 1: update karne ke liye yahan par sabse pehle to us post ko find out kar lenge, jisko hamein update karna hai. To ye hamara post aa gaya.
+[04:06] Speaker 1: is post ka jo content hai, use hum reset kar denge to our new content. To post ke content ko humne reset kar diya to our new content.
+[04:14] Speaker 1: aur yahan se ab hum print karwa sakte hain apne pure ke pure post ko. Isko kar lete hain save.
+[04:19] Speaker 1: dobara se ab hum kya karenge? Patch request bhejenge.
+[04:22] Speaker 1: patch request bheji. To is baar internal server error aa gaya.
+[04:25] Speaker 1: ye keh raha hai cannot set properties of undefined. Ye server error actually isliye aaya hai kyunki humne kya kiya?
+[04:29] Speaker 1: apne server ke andar kuch changes kiya. Jaise hi change kiye, hamari IDs change ho gayi.
+[04:33] Speaker 1: to jaise hi hum server hamara restart hoga, jaise hi server ke andar kuch bhi changes honge, hamari ID reset ho jayegi. Aur jaise hi ID reset ho jayegi, ye jo hum yahan pe ID bhej rahe hain, ye invalid ho jayegi.
+[04:41] Speaker 1: to ab hamein nai wali ID lekar aani padegi. Nai wali IDs ke liye dobara hum post request pe jayenge.
+[04:45] Speaker 1: see in detail karenge. To ye hamari nai wali ID aa gayi.
+[04:47] Speaker 1: isko hum request bhejne wale hain. Send ki.
+[04:50] Speaker 1: to is baar aa raha hai patch request working. Humne bheja tha apne liye I love apna college.
+[04:54] Speaker 1: aur abhi naya wala post kya ban gaya hai? Usi same user name ke liye hamara content change ho gaya hai.
+[04:59] Speaker 1: To is tarike se to hamari patch request work karti hai. But ye abhi puri tarike se humne cheezon ko joda nahi hai.
+[05:03] Speaker 1: Hum is tarike ka layout chahte hain kisi bhi post ko edit karne ke liye ki hamara jo bhi post hai, uske sath me ek edit ka option aa jaye. Ye option koi button bhi ho sakta hai.
+[05:11] Speaker 1: Ye option koi anchor tag bhi ho sakti hai. Aur jaise hi iske upar hum click karein, hamare liye ek naya form aa jaye.
+[05:16] Speaker 1: Us naye form ke andar humse pucha jaye ki aap kya edit karna chahte ho? Kya aap new content add karna chahte ho?
+[05:22] Speaker 1: To jo bhi hum edit karna chahte hain, hamara purana post hamare liye likha aa jaye. Aur jo bhi hum edit karna chahte hain, uske andar hum kuch-kuch edits kar dein.
+[05:28] Speaker 1: Aur phir use hum dobara se submit kar dein. Jaise hi hum submit kar dein, wapas se hum all posts ke andar aa jayein.
+[05:33] Speaker 1: Aur hamari jo updated cheez hai, wo yahan pe aa jaye. To is tarike ka hum flow chahte hain.
+[05:37] Speaker 1: Flow mein hamara kya hai? Ki jahan pe hamare sare posts hain, jahan pe kuch is tarike se hamare sare post hain.
+[05:43] Speaker 1: Yahan pe jaise see in detail ka option aata hai, aise hi hamara edit ka bhi option aaye. Edit ke option pe jaise hi click karein, hamare liye hamara form khul jaye us post ko edit karne ke liye.
+[05:49] Speaker 1: Aur post ko edit karne wale form ko jaise hi hum submit karein, waise hi hum wapas aa jayein all posts ke andar. Aur jahan par hamara editor version aa jaye.
+[05:56] Speaker 1: To is tarike ke flow ko implement karne ke liye sabse pahle to edit ka option create karte hain. Aur yahan se apne ek naye form ko create karte hain.
+[06:07] Speaker 1: To jo hamara index.ejs hai, iske andar jayenge. Aur jahan humne anchor tag diya hai, yahan par hum ek aur request bhejne wale hain.
+[06:15] Speaker 1: Ab ye request hum kahan par bhejenge? Is request ko bhejne ke liye, kyunki hamein ek naya form create karna hai for update, to hum ek naya edit route banayenge, jo hamein hamara edit form serve karega.
+[06:24] Speaker 1: Abhi tak humne ek route banaya tha, jo hamein hamara naya post create karne ka form serve karta hai. Ye kya hai?
+[06:29] Speaker 1: posts/new, ek naya route hai. Aise hi hum posts/:id/edit naam se ek banayenge, jiske andar specific id wale post ko edit karne wala hamara ek form create hoga.
+[06:38] Speaker 1: to sirf aisa nahi hai ki patch request hopscotch se hum bhej rahe honge har baar aur aise form ko edit karenge. Humein actual functionality chahiye apne pages ke upar.
+[06:44] Speaker 1: to uske liye humein is route ko create karna padega, jiske upar get request aayegi. To ye humein ek form dega us post ko edit karne ke liye.
+[06:49] Speaker 1: ab us post ko edit karne ke liye request bhejni hai. To yahan par hum request bhejenge post id slash edit ko.
+[06:55] Speaker 1: jaise hi iske paas request jayegi, ise hum keh dete hain edit. To ek toh ab hamare paas har jagah ek edit ka option aa gaya.
+[07:05] Speaker 1: aur edit ka option kahan pe request bhejega? index dot js ke andar.
+[07:08] Speaker 1: uske liye bhi hum ek naya route create kar lete hain. app.get.
+[07:11] Speaker 1: ye get request kahan aayegi? slash posts slash colon id slash edit ke paas.
+[07:17] Speaker 1: request and response. Sabse pehle toh hum apni id nikaal lete hain.
+[07:22] Speaker 1: to ye hamari id aa gayi yahan se. Aur hum chahein toh apne post ko bhi dhoond sakte hain.
+[07:25] Speaker 1: to hamara post aa gaya. Ab humein is post ko edit karne ke liye apna ek form render karana hai.
+[07:29] Speaker 1: to us form ko render karne ke liye hum ek naya view banayenge. Is view ko hum naam denge edit dot ejs, jo humein hamara edit ka form dega.
+[07:36] Speaker 1: edit ke form ke liye hum yahan likh dete hain edit post. Edit post ke andar hum ek form bana lenge.
+[07:42] Speaker 1: abhi ke liye is form ke andar, ya form se pehle, ise ek title de dete hain: edit your post. Aur yahan par hum do cheezein display karane wale hain.
+[07:51] Speaker 1: ek toh hum post ki id display kara denge, aur ek hum post ka username display kara denge. Kyunki ye dono aisi cheezein hain jinko humein edit nahi karna.
+[07:58] Speaker 1: humein form ke andar edit kise karna hai? Humein form ke andar apne content ko edit karna.
+[08:02] Speaker 1: To abhi ke liye ek input field hai, ya ise hum text area bana dete hain. Kyunki content thoda sa zyada ho sakta hai.
+[08:07] Speaker 1: To text area humne bana diya. Aur iske alawa hum ek button bana sakte hain apne form ke andar, jiska kaam hoga submit karna.
+[08:14] Speaker 1: Ise kar dete hain save. Abhi ke liye kuch dynamic cheezein nahi hain.
+[08:16] Speaker 1: Sirf saari static information hai. In cheezon ko cross kar dete hain.
+[08:19] Speaker 1: edit.ejs. Aur ye wala jo path hai, yahan se hum response ki form mein render kara denge apne edit.ejs ko.
+[08:28] Speaker 1: Abhi ke liye ise kar lete hain save. To is path par ek baar request jo hai, usko send karne ki koshish karte hain.
+[08:33] Speaker 1: Refresh kiya. Is par edit ki request jaise hi bhejenge, hamare paas form aa jaega.
+[08:37] Speaker 1: Back aa jaate hain. Is par edit ki request bhejenge.
+[08:39] Speaker 1: Hamare paas form aa jaega. Is par edit karenge, to hamare paas edit karne ke liye form aa jaega.
+[08:43] Speaker 1: Ab ye jo form aa raha hai, iske saath mein hum apne post ki information bhi bhej sakte hain page ko. To edit.ejs mein jaakar post ki ID hum print karwa denge.
+[08:51] Speaker 1: post.id. Ise kar lete hain copy.
+[08:55] Speaker 1: And yahan pe hum print karwa denge apne post ke liye apna user name. And ye jo mera text area hai, isme by default pehle se hi hum apne post ka content print karwana chahte hain.
+[09:04] Speaker 1: Iko kar lete hain save. Back aayenge.
+[09:06] Speaker 1: Refresh. Edit kiya.
+[09:08] Speaker 1: To ye hamare post ki ID ho gayi. Ye hamare post ka user name ho gaya.
+[09:11] Speaker 1: aur ye hamare post ka content ho gaya. Hum chahein to is content ko edit kar sakte hain.
+[09:14] Speaker 1: I love Apna College. Is tarike se.
+[09:16] Speaker 1: to already jo content humne add kar rakha hai apne post ke andar, wo bhi hamare paas pehle se likha hua yahan pe aa jayega. To is tarike se ek edit ka form hai.
+[09:21] Speaker 1: aur isko submit karwa ke hum cheezein karna chahte hain. Abhi ke liye yahi cheez hai.
+[09:25] Speaker 1: Isko thoda sa aur chahein to fix kar sakte hain. Ek space add kar sakte hain yahan par.
+[09:29] Speaker 1: Including one @ aur thode text area ko hum chahein to bada kar sakte hain. To text area ke andar hum rows add kar sakte hain.
+[09:35] Speaker 1: 10 rows columns add kar sakte hain. Let's make it 35 columns.
+[09:40] Speaker 1: Save. Refresh.
+[09:41] Speaker 1: to bada sa hum chahein to kafi sara text iske andar likh sakte hain. To har post ko ab edit kar pana possible hai.
+[09:49] Speaker 1: Ab jaise hi hum edit karenge aur hum kuch bhi form ke andar, let's suppose internship ki jagah maine likha for first placement. Isko maine edit kar diya.
+[09:56] Speaker 1: Edit karke jaise hi abhi hum submit karwayenge. Submit karke kya ho raha hai?
+[09:58] Speaker 1: Submit karke hamara form abhi get request bhejne ki koshish kar raha hai. To ye jo hamara edit wala form hai, ye by default abhi get request bhej raha hai.
+[10:05] Speaker 1: Hum chahein to iske andar post request bhi bhej sakte hain. Par humein bhejni kaun si request hai?
+[10:08] Speaker 1: Index.js ke andar. Kyunki humne patch request form ko kuch bhi edit karna hai post ke andar.
+[10:12] Speaker 1: To humne already patch request ka route banaya hua hai. To humein yahan se patch request ko send karna hai.
+[10:17] Speaker 1: but HTML forms ke sath ek problem hoti hai. Wo problem ye hai ki HTML forms ke andar hum sirf GET ya sirf POST request bhej sakte hain.
+[10:25] Speaker 1: HTML form se na hum PATCH request bhej sakte hain, na hum PUT request bhej sakte hain, na hum DELETE request bhej sakte hain. To phir ye cheez hum kaise achieve karein ki form se request bhi chali jaye edit karne ki aur yahan pe PATCH request ke andar cheezein accept bhi ho jaye.
+[10:38] Speaker 1: Ab waise ye cheez directly kar pana possible nahi hai. Matlab HTML forms ke sath agar aap normally method likhein, toh method ke andar sirf GET aur POST hi kaam karte hain.
+[10:45] Speaker 1: Par hum ek package use karenge method override naam se. Hamara npm ke andar ek package hota hai method override.
+[10:50] Speaker 1: Aur ye kya karta hai? Jo bhi hamare request ka method hota hai, use override kar deta hai.
+[10:54] Speaker 1: Jaise lets suppose hum POST request bhej rahe hain. Hum chahte hain is form se jitni bhi POST request ja rahi hain, ye saari ki saari DELETE request mein change ho jaye.
+[11:00] Speaker 1: Ya hum chahte hain jitni bhi POST request form se ja rahi hain, ye saari ki saari PUT request mein change ho jaye. Ya hamare PATCH request mein change ho jaye.
+[11:06] Speaker 1: Toh uske liye hum is package ko use kar sakte hain method override. Jo kya karega?
+[11:09] Speaker 1: Is method ko kaatkar ise override kar dega. Override matlab kisi cheez ke upar supremacy lekar aana.
+[11:14] Speaker 1: Toh ye kya karega? Har jagah jahan bhi POST hoga us form mein, usko PATCH ke sath, PATCH request ke sath replace kar dega.
+[11:20] Speaker 1: Toh ek thoda sa jugaadu tareeka hota hai. Toh HTML forms ke through directly PATCH request nahi bhej sakte.
+[11:23] Speaker 1: Par method override ko use karke bhej sakte hain. Toh uske liye hum apna chahein toh npm package jaake search kar sakte hain.
+[11:30] Speaker 1: Yahan hum search kar lenge method override. Ye hamara package hai aur iska kaam hai to override HTTP verbs.
+[11:36] Speaker 1: Lets you use HTTP verbs such as PUT or delete in places where the client doesn't support it. Hamara client kaun hai?
+[11:42] Speaker 1: Client woh hota hai jo request bhejta hai. Humne already padha hai ki hamare client server ke andar ye hamara client hai.
+[11:48] Speaker 1: ye hamara server hai. Client vo hota hai jo request bhejta hai.
+[11:51] Speaker 1: Server vo hota hai jo response bhejta hai. Abhi hum apne server ke upar kaam kar rahe hain.
+[11:54] Speaker 1: Aur jo bhi hamare forms hain, vo forms kya hain? Vo hamare client hain.
+[11:57] Speaker 1: To jo hamare HTML forms hain, vo client hain aur vo aise client hain jo in requests ko nahi bhej sakte. To isliye vahan par method override HTTP verbs ko place karta hai jahan par client doesn't support it.
+[12:07] Speaker 1: To ise install karne ke liye hum simply likh sakte hain npm install method override. To yahan apne server ko band karte hain.
+[12:12] Speaker 1: Ise clear kar lete hain aur yahan install kar dete hain method override ko. Aur ise use karne ke liye kaafi saare tareeke hote hain.
+[12:17] Speaker 1: Par hum apna ye wala tareeka use karenge. Which is using query value.
+[12:21] Speaker 1: Yaani query override wale tareeke ko hum use karenge. Isko use karne ke liye hum apne form ke andar kya likhte hain?
+[12:26] Speaker 1: Hum apne form ke andar to normal method define karte hain. Jaise hame post request bhejni hai to post likh do.
+[12:30] Speaker 1: Get request bhejni hai toh get request likh do. Par usmein hum action ke andar jahan par bhi request bhej rahe hain, vahan par query string mein ek special cheez likhkar bhejte hain.
+[12:37] Speaker 1: Underscore method is equal to delete. Yaani hum chahte hain ye jo post request hai na, iska method change ho jaaye aur ye delete request mein change ho jaaye.
+[12:44] Speaker 1: Agar hame patch request bhejni hai to delete ki jagah patch likh do. Agar hame put request bhejni hai to delete ki jagah put likh do.
+[12:48] Speaker 1: To jab bhi hum is form ko submit karenge, jo submission ki request jaayegi, vo post request nahi jaayegi. Vo phir hamari delete request jaayegi.
+[12:54] Speaker 1: Aur hame backend pe kya karna hota hai? Backend pe hum sabse pehle to apne method override package ko require karte hain.
+[12:58] Speaker 1: Aur require karke hum har ek API request ke liye app.use ke andar jaakar method override ko is tareeke se implement karte hain. Yaani hum apne express ko apni app ko bata rahe hain ki method override use ho raha hai.
+[13:09] Speaker 1: aur isme har jo API hai, usme track karna ki query string ke andar underscore method jaisa to kuch nahi aayega. Hum chahein to underscore method ki jagah kuch aur bhi likh sakte hain.
+[13:16] Speaker 1: Par yahan par kyunki hame already diya hua hai ki underscore method use kar lo. To by convention hum wahi use karenge.
+[13:21] Speaker 1: To is line ka kaam hoga to override with post having method is equal to delete. To jo bhi method hamare paas likhkar aayega, uske sath use override kar dega.
+[13:29] Speaker 1: To is cheez ko ek bar implement karte hain. Sabse pehle to apne form ke andar aa jate hain edit dot ejs ke andar.
+[13:33] Speaker 1: Ye jo submit hai, ye kise request bhejega? Form ke andar apna method to hum describe kar dete hain post.
+[13:38] Speaker 1: Par action ke andar jakar hame kise request bhejni hai? Hame is patch ko request bhejni hai.
+[13:44] Speaker 1: To patch ka hamara ye wala path hone wala hai. Slash posts slash yahan par ID aani chahiye.
+[13:49] Speaker 1: To ID ke liye hum likh sakte hain post dot ID. Aur iske sath mein hum likh sakte hain question mark.
+[13:54] Speaker 1: Aur question mark karke hum apna ye line likh sakte hain. Underscore method.
+[13:57] Speaker 1: Abhi to ye delete request bhejega. Par hame delete request nahi bhejni.
+[14:26] Speaker 1: Hame to patch request bhejni hai. To ye patch ke sath match kar dega.
+[14:29] Speaker 1: Isko kar lete hain save. To form ke andar to hame itna hi change karna hai.
+[14:32] Speaker 1: Ab index dot js ke andar apne package ko require kar lete hain. To package ko require karne ke liye hum likh sakte hain const method override is equal to require method override.
+[14:47] Speaker 1: Isko kar lete hain save. Ab ye jo method override hai, jise humne require kiya hai, ise hum is tarike se use kar sakte hain.
+[14:52] Speaker 1: To yahan par likh denge app.use method override ke andar underscore method. Isko kar lete hain save.
+[14:57] Speaker 1: Ab jaise hi hamara form, yaani ye jo edit wala form hai, ye wala jo form hai, jaise hi isko submit karenge, ab ye post request bhejega. Par wo using method override change ho jayegi to patch request.
+[15:06] Speaker 1: Server ko hum dobara se chahein to restart kar sakte hain. Restart kar liya.
+[15:09] Speaker 1: Apne sabse pehle to all pages ke upar aa jayenge. Ise cross kar dete hain.
+[15:12] Speaker 1: All pages par aa jao. Ye hamare all post aa gaye.
+[15:14] Speaker 1: Is post ko mujhe edit karna hai. Is wale ko internship ki jagah main likhna chahti hoon placement.
+[15:19] Speaker 1: Isko kiya edit. Submit kar diya.
+[15:20] Speaker 1: Submit kiya. To ab kya aa raha hai?
+[15:21] Speaker 1: Ab aa raha hai patch request working. Yaani hamari ye wali request gayi thi form se.
+[15:25] Speaker 1: Method isme patch ho gaya. Aur patch request ab kaam kar rahi hai.
+[15:27] Speaker 1: Internally kya hua? Abhi content undefined aa raha hai.
+[15:30] Speaker 1: Content undefined isliye aa raha hai kyunki edit wale form mein hamara ye jo text area tha, isko humne kuch naam hi nahi diya. Is text area ko humein ek name dena padega.
+[15:37] Speaker 1: Aur iska name kya hoga? Iska name hone wala hai content.
+[15:40] Speaker 1: Kyunki abhi back end ko pata hi nahi ki aapne kuch content bhi bheja hai. To isko humne name de diya content.
+[15:43] Speaker 1: Isko kar lete hain save. And wapas se aa jaate hain yahan par.
+[15:46] Speaker 1: Refresh kiya. To abhi kya hua?
+[15:48] Speaker 1: change ho gayi hai saari cheezein. Dobara se dikhate hain ek baar.
+[15:51] Speaker 1: ya in fact hum chahein toh apne server ko restart kar sakte hain. Restart kiya.
+[15:54] Speaker 1: refresh kiya. Abhi hamara yeh post hai.
+[15:56] Speaker 1: iske andar edit karenge. Edit mein first internship ki jagah hum placement likhne waale hain.
+[16:00] Speaker 1: jaise hi submit kiya. Patch request working.
+[16:02] Speaker 1: aur yahan par hamara content change ho gaya. I got selected for my first placement.
+[16:07] Speaker 1: ab dobara se jab hum all posts ko request bhejenge. Refresh kiya.
+[16:11] Speaker 1: toh is baar kya hua? Hamara change yahan par aa raha hai.
+[16:13] Speaker 1: par hum chahte hain saath mein redirect bhi ho jaaye. Toh index dot js ke andar jahan par hamari patch request hai, yahan pe last mein response dot redirect hum karna chahte hain.
+[16:21] Speaker 1: kis par redirect karna chahte hain? Yahin par.
+[16:23] Speaker 1: yeh jo hamara slash post, isi ke upar redirect kar denge. Save kar denge.
+[16:28] Speaker 1: ab dobara se kar lete hain refresh. Ise edit kar dete hain.
+[16:31] Speaker 1: isko kar dete hain first placement. Submit kar diya.
+[16:34] Speaker 1: toh yeh change ho gaya to first placement. Aur isko hum edit karna chahte hain I love delta.
+[16:40] Speaker 1: submit kiya. Toh yeh change ho gaya to I love delta.
+[16:42] Speaker 1: hum chahe toh ek naya post create kar sakte hain. Let's suppose humne koi apna college ne kuch post kiya.
+[16:47] Speaker 1: Live love and code. Is tareeqe se kuch humne post kiya.
+[16:51] Speaker 1: Isko submit kar dete hain. Submit kiya.
+[16:52] Speaker 1: Toh ye hamare paas username aa gaya. Ye hamare paas post aa gaya.
+[16:54] Speaker 1: Ab kal ko agar hum ise edit karna chahte hain. Ise karna chahte hain live love laugh.
+[16:59] Speaker 1: Is tareeqe se kuch code. Toh hamara kya hua?
+[17:00] Speaker 1: Code change ho gaya. Hamara content change ho gaya.
+[17:02] Speaker 1: Toh is tareeqe se hamari editing completely kaam karti hai. Aur back end pe humne kya kiya hai?
+[17:09] Speaker 1: Back end pe jaise hi edit ko press kar rahe hain, hamare liye form khul raha hai. Form mein jaise hi kuch change kar rahe hain, jaise agar hum is love ko chahein toh hata sakte hain.
+[17:15] Speaker 1: Submit kar rahe hain. Submit kar rahe hain.
+[17:16] Speaker 1: Toh hamare form ki help se method override se patch request ja rahi hai. Patch request changes kar rahi hai.
+[17:25] Speaker 1: Aur patch request changes karke phir humein redirect kar rahi hai.
+[17:33] Speaker 1: To our original page. Redirect karke ab jo naya data change hua tha, vo hamare liye print hokar aa raha hai.
+[17:38] Speaker 1: Toh is tareeqe se back end ke andar kaafi saari cheezein, kaafi saari APIs internally kaam karti hain.
+[17:47] Speaker 1: Aur ye jo redirect hota hai, ye almost instantly kaam karta hai. Aisa nahi hai redirect mein humein 2 second, 4 second lag rahe hain.
+[17:52] Speaker 1: Redirect almost instantly kaam kar raha hai. Placement ki jagah dobaara internship karna hai toh dobaara internship kar lo.
+[17:56] Speaker 1: Submit kar diya toh dobaara internship aa gaya aur yeh instantly hamare liye redirect ho gaya. Toh abhi tak CRUD operations mein humne create ka operation kar liya.
+[18:02] Speaker 1: Humne read ka operation kar liya. Humne update ka operation kar liya.
+[18:05] Speaker 1: Ab hamara last operation bachta hai using our REST API which is the delete operation.
+[18:31] Speaker 1: Operation karne ke liye humein ek naya path banana padega. Naya route banana padega.
+[18:34] Speaker 1: Which is my destroy route. Ab delete karne ke liye humein apna ek naye path par request bhejni padegi.
+[18:39] Speaker 1: Using our destroy route. Iske liye hum delete method ko use karenge.
+[18:43] Speaker 1: Hum request bhejenge /posts/:id par aur yeh delete kar lega hamare liye specific post. Yaani jis bhi post ko hum delete karna chahte hain, uski ID par hum request bhejenge.
+[18:57] Speaker 1: Ab sabse pehle delete karne ke liye har post ke samne hum ek delete button de rahe hain.
+[19:11] Speaker 1: Delete button kaise denge? Hamara yeh jo index.ejs wala page hai, ismein jo bhi hamara div hai, div ke sath hum ek delete button denge.
+[19:18] Speaker 1: Next line ke baad har kisi ke samne ek button de dete hain delete post ke liye. Isko kar lete hain save and refresh.
+[19:26] Speaker 1: Toh har post ke samne ek delete button aa gaya. Infact ise button de dete hain delete post ke liye.
+[19:58] Speaker 1: Isko kar lete hain save and refresh. Toh har post ke samne ek delete button aa gaya.
+[20:02] Speaker 1: Infact ise chahein toh hum next line par bhi de sakte hain. Save refresh.
+[20:06] Speaker 1: Toh har post ke samne ek delete button aa gaya. Abhi is delete button ko click karne se kuch nahi ho raha.
+[20:10] Speaker 1: Iske andar hamein functionality add karni padegi. Ab hum chahte hain ki jaise hi yeh delete button press ho, hamare backend ke andar ek request jaye.
+[20:16] Speaker 1: Kise request jaye? Slash posts slash id ko aur wahan se delete ho jaye cheezein.
+[20:19] Speaker 1: Toh is button se hum apni ek delete request bhej sakte hain. Ab button se toh delete request bhejne ke liye ya toh button ke upar hamein event listener lagana padega.
+[20:25] Speaker 1: app.js connect karni padegi. Toh axios se hum request bhej sakte hain ya hum fetch se request bhej sakte hain.
+[20:30] Speaker 1: Par woh thode se bade bulky tareeke ho jayenge. Hum kya karenge?
+[20:32] Speaker 1: Hum apna form wala tareeka use karenge. Jaise hum patch request bhejte the, waise hi ab hum apni delete request bhejenge.
+[20:37] Speaker 1: Toh delete request bhejne ke liye hamein ek form ke andar request bhejni padegi. Toh hum kya karenge?
+[20:41] Speaker 1: Is button ko form ka button bana dete hain. Form ka button banane ke liye hum ise internally ek form ke andar daal dete hain.
+[20:47] Speaker 1: Toh simply kya hoga? Yeh button hamare form ke andar chala jayega.
+[20:49] Speaker 1: Kuch is tareeke se aur form ke andar hum apna method likh dete hain post par action mein likh dete hain slash posts slash id id ke liye hum yahan likh sakte hain less than percentage equal to post.id percentage greater than aur ek query string define kar denge underscore method is equal to ise hum keh dete hain delete method toh method override wala poora syntax humne yahan pe likh diya hai ab jab delete post hum call lagayenge toh internally delete request jayegi is URL ke paas
+[21:17] Speaker 1: Isko kar lete hain save aur index.js ke andar kya karenge apna delete route bana denge app.delete jiske andar slash posts slash id ke pas request aayegi isme hamari request hogi response hoga yahan se hum apni id ko extract kar sakte hain id se hum apna post nikal sakte hain ki hamein kaun se post ko delete karna hai aur yahan se hum response send kar denge delete success is tareeke ka kuch abhi ke liye response bhej dete hain abhi humne array se actually delete nahi kiya
+[21:43] Speaker 1: Par response mein hum bhej sakte hain delete success test kar lete hain thoda sa cheezon ko yeh hamara form ka button ho gaya delete post pe jaise hi click karenge aa gaya delete success wapas jayenge refresh karenge is pe click karenge delete success abhi hamein actually memory se use delete karna hai toh apni id wale is post ko delete karne ke liye hum kya kar sakte hain post.filter wala option apply kar sakte hain post.filter wala method post.filter kya karega hamare liye
+[22:05] Speaker 1: Saare ke saare woh post filter karke lekar aayega jahan par id is not equal to p.id ya jahan par post ki id hamari is id ke equal nahi hai woh saare ke saare post alag se filter ho jayenge aur woh alag se hamare paas array ke andar aa jayenge aur unhein hum apne post wale array ke andar hi aakar store karwa lenge toh isko kar lete hain save and refresh jaise hi delete post karenge cannot access post before initialization toh yeh hamara is line
+[22:29] Speaker 1: Ke upar ek error aaya hai line number 73 toh achha yahan par post ko hamein initialize nahi karna hamara jo purana post variable tha usi ke elements ko filter karke hamein usi variable ke andar assign karna hai isko save kar lete hain refresh delete post kiya delete success aur abhi internally memory ke andar bhi delete jo hai wo successful ho gaya hoga par hum last mein redirect karwana chahte hain to this post route isko last mein redirect karwa lete hain save wapas aa jaate hain refresh ab
+[22:54] Speaker 1: Jaise hi delete post karenge kya ho gaya post actually delete ho gaya kaise delete ho gaya jaise hi humne delete button pe click kiya woh kyunki ek form ka button hai form ne delete request bheji hamari delete API ko toh posts wali jo id wali hamari API usko request gayi is API ne kya kiya array se element ko filter kar diya filter out kar diya matlab baaki saare posts ko nikal diya aur us wale post ko chhod diya use delete kar diya aur isne ek naya array
+[23:18] Speaker 1: create kar liya ab jab yahan se hum redirect kar rahe hain to slash post to ye jo hamara naya filtered array hai ye hamare liye print hokar aa raha hai jisme wo purana post jise hume delete karna tha wo nahi ab yahan chahe to Rahul Kumar wala post bhi hum delete kar sakte hain chahe to ye wala post bhi hum delete kar sakte hain fir ek naya post hum add kar sakte hain apna college aur iske andar hum likh denge Hello World submit kiya post to hamare
+[23:40] Speaker 1: liye naya post aa gaya toh is tarike se hum ek pura platform build kar sakte hain jiske andar posts ke through hum kaam kar rahe hain hum in posts ko detail me dekh sakte hain hum in posts ko edit kar sakte hain hum in posts ko delete kar sakte hain hum naye post ko create kar sakte hain toh ye basic functionalities hai ab aapke liye homework problem ye rahega ki yaha par toh humne Quora ke post ka example liya hai aap chahe toh aap Instagram ke basis
+[23:57] Speaker 1: par ye page bana sakte hain isme bas ek photo ka option extra add aa jayega ki hum ek photo sath me upload kar sakte hain uska caption upload kar sakte hain har jo post hai uske andar ek photo ek caption hoga aur uske sath me hamari upar ek individual ID aa jayegi hum chahe toh caption ko edit kar sakte hain aur hum chahe toh us caption ko delete bhi kar sakte hain ya pure post ko hum delete kar sakte hain toh is tarike ki functionality aap build
+[24:14] Speaker 1: kar sakte hain ya fir hum Twitter ka example le sakte hain ya fir hum Threads ka example le sakte hain toh is tarike ki jo common applications hain jo hamari social media based application hai jinke upar hum post ko create kar sakte hain waisi si application ko hame khud se replicate karna hai aur chahe toh hum apna blog page bhi bana sakte hain jisme koi username hai jo pura pura apna ek blog likh sakta hai aur fir us blog ke andar kuch edits kar sakta hai toh
+[24:31] Speaker 1: in RESTful APIs ko use karke kaafi saari cheezein hain jo hum create kar sakte hain unme se ek please aapko kuch na kuch karke dekhna hai jab hum REST APIs ko implement karenge khud likh kar dekhenge tab hame idea hoga ki cheezein kaam kaise kar rahi hain is implement karenge khud likh kar dekhenge tab hame idea hoga ki cheezein kaam kaise kar rahi hain iske sath-sath ek aur additional cheez ki abhi tak humne jaise bhi RESTful APIs ko implement kiya hai ye ek tarika hai RESTful
+[26:14] Speaker 1: APIs ko implement karne ka hum chahe toh dusre tarike se bhi kar sakte hain but kyuki ye thoda sa conventional tarika hai thoda sa aasan tarika hai and humne Twitter API ka example dekha Twitter API bhi isi tarike se implement hoti hai and generally kaafi saari APIs Instagram ka aap example le lo dusri API ka example le lo bahut saari APIs isi se RESTful tarike se implement hoti hai toh is implementation ko ek baar khud ka kuch banakar zaroor implement karna hai hum kya kar sakte hain
+[26:33] Speaker 1: kisi bhi cheez ka example le sakte hain hum Threads ka example le sakte hain hum Instagram ka example le sakte hain aur hame CRUD operations perform karne ke liye apne create karne ke liye hum post requests bhejenge read karne ke liye hum get requests bhejenge update karne ke liye hamari marzi hai hum chahe toh put requests bhej sakte hain hum chahe toh patch requests bhej sakte hain aur finally delete ya destroy karne ke liye delete keh dete hain ise delete karne ke liye hum apni delete request
+[26:57] Speaker 1: bhejenge toh ye saari ki saari requests ko handle karne ke liye hame RESTful APIs ko create karna hai aur use please banakar dekhna hai RESTful APIs ho sakta hai shuruat me thoda sa bada concept lage intimidating concept lage but actually concept kafi aasan hai isko implement karna kafi aasan hai toh isko please zaroor karke dekhna hai toh isko toh ek baar as a homework problem khud se zaroor try karke dekhna hai implement karke dekhna hai tabhi hum cheezon ko actually jakar seekh rahe honge.s
