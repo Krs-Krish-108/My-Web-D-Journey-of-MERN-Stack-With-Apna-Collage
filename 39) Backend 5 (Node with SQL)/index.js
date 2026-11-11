@@ -1,5 +1,19 @@
 import { faker } from '@faker-js/faker';
 import mysql from "mysql2";
+import path from "path";
+import { fileURLToPath } from 'url';
+import {v4 as uuidv4} from "uuid";
+import express from "express";
+const app = express();
+const port = 8080;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.set("views engine", "ejs");
+app.set("views", path.join(__dirname, "/views"));
+
+
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -29,23 +43,46 @@ let userdata = ()=>{
 };
 
 
-const q = "insert into USERS (id, name, email, password) values ?";
-let data= [];
-for(let i=1; i<10; i++){
-    data.push(userdata());  
-};
+// const q = "insert into USERS (id, name, email, password) values ?";
+// let data= [];
+// for(let i=1; i<10; i++){
+//     data.push(userdata());  
+// };
 
 
-connection.query(q, [data], (err, result)=>{
-    if (err) {
-        console.error(err);
-        return;
+// connection.query(q, [data], (err, result)=>{
+//     if (err) {
+//         console.error(err);
+//         return;
+//     }
+//     console.log(result);
+// });
+
+// connection.end();
+
+
+app.get('/', (req, res)=>{
+  let q = "SELECT count(*) from users";
+  connection.query(q, (err, result)=>{
+    if(err){
+      console.error(err);
+      return;
     }
-    console.log(result);
+    let count = result[0]['count(*)'];
+    console.log(result[0]['count(*)']);
+    res.render("home.ejs", {count});
+  });
 });
 
-connection.end();
+
+app.get('/users', (req, res)=>{
+  let q = "SELECT count(*) from users";
+  console.log('this route is working fine');
+  res.send();
+  
+});
 
 
-
-// console.log(getRandomUser());
+app.listen(port, ()=>{
+  console.log(`Server is listing on port ${port}`);
+});

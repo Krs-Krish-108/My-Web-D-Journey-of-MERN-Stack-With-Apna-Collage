@@ -1,0 +1,889 @@
+# Backend SQL with Faker Data
+
+## Summary
+### Flow Summary
+Node.js backend ko mysql2 se delta\_app database se connect kiya, user table banayi aur Faker se 100 fake users bulk insert kiye; agla step Express routing (GET, PATCH, POST, DELETE).
+
+### Faker se fake data
+- Real-life databases ke liye manual data ki jagah @faker-js/faker package install kiya (npm init ke baad).
+- getRandomUser function sirf chaar values return karta hai: id (UUID), username, email, password.
+    - Har run par naya random data generate hota hai
+
+### mysql2 se Node aur MySQL connection
+- Flow: client server ko request bhejta hai, server database se baat karta hai; client kabhi direct database tak nahi jaata.
+- mysql package ki jagah mysql2 use kiya, kyunki mysql mein authentication errors aa sakte hain.
+- createConnection mein host localhost, user root, database delta\_app aur password diya; password pehle galat hone se access denied error aaya.
+- connection.query(query, callback(err, result)) try/catch mein chalaya; kaam ke baad connection.end() se connection band karna zaroori.
+
+### SQL commands chalane ke chaar tareeke
+- Tareeke: MySQL Workbench, mysql2 package, CLI (mysql -u root -p), aur SQL files (source schema.sql).
+- CLI se quit ya Ctrl D se exit hota hai; saare tareeke ek hi database par synced rehte hain.
+- schema.sql se user table banayi: id varchar(50) primary key, username unique, email unique not null, password not null.
+- Result ek array hota hai; result.length aur result[0] se individual objects nikalte hain; query ko variable q mein rakhna behtar.
+
+### Placeholders aur bulk insert
+- Placeholders (?) se dynamic values array ke roop mein connection.query ka doosra argument banti hain.
+- Multiple users ke liye array of arrays aur single ? (VALUES ?) use kiya; 2 records ek saath insert hue.
+- Loop se 100 Faker users data array mein push karke insert kiye: Records 100, duplicates 0, warnings 0.
+    - UUID deprecated warning abhi ignore kiya
+
+### Express routing ka plan
+- GET /home: database mein users ki count dikhayega.
+- GET /user: EJS page par id, email, username dikhayega; password sensitive hai isliye nahi dikhega.
+- PATCH /user/:id: sirf username edit hoga, email aur password nahi.
+- POST /user (naya user) aur DELETE /user/:id (password maangkar) homework rahenge; pehle teen class mein banenge.
+
+### Agle Kadam
+- (Students) Class ke saath GET /home, GET /user aur PATCH /user/:id routes implement karna
+- (Students) Homework: POST /user se naya user add aur DELETE /user/:id password verify karke implement karna
+
+## Transcript
+[00:37] Speaker 1: Hi everyone, toh abhi tak SQL ke andar humne bahut saari commands padhi hain, aur in saari commands ko humne MySQL Workbench ke upar likhkar dekha hai. Toh is chapter ke andar hum actually baat karne wale hain ki kaise backend ke andar hum apne database ko use kar sakte hain. Yaani hume already pata hai ki hum Node.js ko, Express.js ko kaise use karte hain, bas uske andar hum apne ek aur naye puzzle ko fit-in karne wale hain, jo hone wala hai hamara MySQL.
+[00:54] Speaker 1:  Hum baat karenge ki kaise hamare backend ke jo server hote hain.
+[05:44] Speaker 1:  Hamari jo APIs hoti hain, wo hamare database ke saath interact kar sakti hain. Kaise?
+[05:48] Speaker 1:  Agar frontend se, yaani client se koi request aati hai, toh us hisaab se hamari jo APIs hain, yaani hamara jo pura routing ka concept hai, wo kaise databases ke saath kaam kar sakta hai. Hum kaise backend ke through databases ke andar naya data add kar sakte hain, update kar sakte hain, use delete kar sakte hain.
+[05:59] Speaker 1:  Toh apne databases ke saath kaam karne se pehle, hum ek naye package ke baare mein jaanenge, jo hai hamara Faker package. Yaani Faker ka kaam hai to generate fake data.
+[06:06] Speaker 1:  Ab abhi tak humne jitne bhi databases ke saath kaam kiya hai, wo bahut chhote databases hote the, jiske andar hum 4-5 rows khud se banate hain, 4-5 tuples hum khud se bana lete hain. Par actual jo real-life databases hote hain, unke andar bahut saara data ho sakta hai.
+[06:17] Speaker 1:  Isliye, ye jo saara ka sara data hai, hum manually baithkar generate karein, hum wo tarika nahi apnane wale. Hum smart developers wala tarika apnayenge.
+[06:23] Speaker 1:  Yaani hamare paas already existing packages hain, jo fake data generate karte hain, jinki help se hum fake data ko apne database ke andar enter karenge, aur fir uske upar hum operations perform karne wale hain. Toh sabse pehle install karte hain apni Faker naam ke is package ko.
+[06:35] Speaker 1:  It is @faker.js/faker. npm ke andar jab hum is package par jaenge, toh yahan par hum yahan se copy kar sakte hain iska installation link. Copy kar liya.
+[06:42] Speaker 1:  Ab apne VS Code ke andar aa jaenge. VS Code ke andar humne already ek folder banaya hua hai, SQL Class ke naam se.
+[06:47] Speaker 1:  Toh abhi hamara folder khaali hai. Neeche is option pe click karke, yaani VS Code ke andar hum click karke apne terminal ko kholenge.
+[06:53] Speaker 1:  Kuch aise. And terminal ke andar hume dikhayi de raha hai ki abhi hum kahan par hain.
+[06:56] Speaker 1:  Abhi hum apne SQL Class, yaani isi folder ke andar hain. Toh jitni bhi commands hum yahan par likhne wale hain, wo saari ki saari isi folder ke andar run karengi.
+[07:02] Speaker 1:  Sabse pehle, hum npm init kar lete hain, taaki apne package.json ko hum initialize kar sakein. Toh iske andar hamare paas multiple options aayenge.
+[07:09] Speaker 1:  Enter, Enter, Enter. Author ke andar hum naam de dete hain Shraddha.
+[07:14] Speaker 1:  Enter. To SQL Class ke andar hamari package.json initialize ho gai hai.
+[07:18] Speaker 1:  Ab hum yahan par sabse pehle install kar lenge apni Faker.js. Isko kar lete hain Enter.
+[07:22] Speaker 1:  To ye hamare liye ho gaya Node module.
+[08:24] Speaker 1:  Uske andar hamare paas aa gai hai hamari Faker.js ki repo. Ise kar lete hain clear.
+[08:28] Speaker 1:  Ab Faker.js ko using ke liye hum ek file banayenge apni SQL Class ke andar, jisko hum naam denge index.js. Ab ye index.js file ke andar hum is package ko require karenge.
+[09:00] Speaker 1:  To ek baar documentation par aa jaate hain. use karne ke liye hum ye wala tarika apnane wale hain.
+[09:03] Speaker 1:  Ise kar lete hain copy-paste. To is tarike se hamare paas Faker aa gai.
+[09:06] Speaker 1:  And Faker se random data generate karne ke liye, hame already ek sample function chahiye. Aur ye function ko hum use karne wale hain.
+[09:12] Speaker 1:  Ise export karne ki bajay, hum ek normal function bana lete hain. let.
+[09:17] Speaker 1:  Aur ise keh dete hain createRandomUser. Hum ise arrow function mein convert karne wale hain.
+[09:22] Speaker 1:  isEqualTo. Aur ye function kya kar raha hai?
+[09:24] Speaker 1:  Ye function return kar raha hai hamare liye ek random user ka object. Ab console.log karke hum print karwayenge createRandomUser ka output.
+[09:32] Speaker 1:  To yahan par humne kya kiya? Yahan par humne wahi same code use kiya, almost, jo hamare documentation mein diya hua hai Faker ke andar.
+[09:37] Speaker 1:  Faker fake data kaise generate karta hai? Sabse pehle hum Faker ko require karenge.
+[09:46] Speaker 1:  Uske baad Faker ke paas apne kuch-kuch types hote hain. Jaise ye types hame yahan par upar diye hue hain ki Faker hamare liye location, time-based data, localization, finance, products—is tarike ka kafi sara data generate kar sakta hai.
+[09:56] Speaker 1:  already humein diya hua hai ki is tarike se hamare liye ek fake ID generate ho sakti hai, UUID hamare liye username generate ho sakta hai, email ho sakta hai, avatar ho sakta hai, password ho sakta hai, birthdate ho sakti hai. And koi bhi date, yaani registered at or past ki koi bhi date hamare liye generate ho sakti hai.
+[10:10] Speaker 1:  to is tarike se ye function mujhe ek random user create karke dega. To ise execute karne ke liye, hum apne terminal mein likh sakte hain Node.index.js.
+[10:18] Speaker 1:  Enter. To hamare liye jo object generate hokar aayi, yaani fake user, vo kuch is tarike ka hai.
+[10:23] Speaker 1:  is user ke andar ye hamare liye isne random user ID generate kar di, random username, random email, and is tarike se kaafi saari cheezein. Hum chahein to dobara execute karenge.
+[10:31] Speaker 1:  And is baar notice karenge, is baar jo data generate hua hai, vo completely different hai. Kyunki har baar Faker kya kar raha hai?
+[10:35] Speaker 1:  humein random fake data generate karke de raha hai. To har baar naya data generate hoga, jo ki fake hoga.
+[10:39] Speaker 1:  to ye wali jo email ID hai, is wali email ID se completely different hai. Ab humein jo SQL ka data chahiye, uske liye hum chaar parameters use karne wale hain.
+[10:47] Speaker 1:  yaani ek humein generate karwani hai apne liye ID, kisi bhi user ke liye. Humein koi random ID generate karwani hai, jisko hum database ke andar store karenge.
+[10:53] Speaker 1:  ek humein generate karwana hai username, ek email, aur ek password. Ye chaar cheezein hain jo hum Faker se generate karwana chahte hain.
+[10:58] Speaker 1:  to is createRandomUser ko hum rename kar dete hain to getRandomUser. Aur yahan se return karenge hum user ID, username, email, and uske saath-saath password.
+[11:10] Speaker 1:  to baaki saare options ko hum yahan se hatane wale hain, kyunki inhi chaar values ke saath hum work karenge. Saath ke saath is user ID ko hum naam de dete hain id.
+[11:18] Speaker 1:  And ise kar lete hain save. To ab yahan par hamare function ka naam bhi change ho jayega, to getRandomUser.
+[11:25] Speaker 1:  ise kar lete hain getRandomUser. save.
+[11:28] Speaker 1:  clear. rerun.
+[11:29] Speaker 1:  to abhi bhi hamara fake data generate ho raha hai. Aur isi fake data ko baar-baar, baar-baar generate karke, humein apne SQL ke database ke andar actually store karana hai.
+[11:36] Speaker 1: to is tarike se hum Faker ko use karte hain.
+[12:34] Speaker 1: baat karne wale hain apne MySQL package ke bare mein. Abhi tak hamara jo backend hai aur hamara jo MySQL hai, vo separate entities rahe hain.
+[12:40] Speaker 1: generally abhi tak humne kya architecture dekha hai? Yaani humne dekha hai abhi tak ki ek side hoti hai hamari client side.
+[12:47] Speaker 1: client side kya karti hai? Client side ek request bhejti hai.
+[12:49] Speaker 1: client kise request bhejta hai? Client hamare web server ko request bhejta hai.
+[12:53] Speaker 1: to client hamare server ko request bhejta hai. Ab yahan par client kahne ka matlab hai ki hum frontend ki baat kar rahe hain, aur server kahne ka matlab hai ki hum backend ki baat kar rahe hain.
+[12:59] Speaker 1: to client server par request bhejta hai, aur server ke andar apni kuch APIs hoti hain. Ab hum aisa kuch chahte hain ki jab client server ko request bheje, aur server ko is tarike ki request bheje ki server par naya data hume add karna hai, ya naya data delete karna hai, to humne pehle, yaani apne CORAPOST wale example mein dekha tha ki vo sare ke sare changes hum array ke andar kar rahe the.
+[13:15] Speaker 1: par is bar vo sare changes hum directly database ke andar karenge. To hum chahte hain ki server kya kare?
+[13:19] Speaker 1: server ke pas jaise hi request aaye, vo ek aur request bhej de hamare database ke pas. Yaani ye hamara SQL ka database hai, aur iske pas request aayi hai.
+[13:26] Speaker 1: request aayi to isne execute kar diya. Execute kar diya, vapas se response server ko bheja, aur server ne vapas se response client ko bheja.
+[13:31] Speaker 1: matlab client directly database ke sath interact nahi karta. Jab hum bhi Instagram ke upar, ya jab hum bhi Facebook ke upar apna account banate hain, to aisa nahi hota ki hum Facebook ke database mein directly changes kar rahe hain.
+[13:40] Speaker 1: jab hum apni information enter karte hain Facebook ka account banane ke liye, to hum Facebook ke servers ko request bhej rahe hain, aur Facebook ke servers internally Facebook ke database ke sath interact karte hain. To ye jo cycle hoti hai client, server, and database ki, ye kuch is tarike se kaam karti hai.
+[13:53] Speaker 1: ab iske andar ye cheez bahut zaroori hai ki hamara jo server hai, yaani hamari jo backend wali app hai, vo hamare database ke sath interact kar paaye. Abhi kya hai?
+[13:59] Speaker 1: hamara server alag se chal raha hai Node ke basis par, aur hamara SQL jo hai, usko uski queries ko hum alag se run karte hain MySQL Workbench ke andar. Dono abhi connected nahi hain.
+[14:06] Speaker 1: yaani SQL ke andar koi change hoga, hamare database ke andar koi change hoga, to server ko pata nahi chalega. Aur server ke andar koi change hoga, to vo hamare database ko nahi pata chalega.
+[14:13] Speaker 1: to dono ke beech mein ek connection form karne ke liye, hum ek naya package use karenge, jiska naam hai MySQL2. Ab MySQL2 ke alawa ek aur package hota hai npm ke andar, MySQL naam se.
+[14:21] Speaker 1: But MySQL ke andar hum kaafi saare authentication errors ko face kar sakte hain. Isliye hum MySQL2 ko use karenge, taki hamare paas koi errors na aaye apna pura process karte time.
+[14:29] Speaker 1: to hum ye imagine kar sakte hain ki MySQL2, ya ise MySQL hi keh dete hain, jo ye hamara package hota hai, ye hamara server nahi hai, ye hamara database nahi hai, ye ek package hai. Ye jo package hai, ye link karta hai hamare database ko hamare server ke saath.
+[14:40] Speaker 1: Yaani iska kaam hota hai to connect Node with MySQL. Ab MySQL package ko ek baar install karte hain.
+[14:45] Speaker 1: Hum jayenge npm par, aur yahan hum search karne wale hain for MySQL. Is package par hume nahi jana.
+[14:51] Speaker 1: Is MySQL2 wale package par hum jayenge, aur ise yahan se kar lete hain copy. And apne terminal mein jaake kar lete hain install.
+[14:59] Speaker 1: Jaise hi humne install kar liya, ab hamare Node modules ke andar hume kaafi saari cheezein dikh rahi hain, jisme se one package is MySQL2. To MySQL2 ko use karne ke liye, hamare paas kaafi saare different different tarike hote hain.
+[15:09] Speaker 1: To sabse pehle hum kya karenge? Sabse pehle ise require kar lenge.
+[15:11] Speaker 1: require karne ke liye, upar likh dete hain apni command: const MySQL isEqualToRequireMySQL2. And uske baad hum ek connection banayenge.
+[15:18] Speaker 1: Connection kya hai? MySQL ke andar ek hamara function hota hai for creating connection.
+[15:22] Speaker 1: Connection create karne ka matlab hai ki ab hum apne Node ka connection apne database ke saath create kar rahe hain. Dono ke beech mein connection ko create kar rahe hain.
+[15:28] Speaker 1: To ye actually connection naam ki hamari ek object ban jaati hai, jiske andar kai saare different different methods hote hain.
+[15:50] Speaker 1: To ise kar lete hain copy. And ise hum yahan par kar lenge paste.
+[15:54] Speaker 1: Ab yahan par connection ke andar hume kuch-kuch cheezein define karni padengi. Jaise hume apna host define karna padega, apna user define karna padega, apna database define karna padega.
+[16:00] Speaker 1: Ye saari cheezein hum kahan par lekar aaye? Also, connection create karne ke liye, hamare paas already ek database hona chahiye.
+[16:05] Speaker 1: to pehle se hamein ek database create karke rakhna padega. to ab aa jaate hain apne MySQL Workbench ke andar.
+[16:09] Speaker 1: yahan par sabse pehle toh apne home par jaate hain, is button ko click karke. jab bhi hum MySQL connection ke andar ek naya connection create karte hain, toh yahan par kuch cheezein hamare liye pehle se likhi aati hain.
+[16:18] Speaker 1: in cheezon mein, ye jo hamara host hai, wo hamesha localhost hi rahega, kyunki hum localhost ke upar apna server run karne wale hain. to basically, this is my localhost.
+[16:25] Speaker 1: iske alawa hamein user ka naam chahiye. user kaun hai?
+[16:27] Speaker 1: user hamara root user hi hai. yaani username already hamare pas root user hai.
+[16:31] Speaker 1: ab hamein apna database create karna hai. sath ke sath, hamein apna password bhi enter karna padega.
+[16:35] Speaker 1: password kya hota hai? password wo password hai, jisko humne apne SQL ke liye set kiya tha.
+[16:38] Speaker 1: yaani jo password yahan par store in keychain par click karke jab hum yahan par enter karenge, wahi same password hamein is file ke andar likhna padega. ab maine kaafi simple sa password create kiya hai, bilkul zero security ke saath, kyunki ye sabhi ko dikhne wala hai.
+[16:49] Speaker 1: to yahan par I can enter that it is MySQL @ 123. it's a very simple password.
+[16:54] Speaker 1: is tarike ka password hamein kabhi nahi rakhna chahiye. but ye ho gaya.
+[16:57] Speaker 1: And yahan par database ke andar, hum apne database ka naam likhenge. to apne is delta connection ke andar aa jaate hain, jiske andar hum kaafi saare changes kar rahe the.
+[17:03] Speaker 1: ise, ya in fact, isi window par aa jaate hain wapas se. iska size hum rakh dete hain 160.
+[17:07] Speaker 1: aur yahan par hum ek naya database create karenge. createDatabase.
+[17:10] Speaker 1: is database ko hum naam dene wale hain delta_app. hum assume kar rahe hain ki hum delta naam ki koi ek app banayenge, jiske andar bahut saare users ka hum data store karane wale hain.
+[17:19] Speaker 1: to us delta app ka sara data store karne ke liye, hum is database ko create kar rahe hain. ise kar lete hain create.
+[17:24] Speaker 1:  execute. To ye hamare paas delta app ho gai.
+[29:44] Speaker 1:  database ke andar, hum apne database ka naam likhenge. To apne is delta connection ke andar aa jaate hain, jiske andar hum kaafi data store karane wale hain.
+[30:04] Speaker 1:  to us delta app ka saara data store karne ke liye, hum isko create kar rahe hain. Isey kar lete hain create.
+[30:08] Speaker 1:  execute. To ye hamare paas delta app ho gai.
+[30:11] Speaker 1:  Ab issey use kar lete hain hum. delta_app.
+[30:16] Speaker 1:  execute. And iske andar hum ek sample table banane wale hain.
+[30:19] Speaker 1:  yaani iske andar koi random table create karenge, createTable, jiska naam hoga temporary. temporary ke andar, hum ek id create karenge, int naam se, jo is table ki primary key hone wali hai.
+[30:29] Speaker 1:  to is tareeqe se hum apni temporary table ko create kar lenge. Hum chahein toh iske andar values bhi insert kar sakte hain, par is tareeqe se humne kuch basic operations perform kar diye.
+[30:36] Speaker 1:  jab hum refresh karenge, toh humein dikhega delta app create ho gaya database, uske andar temporary naam ki table bhi aa gayi. Ab waapas se aa jaate hain yahan par.
+[30:42] Speaker 1:  hum chahte hain jis database ko hum use karein, ye hamara delta app naam ka database ho. Aur host ka naam humne likh diya, user ka naam humne likh diya, database likh diya, humne apna password likh diya.
+[30:50] Speaker 1:  Isey kar lete hain save. To abhi uske andar temporary naam ki table bhi aa gayi hai.
+[34:41] Speaker 1:  ab waapas se aa jaate hain yahan par. Hum chahte hain jis database ko hum use karein, ye hamara delta app naam ka database ho.
+[34:46] Speaker 1:  aur host ka naam humne likh diya, user ka naam humne likh diya, database likh diya, humne apna password likh diya. Isey kar lete hain save.
+[34:51] Speaker 1:  to abhi ke liye hamari connection object jo hai, woh create ho jayegi. Par sirf connection ka create hona kaafi nahi hai.
+[34:55] Speaker 1:  connection toh build ho gaya, par ab use kaise karein is connection ko database ke andar changes karne ke liye ya koi query place karne ke liye. To uske liye hum apni query method ko use karte hain, jo connection ke andar available hota hai.
+[35:04] Speaker 1: hum likhte hain connection.query. Aur connection.query ke andar kaafi saari cheezein pass hoti hain, jisme se first parameter jo aayega, vo hogi hamari query.
+[35:12] Speaker 1: hamari query kuch bhi ho sakti hai. let's suppose abhi hamari jo query hai, vo hai show tables.
+[35:17] Speaker 1: yeh hamari query hai ki humein saari ki saari jo tables hain, apne is database ke andar, vo show karvani hain. Ki kaun-kaun si tables created hain is database ke andar.
+[35:24] Speaker 1: this is my query. second parameter jo hone vala hai, yeh hoga hum ise ek call ki tarah rakh sakte hain.
+[35:28] Speaker 1: yahan parameter kya hai? Ek jo hamara callback hai, uske andar teen ek hamara error aa sakta hai, ek hamare results aa sakte hain, ek hamara fields.
+[35:37] Speaker 1: ab yeh fields tab aayega jab hum koi select query ko run kar rahe hain. Abhi ke liye kya karenge?
+[35:41] Speaker 1: do hi function, do hi parameters hum lenge: error and result. To yahan par to function vala format follow hua hai.
+[35:45] Speaker 1: hum chahein to apna arrow function likh sakte hain, jaise hum request and response ke liye likhte hain. Yaani yahan par ek hamare paas error aa sakta hai aur ek hamare paas result aa sakta hai.
+[35:52] Speaker 1: jaise hi dono aayenge, vaise hi hum kya karenge? console.log karva denge result ko.
+[36:01] Speaker 1: agar error aata hai, if there is error, to us case mein hum throw kar denge apne error ko. And kyunki humne try and catch seekha hua hai, to is poore ke poore part ko hum kya karne vaale hain?
+[36:11] Speaker 1: is poore ke poore part ko hum try mein likhenge. Kyunki hum nahi chahte ki agar koi error aa jaye database ki vajah se, uski vajah se hamara poora ka poora index.js ka code ruk jaye.
+[36:17] Speaker 1: to isliye hum yahan try karke yahan catch kar lenge apne error ko. aur agar error aata hai, to hum console.log karva denge apne error ko.
+[36:24] Speaker 1: ise kar lete hain save. To itna part humne likha hai.
+[36:26] Speaker 1: kya likha hai? try aur catch likhe hain, simply.
+[36:27] Speaker 1: yeh vala syntax hum already JavaScript ke andar padh chuke hain. connection jo object hamari form hui yahan par, uske andar ek query naam ka function hota hai, jiska kaam hota hai database ke upar koi bhi query run karna.
+[36:35] Speaker 1: humne kya query run ki? show tables.
+[36:37] Speaker 1: hame pata hai show tables se kisi bhi database ki saari tables dikhti hain. Uske baad humne ek arrow function likha hai, jiske andar do parameters hain: error and result.
+[36:42] Speaker 1: agar error hai, toh throw jaega error, jisko hum catch karke print karva denge. Agar result hai, toh us case mein hum print karvaane vaale hain ki kya result aaya finally.
+[36:49] Speaker 1: toh itna part hai jise hum execute karenge, aur ye automatically hamare liye execute ho jaega. Is console.log get random user ko hata dete hain.
+[36:55] Speaker 1: abhi ke liye ye bas humne randomly ek function banaya hua hai. Hum basically itne part ko test karne vaale hain.
+[36:59] Speaker 1: ise kar lete hain save. Clear.
+[37:01] Speaker 1: And run karte hain apne code ko. Toh yahan par ek hamare paas aaya error: access denied error.
+[37:07] Speaker 1: abhi tak humne MySQL ke andar jitni bhi cheezein dekhi hain, humne databases dekhe hain, humne tables ke upar operations kiye hain, vo saare ke saare humne MySQL Workbench ke andar kiye hain. Par ab hum baat karne vaale hain ki kaise MySQL ko apne CLI ke andar access kar pana bhi possible hai.
+[37:20] Speaker 1: yaani is terminal ke andar hi hum apne MySQL ko access kar sakte hain. Kya karne ka usko tareeqa hai?
+[37:24] Speaker 1: hame apne terminal ke andar ye command likhni hogi. And command likhne ke baad hame apne MySQL ka password type karna hoga.
+[37:29] Speaker 1: jaise yahan par hum ek naya terminal create karne vaale hain. Plus pe click karenge.
+[37:33] Speaker 1: And apni ab command enter karenge: -u root -b. Ise karenge enter.
+[37:37] Speaker 1: ab apne MySQL ka hum password enter karne vaale hain. And ab apne CLI ke andar humne MySQL ke andar login kar diya hai.
+[37:43] Speaker 1: yahan hum notice karenge ki aage MySQL likha hua hai, aur ab hum apni SQL ki commands ko type kar sakte hain.
+[37:50] Speaker 1: toh abhi jo hum MySQL ke Workbench par saari cheezein yahan par likhkar kar pa rahe the, vo saari ki saari cheezein hum command line se kar sakte hain yahan par likhkar. Abhi hum MySQL ke server ke sath hi connected hain.
+[37:59] Speaker 1: apni hum command likh sakte hain, jaise we can write show databases; semicolon enter. to ye kya hua?
+[38:06] Speaker 1: ye hamare sare ke sare databases aa gaye, jo abhi MySQL server ke andar hain, jinme se ek database hai hamare paas delta app. is tarike se hum likh sakte hain: use delta_app.
+[38:15] Speaker 1: enter. enter kiya to hamara database change ho gaya.
+[38:18] Speaker 1: abhi hum delta app ke andar hain, delta app ke andar hain, to yahan hum likh sakte hain show tables. enter.
+[38:22] Speaker 1: show tables ki to hamare paas hamari temporary table aa gayi hai. to is tarike se jo sari cheezein, jo sari commands, jo sare operations Workbench ke andar hote the, vo sare ke sare command line se kar pana bhi possible hai.
+[38:30] Speaker 1: ab ye to humne login kar liya hai apne MySQL ke andar. is command line se ab vapas se apne terminal par chale jaate hain, is button ko click karke.
+[38:36] Speaker 1: to apne terminal par chale gaye. dobara se run karenge.
+[38:38] Speaker 1: ab vapas se aa jaate hain apne error ki taraf. error mein keh raha tha access denied.
+[38:42] Speaker 1: nahi mil paya. matlab MySQL ka hum password nahi de paaye, par password to humne yahan par type kiya hai.
+[38:46] Speaker 1: achha, yahan par password ka error aa gaya hai. matlab password humne likh diya hai.
+[38:50] Speaker 1: dobara se ise kar lenge save. clear.
+[38:52] Speaker 1: And run. is baar run kiya to yahan kya aa gaya?
+[38:55] Speaker 1: yahan ek result aaya hai. ye result kya hai?
+[38:57] Speaker 1: notice karenge to humne yahan par try kiya tha, uske baad humne apne result ko print karwaya tha. humne show tables command ko run kiya tha, aur show tables command ka jo result hai, vo hamare paas print hokar aa gaya.
+[39:06] Speaker 1: kya result print hokar aaya hai? tables in delta app temp.
+[39:09] Speaker 1: yaani delta app naam ka jo database hai, uske andar kaun-kaun si table hai? Uske andar temporary naam ki ek table hai.
+[39:13] Speaker 1: to wo result usne print karwa diya. Par ek cheez hum yahan par notice karenge ki abhi bhi hamari execution ruki hi nahi hai.
+[39:18] Speaker 1: abhi bhi hamara cursor kahan par hai? Yahan par hai.
+[39:19] Speaker 1: matlab ye wali line hamare liye appear nahi kar rahi. Abhi hum apne app ke andar hi hain.
+[39:23] Speaker 1: abhi hamari app running hai. Abhi hamara connection running hai.
+[39:25] Speaker 1: to hamare ye jo connection, jo hum ek baar establish kar lete hain, jisko open kar lete hain, isko agar humein aur further continue nahi karna, to is connection ko alag se jaakar humein close karna padta hai.
+[39:51] Speaker 1: to connection ko close karne ke liye, ya end karne ke liye, hum likhte hain connection.int, jisse hamara SQL ka connection band ho jata hai. To yahan likhenge connection.int.
+[40:01] Speaker 1: save. Ise kar lete hain control C.
+[40:03] Speaker 1: And dobara se execute karte hain. Is baar kya hua?
+[40:05] Speaker 1: execute karke usne hamare liye temporary table print karwa di. And is baar connection automatically band ho chuka hai.
+[40:10] Speaker 1: to is tarike se humne apne database ke sath connect kiya hai. Do tarike hain database ke sath connect karne ke.
+[40:15] Speaker 1: ek to hai ki hum yahan se apna ek connection form kar len. Connection form kar liya.
+[40:18] Speaker 1: uske baad hum connection.query, ye jo method hai, isko run kar sakte hain. Apne database ke upar queries ko run kar sakte hain.
+[40:23] Speaker 1: uske error, uske result ko print karwa sakte hain. Aur dusra tarika jo humne dekha, uske andar hamara CLI hai, jisike andar hum apne MySQL ko khol sakte hain.
+[40:30] Speaker 1: matlab yahan par agar hum MySQL Workbench nahi use karna chahte, aur hum development kar rahe hain apne MySQL ko use karke, to agar hum apne tables ya apne databases ya nayi tables ko agar create karna hai, to hum yahan se, matlab command line se bhi un tables ko create kar sakte hain.
+[61:59] Speaker 1: Ab abhi tak humne multiple tareeqe seekhe. Kya apne MySQL ki commands ko run karne ke liye.
+[62:06] Speaker 1: Sabse pehla tareeka, jisko humne shuruat ke do parts mein seekha, wo hai using the workbench. Yaani ye jo hamara hota tha, jisme abhi maine dark mode lagaya hua hai, to utna sundar aapko nahi dikh raha hoga jitne pehle wale do parts mein dikha.
+[62:16] Speaker 1: Iske upar directly hum apni commands ko likhte hain aur unhe run karte hain, jo hamare server ke andar automatically changes karti thi. To ye to ho gaya hamara pehla tareeka.
+[62:23] Speaker 1: Second tareeka jo humne seekha, wo tha using MySQL package. To package ke andar humne Node.js ke andar changes likhe aur Node.js ke andar jo jo humne code likha, uske basis par hum apne SQL queries ko run kar sakte hain on our database.
+[62:35] Speaker 1:  un SQL queries ka hum chahe to result yahan par print karwa sakte hain aur unhe run karne ke liye hume is connection naam ki object ko banana padta hai. to ye to ho gaya second tareeka.
+[62:41] Speaker 1: Third tareeka seekha ki hum apne SQL commands ko kaise apne CLI par hi run kar sakte hain. Yaani command line ke andar run karne ke liye hume simply kya type karna hota hai?
+[62:49] Speaker 1: Hume simply ye command type karni hoti hai. Phir hume password enter karna hota hai aur hum ek alag hi duniya mein pahunch jaate hain, jo hamari MySQL ki duniya hai, jiske andar hum kai saare different-different SQL commands ko likh sakte hain, run kar sakte hain, execute kar sakte hain.
+[62:58] Speaker 1: Agar hume MySQL ke is environment se exit karna hai, to uske liye hum type kar sakte hain Ctrl D. Nahi to hum yahan par quit bhi type kar sakte hain.
+[63:04] Speaker 1:  quit karenge to directly hum quit ho jayenge. isne bye print karwa diya aur hum wapas se yahin par aa jayenge.
+[63:08] Speaker 1: Dobara agar hume enter karna hai, to dobara se isi command ko hume run karna padega to enter our MySQL universe. To ye teen tareeke humne seekhe, jinse hum SQL ke sath connect kar sakte hain.
+[63:16] Speaker 1: Ab hum ek fourth tareeka seekhne wale hain apni SQL queries ko run karne ka, jisko hum generally badi queries ko run karne ke liye use karte hain. Agar hamare paas workbench nahi hai, to hum kya kar sakte hain?
+[63:23] Speaker 1: Apni SQL ki files banakar bhi apni SQL queries ko run kar sakte hain. To hum ek schema.sql naam ki file banayenge.
+[63:29] Speaker 1: Sabse pehle ise create karte hain. Ise SQL class isi folder ke andar hum banane wale hain.
+[63:33] Speaker 1: Ise naam de denge schema.sql. Dot sql se pata chal raha hai, ye hamari SQL file hai.
+[63:39] Speaker 1: Iske andar hum koi bhi command likh sakte hain. Lets write a command show tables.
+[63:43] Speaker 1: ye hamne proper SQL ki command likhi hai. Ise kar lete hain save.
+[63:45] Speaker 1: to ye hamari command ho gayi show tables. Ab ise execute karne ke liye kya karenge?
+[63:50] Speaker 1: hum apne SQL CLI ke andar jayenge.
+[66:12] Speaker 1: yahan par sabse pehle SQL ko kholne wale hain @ 1 2 3. To hum SQL MySQL ke andar aa gaye.
+[66:17] Speaker 1: MySQL ke andar hum likhenge source schema.sql. Yaani hum chahte hain ki hamara source code, yaani jis SQL code ko hum run karna chahte hain, commands ko run karna chahte hain, wo is file ke andar likha ho.
+[66:28] Speaker 1: ise kar lete hain enter. Sabse pehle apna database select kar lete hain.
+[66:32] Speaker 1: use delta_app aur iske andar hum enter karayenge. To enter karaya to kya hua?
+[66:39] Speaker 1: sirf hamne likha schema.sql aur ye line, ye ye poori ki poori hamari command execute ho gayi, jiski madad se hamare paas ye saari information aayi hai. To hamne ab fourth tarika sikha hai.
+[66:47] Speaker 1: fourth tarika kya hai? Using SQL files.
+[66:50] Speaker 1: ki kaise SQL files ke andar command likhkar hum directly SQL files ke through apne database ko access kar sakte hain.
+[67:01] Speaker 1: ab next hum hum create karne wale hain apne database ke andar apna table.
+[69:56] Speaker 1: hamari table ka naam hone wala hai user aur is user ke andar hum chaar cheezein create karenge. Ise user id nahi, isko hum id naam denge.
+[70:03] Speaker 1: hum user id naam isliye nahi de rahe kyunki iske andar i hamara capital ho jayega aur hum chahte hain saari cheezein small mein rahe SQL ke andar. To hum ise apna id naam denge yahan par.
+[70:10] Speaker 1: sabse pehli cheez hum create karenge column id. ID ko varchar 50 type ka rakhenge aur isko hum banayenge apni primary key.
+[70:15] Speaker 1: uske baad hamare paas username hoga. Ye bhi varchar type ka aur username ko hum unique rakhenge.
+[70:19] Speaker 1: yaani do logo ke username same nahi hone chahiye. Usi tareeke se email hoga varchar type ka.
+[70:23] Speaker 1: Ye bhi unique aur not null hoga. Matlab email hamara khali bhi nahi ho sakta.
+[70:26] Speaker 1: Plus email unique hamesha hona chahiye. And phir ek password ka column banayenge jisme varchar type hoga aur not null hamari property hogi.
+[70:32] Speaker 1: To basically hum kuch is tareeke ki table create karna chahte hain. Jiske andar kai saare columns ho.
+[70:37] Speaker 1: Jinme se ek column ho hamara id. Ek column ho hamara username.
+[70:41] Speaker 1: Ek column ho hamare pas hamara email and ek column ho hamare pas hamara password. To is tareeke ki table ko hum create karna chahte hain apne delta app ke andar.
+[70:49] Speaker 1: Is table ko create karne ke liye iska jo pura ka pura code hai. Ab humne chaar tareeke seekhe hain.
+[70:53] Speaker 1: Chaaro me se koi bhi tareeka hum use kar sakte hain. Hum chahe to workbench ke andar table ko create kar sakte hain.
+[70:56] Speaker 1: Yaani hum chahe to jaise humne temporary ko create kiya tha, waise hi yahan se table ko create kar sakte hain. Hum chahe to mysql ke package se bhi table ko create kar sakte hain.
+[71:03] Speaker 1: Hum chahe to cli se bhi table ko create kar sakte hain. Yaani directly yahan command line ke andar likhkar hum chahe to is schema.sql ke andar bhi likhkar kar sakte hain.
+[71:10] Speaker 1: To hum kya karenge? Schema.sql ko use karenge kyunki create table wali ye jo command hai, ye thodi si badi hai.
+[71:14] Speaker 1: Agar hum ise yahan par use karenge index.js ke andar, to yahan par itni badi command ko likhna thoda sa achha nahi lagega dekhne me. To isliye hum ek aur better tareeka, simple tareeka use karne wale hain, which is going to be schema.sql.
+[71:25] Speaker 1: Schema.sql ke andar hum apni command likhenge create table. Ise hum naam denge user.
+[71:32] Speaker 1: User ke andar sabse pahle hum id create karenge varchar of 50 type ki. And ise hum banayenge apni primary key.
+[71:38] Speaker 1: Uske alawa ise kar lete hain copy varchar of 50 ko.
+[71:53] Speaker 1: hum apna username create karenge. Name ise bhi varchar of 50 and ise banayenge unique.
+[72:00] Speaker 1: fir apni email ye bhi hogi hamare paas unique and not null and sath mein create karenge hum apna password. Ye hone wala hai not null.
+[72:10] Speaker 1: ise kar lete hain save. Jaise hi save kiya, ab yahan se hum run kar sakte hain apni command ko.
+[72:14] Speaker 1: kis command ko? source schema.sql.
+[72:16] Speaker 1: abhi hum kaun se database ke andar hain? Abhi hum apne delta app wale database ke andar hain.
+[72:19] Speaker 1: ise yahan par likhenge. Kahan par likh rahe hain?
+[72:21] Speaker 1: ise hum apne database yaani apne MySQL ke CLI mein likh rahe hain. Enter karenge.
+[72:24] Speaker 1: jaise hi enter kiya, humein dikha raha hai query ok. And is bar jab hum show tables ko run karenge, show tables enter.
+[72:31] Speaker 1: to is bar do tables hamare paas aai hain. Ek hai hamari temporary table, jisko pehle se create kiya tha.
+[72:35] Speaker 1: ek hai hamari user table. Hum chahe to wapas se Node.js ke andar aa sakte hain.
+[72:38] Speaker 1: aur is bar index.js ko run karenge, jiska kaam hai to show tables. Uske andar kya result aayega?
+[72:43] Speaker 1: enter kiya. To is bar iske andar do objects result aaye hain.
+[72:45] Speaker 1: pehle ke andar temporary likha hua hai. Doosre ke andar user likha hua hai.
+[72:48] Speaker 1: yaani hamari jo user table hai, wo create ho gayi hai. Hum workbench se jakar isko verify bhi kar sakte hain.
+[72:51] Speaker 1: yahan refresh kar lenge. Refresh kiya to tables ke andar ek hamare paas hamari user table hai, jiske andar ye char columns hamare paas create hokar aa gaye hain.
+[72:57] Speaker 1: to hamein dikh raha hai ki saari ki saari cheezein, jinako humne use kiya hai server ke saath connect karne ke liye, vo aapas mein synced hain. Aisa nahi hai work bench se kuch database ke andar change kiya to vo yahan nahi dikhega.
+[73:05] Speaker 1: ya yahan par koi change kiya to vo CLI ke andar nahi dikhega. Agar database ke andar, kyunki database to ek hi hai, uske andar koi bhi change karega, vo har jagah reflect ho raha hai.
+[73:11] Speaker 1: vo har jagah dikhai de raha hai. To ab yahan se hum apne work bench ko karne vale hain close.
+[73:15] Speaker 1: kyunki ab hum finally pura ka pura focus karenge apne database ko access karne ke liye using our index.js file.
+[78:14] Speaker 1: change kiya to vo CLI ke andar nahi dikhega. Agar database ke andar, kyunki database to ek hi hai, uske andar koi bhi change karega, vo har jagah reflect ho raha hai.
+[78:20] Speaker 1: vo har jagah dikhai de raha hai. To ab yahan se hum apne work bench ko karne vale hain close.
+[78:24] Speaker 1: kyunki ab hum finally pura ka pura focus karenge apne database ko access karne ke.
+[78:58] Speaker 1: ke liye using our index.js file. To schema.sql ko bhi close kar dete hain.
+[79:01] Speaker 1: ab sirf index.js se, yaani sirf apne node ki help se, apne back end ki help se, hum apne database ke saath connect karne vale hain. Different-different queries ko perform karne vale hain.
+[79:09] Speaker 1: ab aage badhne se pehle ek baar hum is result ko thoda sa analyze karne vale hain. Humne jab result ko print karvaya tha, to kuch is tareeqe ki cheez print hui thi.
+[79:15] Speaker 1: to ye jo hamara result hai, ye actually ek array hai. Yahan hum notice karenge, to har baar jab bhi result print hua hai, hamare paas square brackets yahan par aate hain.
+[79:22] Speaker 1: aur is square brackets ke andar hamare paas different-different objects hain. To hum chahein to result ke saath hum result ki length ko bhi print karva sakte hain.
+[79:45] Speaker 1: kyunki har array ke paas apni ek length hoti hai. Isko kar lete hain save and clear.
+[79:49] Speaker 1: saath mein rerun karenge. Execute kiya.
+[79:52] Speaker 1: to ye hamare paas hamara array aa gaya. Aur ye hamare paas us array ki length aa gayi.
+[79:55] Speaker 1:  agar hum chahte hain ki humein individual jo hamare array ke andar objects hain, unka data print karwana hai. To uske liye hum likh sakte hain result of zero.
+[80:02] Speaker 1:  to hamare paas first result aa jayega. Aur phir hum likhenge result of one.
+[80:06] Speaker 1:  to phir hamare paas second result aa jayega. Isko kar lete hain save and re-execute.
+[80:10] Speaker 1:  to ye hamare paas total result hai. Ye uski length hai.
+[80:12] Speaker 1:  aur ye hamare paas first result aa gaya. Which is the temporary table.
+[80:14] Speaker 1:  ye hamare paas second result mein aa raha hai jab hum show tables kar rahe hain jo hamari user table hai. Ab yahan to humne show tables ki query likhi hai.
+[80:20] Speaker 1:  ye jo query humne yahan par likhi hai, hum chahein to is query ko kisi variable ke andar bhi likh sakte hain. Yaani hum ek query naam ka variable bana sakte hain.
+[80:26] Speaker 1:  ise hum query keh sakte hain ya phir simply q keh sakte hain. Aur is variable ke andar hum apni command paste kar sakte hain.
+[80:30] Speaker 1:  to ye hamari query ho gayi. And jab hum connection.query ko run karenge, toh yahan simply hum q ko paas kar denge.
+[80:35] Speaker 1:  ise kar lete hain save. Clear?
+[80:54] Speaker 1:  and dobara se jab run karenge, toh hamare paas same output aayega. To basically ye ek aur better tareeqa hai ki hum ek variable ke andar apni query likh sakte hain.
+[81:00] Speaker 1:  usi query ko hum yahan par paas kar denge as an argument. Aur phir hamara connection.query jo function hai, woh execute karega.
+[81:10] Speaker 1:  ab ab next hum baat karne wale hain ki kaise apni user table ke andar hum apne data ko insert kar sakte hain.
+[88:05] Speaker 1:  ab next hum baat karne wale hain ki kaise apni user table ke andar apne data ko insert kar sakte hain. Ye data insertion ke liye hum placeholders ko use karenge.
+[88:12] Speaker 1:  npm ke agar documentation par jayein, mysql2 wale documentation mein, toh yahan par jaise hi neeche scroll karenge, jahan hamara first query ka hume example diya hua hai, wahan par placeholders ke sath hume ek example diya hua hai. Placeholders kehne ka matlab hai ki jab bhi hum koi query likhte hain, ho sakta hai query ke andar bahut sari values aisi jayein jo normal values ho, jo variables ho.
+[88:28] Speaker 1: to is tareeqe ki cheezein likhne ke liye hum placeholders ko use karte hain. Placeholders basically ye question marks hote hain.
+[88:33] Speaker 1: is tareeqe ke question marks hum apni query ke andar add kar sakte hain. To jaise humne first question mark add kiya, to comma se separate karke hum ek array ke andar apne different-different parameters pass kar sakte hain jo saari values in question mark ko replace karengi.
+[88:45] Speaker 1: kyunki kayi baar ho sakta hai ki jis name se humein compare karna ho ya jis age ki value se humein compare karna ho, vo hamare paas abhi na ho. Vo hum dynamically pass karna chahte hain.
+[88:51] Speaker 1: statically ek string mein nahi likhna chahte. To isliye aisi values ko hum ek array ki form mein pass on kar sakte hain.
+[88:56] Speaker 1: to hum ise test karne ke liye apni ek query likhne vaale hain to insert data. Insert data karne ke liye hum apni query mein likhenge insert into hamari user table.
+[89:04] Speaker 1: kya-kya insert karna hai? Humein id insert karni hai.
+[89:06] Speaker 1: humein username insert karna hai. Humein email insert karna hai aur humein password insert karna hai.
+[89:11] Speaker 1: aur iske baad hum likh denge values. And finally ab humein values define karne ki zaroorat hai.
+[89:15] Speaker 1: but values abhi hamare paas hai nahi. To hum simply kya karenge?
+[89:17] Speaker 1: yahan par question mark hum likh sakte hain. Ya abhi ke liye question mark ki jagah hum chaar question marks likhenge taaki hum chaaro values ko separately pass kar paayein.
+[89:24] Speaker 1: to is tareeqe se humne query likh di. Query ke andar jo hamara first user id honi chahiye thi, username hona chahiye tha, email hona chahiye tha, password hona chahiye tha.
+[89:30] Speaker 1: ye chaaro values abhi humne pass nahi ki. Inki jagah sirf yahan par question mark likha hai.
+[89:33] Speaker 1: ab ye question marks se hum chahte hain ki kitni values ko replace karein. To ye chaaro jo values hongi, inko hum ek array ke andar enter karenge.
+[89:39] Speaker 1: to yahan hum ek array banayenge. Let user is equal to.
+[89:41] Speaker 1: ye hamara array ho gaya. Hum chahte hain user ki jo id ho, vo ho 1 2 3.
+[89:45] Speaker 1: hum chahte hain user ka jo username ho, vo ho 1 2 3 underscore new user aur iska email hum rakh sakte hain abc@gmail.com and saath mein password hum rakh sakte hain ABC.
+[90:22] Speaker 1: to is tarike ka humne koi random user hai jisko create kar liya hai. Ab yahan par connection.query ke andar hum kya karenge?
+[90:28] Speaker 1: query ko to pass kar hi rahe hain. Yaani apni is query ko to hum pass karenge hi.
+[90:30] Speaker 1: par hum chahte hain ye jo place holders hain, ye jo question mark hai, inki jagah asli values aa jaye. Asli value kahan par hai?
+[90:35] Speaker 1: asli value is array ke andar hai. To asli value enter karne ke liye hum ek aur naya parameter pass karenge, which is going to be our array user.
+[90:41] Speaker 1: to connection.query kya karega?
+[90:43] Speaker 1: is query ke andar agar use koi place holders milenge, to un place holders ko user array ke andar agar koi value hai, to wahan se uthaakar apni query ke andar input karne ki koshish to hum pass karenge hi.
+[91:01] Speaker 1: par hum chahte hain ye jo place holders hain, ye jo question mark hai, inki jagah asli values aa jaye. Asli value kahan par hai?
+[91:06] Speaker 1: asli value is array ke andar hai. To asli value enter karne ke liye hum ek aur naya parameter pass karenge, which is going to be our array user.
+[91:12] Speaker 1: to connection.query kya karega?
+[91:13] Speaker 1: is query ke andar agar use koi place holders milenge, to un place holders ko user array ke andar agar koi value hai, to wahan se uthaakar apni query ke andar input karne ki koshish karega. To is tarike se hum multiple values ko pass kar sakte hain dynamically with in our query.
+[91:25] Speaker 1: to jab bhi hum data ko insert karenge, ho sakta hai hamare paas koi result aaye, to result ki length 0 1 is tarike se hum nahi dekhna chahte. Hum sirf result ko print karwaana chahte hain.
+[91:32] Speaker 1: to ise kar lenge save. Abhi ke liye kya part hai?
+[91:35] Speaker 1: abhi ke liye hum sirf naya data inserting new data itne part ko execute karna chahte hain jo yahan par likha hua hai. Jaise ye part execute ho jaega, phir hamara connection end ho jayega.
+[91:46] Speaker 1: isko kar lete hain save. Clear and dobara se run.
+[91:49] Speaker 1: jaise hi execute kiya, kya aaya hamare paas result mein? Humne ye execute kiya node index.js.
+[91:54] Speaker 1: To hamare paas result mein aaya result set header. Isne hume bataya field count zero, affected rows one, inserted zero, information server status, warning status, change rows.
+[92:01] Speaker 1: Yaani ye by default response hai. Jab bhi hum koi data insert karte hain table ke andar, to by default isi tarike ka kuch response hamare paas aayega.
+[92:07] Speaker 1: Par verify kaise karein ki data actually insert hua hai? Verify karne ke liye hum apne second terminal mein ja sakte hain, jo hai hamara database ka terminal.
+[92:13] Speaker 1: Isme MySQL already khula hua hai. Hum kya karenge?
+[92:14] Speaker 1: Is user table se sara data select karenge. To select all from user.
+[92:19] Speaker 1: Enter. To kya hua?
+[92:20] Speaker 1: Hamare paas hamara data aa gaya aur ye wahi data hai jisko abhi humne enter kiya tha in the form of our array. Ab lets suppose kal ko hame do users ka data ek sath enter karna hai.
+[92:27] Speaker 1: To do users ka data ek sath enter karne ke liye sabse pehle to in sabke end mein hum b attach karne wale hain taki hame pata chal jaye ye user number two hai. Ye ho gaya b.
+[92:35] Speaker 1: And isi tarike se ye hamara user one ho gaya. And isi tarike se ek aur ya ise user two keh dete hain.
+[92:40] Speaker 1: User two and this is going to be user three. Iske last mein hum append kar denge c taki saari cheezein unique ho jayein.
+[92:46] Speaker 1: Koi error na aaye database mein enter karte time. To ye hamare do users aur ho gaye.
+[92:49] Speaker 1: Hum kya kar sakte hain? Dono users ko data ko agar hame ek sath enter karna hai to hum ek user naam ka naya array bana sakte hain.
+[92:55] Speaker 1: Jis array ke andar hamare ye dono sub arrays honge. Comma and is tarike se ye hamara second array aa gaya.
+[93:03] Speaker 1: Save. To humne kya kya kiya?
+[93:06] Speaker 1: user naam ka ek naya array banaya jo array of array hai. Array of array yaani hum kya karte hain?
+[93:11] Speaker 1: arrays ke andar apna data store karate hain. 1 2 3 par hum arrays ke andar arrays bhi to store kara sakte hain.
+[93:16] Speaker 1: yaani ek array ke andar ye one aur two ye pehla array ho gaya. Ye three aur four ye second array ho gaya.
+[93:29] Speaker 1: ye five aur six ye third array ho gaya. To ye saara ye mera array one hai.
+[93:32] Speaker 1: ye mera array two hai. Ye mera array three hai.
+[93:33] Speaker 1: aur ye teeno ke teeno is outside wale array ke andar likhe hue hain. To is tareeqe ka format humne banaya hai jiske andar ye hamara first array hai yaani user two.
+[93:40] Speaker 1: ye hamara second array hai yaani user three. Ab multiple users ka data pass karne ke liye hum yahan par simply enter kar sakte hain users and unhe hum enter karenge ek square bracket ke andar.
+[93:49] Speaker 1: aur ab kyunki hum chahte hain ki ek single user ka data ek sath hamari is query ke andar chale jaye to ab hume char question mark likhne ki zaroorat nahi hai. Ab hum ek simple single question mark likh sakte hain aur usse hamara data enter ho jayega.
+[93:58] Speaker 1: to ye hamari insertion query hai jab bhi hum multiple users ko insert karna chahte hain. Ismein hum do users ko ek sath insert karne ki koshish karenge aur is tareeqe se hum apne users wale array ko pass in karne wale hain.
+[94:06] Speaker 1: ise kar lete hain clear and dobara se run. Run kiya to is baar hamare paas result aa gaya.
+[94:11] Speaker 1: information mein aaya records to duplicate zero warning zero. Records to kehne ka kya matlab hai?
+[94:15] Speaker 1: ki humne do records ek sath enter karane ki koshish ki hai. Do records yaani do rows ko.
+[94:19] Speaker 1: ye hamari first row hai. Ye hamari second row hai.
+[94:21] Speaker 1: yaani ab total kitni rows ho gayi hongi database mein? Apni table ke andar teen rows ho gayi hongi.
+[94:25] Speaker 1: dobara se jaake agar select kare all from user to is baar hamare paas teen rows aa rahi hain hamari user table ke andar. To ye to humne data ko manually yaani khud se humne kuch data create kiya.
+[94:34] Speaker 1: usko arrays ke andar enter kiya aur phir usko humne apne database yaani user table ke andar store karaya. Par hum faker ko kaise use kar sakte hain?
+[94:39] Speaker 1: faker jiski humne pehle hi baat ki thi ki faker ki help se hum fake data create kar sakte hain.
+[107:18] Speaker 1: toh is baar hamare paas teen rows aa rahi hain hamari user table ke andar. Toh ye toh humne data ko manually yaani khud se humne kuch data create kiya.
+[107:25] Speaker 1: usko arrays ke andar enter kiya aur phir usko humne apne database yaani user table ke andar store karaya.
+[111:33] Speaker 1: par hum faker ko kaise use kar sakte hain? Faker jiski humne pehle hi baat ki thi ki faker ki help se hum fake data create kar sakte hain.
+[111:45] Speaker 1: toh ab hum baat karenge ki kaise hum apne data ko bulk mein insert kar sakte hain. Bulk mein data ko insert karne ke liye hum faker ko use karenge aur faker ko use karke hum 100 users ka data ek saath apne database ke andar enter karane wale hain.
+[111:56] Speaker 1: isse enter karane ka kya process rahega? Sabse pehle toh aa jaate hain apne get random user is function ke andar.
+[112:02] Speaker 1: is function ke andar apna ek object return karne ki bajay hum kya karenge? Ek array return kar denge.
+[112:06] Speaker 1: is array ke andar object ki saari ki saari values hongi. Yaani ye array waise hi kaam karega jaise hamara object kaam karta tha.
+[112:12] Speaker 1: bas iske andar key value pairs nahi honge. Iske andar sirf values hongi taaki woh directly hamare database ke andar jaakar insert ho sake.
+[112:18] Speaker 1: isse kar lete hain save. Toh ab return kya ho raha hai?
+[112:20] Speaker 1: object ki bajay ab ye chaar values return ho rahi hain. Jo chaaro values kaun generate kar raha hai?
+[112:24] Speaker 1: jo hamara faker generate kar raha hai. Faker ne chaaro values generate kar di aur ye get random user se humein ye saari values ek-ek karke mil sakti hain.
+[112:30] Speaker 1: ab humein kya karna hai? Humein 100 users ka data chahiye.
+[112:32] Speaker 1: toh baar-baar get random user, get random user hum likhne nahi wale. Hum kya karenge?
+[112:35] Speaker 1: ek loop run karenge. Toh yaha par ye users hata lete hain.
+[112:39] Speaker 1: apni query com same rakhenge kyuki isi query ki help se hum apne data ko insert karne wale hain. Ek variable bana lete hain.
+[112:43] Speaker 1: let data equal to aa khali object. Ab ek loop chala lenge for let i = 0, i < = 100.
+[112:51] Speaker 1: ise one se start kar lete hain ki hamara loop one se 100 tak jayega. Har baar hum kar denge i + + and har baar hum get random user ko call lagayenge.
+[112:58] Speaker 1: get random user ko jaise hi call lagayenge, ye hume kya dega? Ye hume ek return karega.
+[113:01] Speaker 1: ek array. Array ke andar random user hoga.
+[113:03] Speaker 1: abhi ke liye kya karenge? Ise 100 baar call laga kar ise print karwane wale hain.
+[113:06] Speaker 1: aur is connection wale poore part ko kar dete hain comment out save. Infact is get random user ko hum upar ki taraf paste kar dete hain.
+[113:12] Speaker 1: ye hamara connection ho gaya. Ye hamara function ho gaya get random user.
+[113:15] Speaker 1: aur yaha par hum apne data ko insert karne ki koshish kar rahe hain.
+[114:04] Speaker 1: ye hamari query ho gayi. Abhi ke liye data hamara ek khali object hai aur hum kya kar rahe hain?
+[114:08] Speaker 1: chala kar 100 random users ko generate karwa rahe hain. Ise kar lete hain clear.
+[114:11] Speaker 1: toh ab ise execute karke dekhte hain. Hum likhenge node index dot js.
+[114:15] Speaker 1: isko kiya enter. Toh hamare liye 100 users ka data jo hai woh print hokar aa gaya.
+[114:19] Speaker 1: ye hamara first user hai. Ye hamara second user hai.
+[114:21] Speaker 1: ye hamara third user hai. Is tarike se multiple users ka data hamare paas aa gaya hai.
+[114:24] Speaker 1: yaha kuch error hame dikhai de raha hoga UUID se related which is deprecated kyoki ab hum UUID V4 yaani version four ko use karte hai. Jab hum UUID ko install bhi karte hai.
+[114:32] Speaker 1: hamne already is package ko install karke use karke dekha hua hai. To we know why it is deprecated.
+[114:36] Speaker 1: but abhi ke liye hum ise ignore kar sakte hai. Ye basically hamare 100 users ka data hame dikhai de raha hai.
+[114:41] Speaker 1: ise stop kar lenge and clear kar lenge. Hame pata hai successfully 100 users create ho rahe hai get random users ke andar.
+[114:47] Speaker 1: in sare users ko hum is data naam ke array ke andar add karna chahte hai. To hum data ke andar data dot push kar denge apne sare users ke data ko.
+[114:54] Speaker 1: to is tarike se data object ke andar hamara sara data push ho jayega. And fir hum kya karne wale hai?
+[114:59] Speaker 1: yaha se itne part ko kar lete hai uncomment. Uncomment kar liya.
+[115:02] Speaker 1: to yaha par query to hum vaise hi pass karenge. Is baar users ki jagah hum apna data pass karenge.
+[115:05] Speaker 1: is data naam ke array ke andar kya aa raha hai? Is data naam ke array ke andar 100 random ya random ki jagah ise keh lete hai 100 fake users ka data aa raha hai.
+[115:13] Speaker 1: is data ko hum enter karwa rahe hai with in our database aur database ke andar enter karwa denge. Jo bhi result aayega use print karwa denge aur fir connection ko kar denge close.
+[115:20] Speaker 1: to ise kar lete hai clear. And ab dobara se run karte hai.
+[115:24] Speaker 1: run kiya. Execute kiya.
+[115:25] Speaker 1: achha hamne save nahi kiya tha. Clear save and re execute.
+[115:31] Speaker 1: re execute kiya. To is baar ye hamare liye final output aaya.
+[115:33] Speaker 1: Final output mein kya dikha raha hai? Records 100 yaani humne ek saath 100 rows ek saath 100 tuples ka data add karane ki koshish ki hai.
+[115:40] Speaker 1: Inme se koi duplicate nahi tha. Koi warnings hamare paas nahi aayi.
+[115:42] Speaker 1: Achhe se sara data enter ho gaya hai. Kaise verify karein data enter hua hai?
+[115:45] Speaker 1: Wapas se aa jaate hain SQL ke andar. MySQL ke andar.
+[115:48] Speaker 1: Ab hum select query run karenge. Run ki.
+[115:50] Speaker 1: Hum bahar aakar thoda sa font size chhota karte hain. To ye ek table hamein dikhai de rahi hai aur is table ke andar 100 users ka mere paas data aa gaya hai.
+[115:57] Speaker 1: Ye hamare teen users aise hain jinhe shuruat mein humne enter kiya tha. But baaki sare users agar aap notice karenge to ye bilkul asli users the jaise dikh rahe hain.
+[116:03] Speaker 1: Jaise Renault 57 ye yahoo.com karke email ID hai. Ye inka password hai.
+[116:07] Speaker 1: To random email ID, random username, random passwords generate hue hain aur ye sare ke sare jaakar hamare is database ke andar enter ho gaye hain. Is table ke andar enter ho gaye hain.
+[116:15] Speaker 1: To is tarike se hum bulk mein data insert kar sakte hain within our database using what? Using connection dot query.
+[134:50] Speaker 1: Ab next hum baat karne wale hain routing ke jade mein. Humne already REST ko padh liya hai ki hum RESTful APIs ko kaise create karte hain.
+[134:57] Speaker 1: RESTful API se hum different-different routes kaise create karte hain. Ab waise hi routes hum yahan par create karenge.
+[135:01] Speaker 1: Matlab hum apne jo backend hai, use ek express app ke andar convert karenge aur uske andar different-different routes ko banane wale hain. To basically hum is tarike ka kuch system banane wale hain ki already hamare database ke andar 100 users ka data to hai hi.
+[135:11] Speaker 1: To hum sabse pehle ek slash home wala route banayenge, jiska kaam hoga to show number of users in database. Jaise hi hum home par jayenge, sare ke sare users ka jo database hai, use show kar dega.
+[135:25] Speaker 1: Aur ye hum rakhenge get request. Uske alawa hum apni RESTful APIs create karenge.
+[135:28] Speaker 1: ek hamari API hogi slash user, jis par get request agar jati hai, toh ye hamein sare users ka show users, sare users ka hamein email ID dikhayega, hamein ID dikhayega aur hamein username dikhayega. Toh iske liye hum apne EJS ko use kar sakte hain ki ek template page bana lenge, jiske upar sare ke sare users ka data aa raha hoga.
+[135:47] Speaker 1: ismein hum password ko nahi show karne wale kyunki password sensitive information hai, usko hum kabhi show nahi karenge database se. Toh sirf email ID, ID and username ko hum is page ke upar dikha rahe honge.
+[135:54] Speaker 1: ye hamara first route hoga, jisko hum create karenge. Iske alawa hum update karne ke liye, yaani patch karne ke liye, apna ek route banayenge, jismein slash user slash ID, yaani jis bhi user ki ID hai, uske liye hum uska username edit kar sakte hain.
+[136:07] Speaker 1: email aur password toh edit nahi hoga, but username hum edit kar sakte hain. Toh woh jo sari cheezein, jo humne RESTful APIs mein sikhi thin, apne kora wale example ke saath, jismein humne form banaya tha edit karne ke liye, phir form se request ja rahi thi backend mein, woh sari ki sari cheezein hum yahan par repeat karne wale hain.
+[136:19] Speaker 1: yaani apne RESTful APIs ke concept ko hum yahan par database ke saath jodkar use karenge. Toh ye hamari patch wala ek route hoga, jisko hum create karenge.
+[136:26] Speaker 1: iske alawa hamare do aur routes honge. Ek hamara add wala route hoga, ek hamara delete wala route hoga.
+[137:38] Speaker 1: isko add keh lete hain ya isko hum post keh dete hain. Yaani jaise hi post request bhejenge slash user par, waise hi kya hoga?
+[137:43] Speaker 1: naye user ko hum add kar payenge. Aur jaise hi delete request bhejenge slash user slash ID par, waise hi hum is user ko delete kar payenge.
+[137:51] Speaker 1: ab delete karne se pehle hamesha password mangna hai hamein user ka. Toh is tarike ki functionality ko hum develop karenge.
+[137:56] Speaker 1: ab yahan par class ke andar hum in teen cheezon ko cover karenge. Aur ye dono cheezein aapke liye as a homework problem hongi last mein.
+[138:01] Speaker 1: is homework problem ka aapko solution mil raha hoga, to uski tension lene ki zaroorat nahi hai. But basically isko humein positively jakar solve karna hai kyunki ye bahut easy hone wala hai.
+[138:08] Speaker 1: matlab naya user add karna aur purane user ko delete karna, based upon their ID and using their password, woh kaafi easy hone wala hai. Usko already hum ek baar RESTful APIs ke andar dekh chuke hain.
+[138:16] Speaker 1: bas humein khud se baithkar us cheez ko ek baar implement karna hai taaki hamein thoda sa confidence aaye ki humne cheezein kari hain. Hum kya karenge?
+[138:22] Speaker 1: class ke andar abhi hum pehle ye teen cheezein implement karne wale hain. Aapko bhi ye teen cheezein saath ke saath implement karni hain.
+[138:26] Speaker 1: tabhi humein homework problem ki taraf badhna hai. Ab in teeno ko implement karna, kyunki hum first time database ko saath mein use kar rahe hain RESTful APIs ke, toh thoda sa tricky lag sakta hai.
+[138:33] Speaker 1: Isliye agar thoda sa extra time lag jata hai is chapter ko complete karne ke liye, usme bilkul tension nahi leni. Par dheere-dheere apne concepts ko acche se seekhte hue chalna hai.
+[138:40] Speaker 1: Kyunki RESTful APIs aisi hain jinko hum aage aur likhne wale hain. Kyunki hamare backend me ab jab bhi hum APIs likhenge, hum isi tarike se routing ko create karne wale hain.
+[138:46] Speaker 1: To jitni us cheez ki hume khud practice hogi, utna acche se un cheezon ko hum implement kar payenge apne khud ke projects ke upar. Saath ke sath, kyunki MySQL important database hai, to uski bhi acche se practice ho jaye.
+[138:54] Speaker 1: To isliye ye wala part, jo hum implementation wala part karenge, using routing, isko bade dhyan se dekhna hai. Dheere-dheere har ek cheez bahut simple hai.
+[139:00] Speaker 1: Bas kyunki humne kaafi saari different jo cheezein seekhi hain, jaise humne templating seekhi hai, humne UUID seekha hai ya humne Express seekha hai ya humne kuch aur seekha hai Node ke andar. In saare tukdon ko hum ek jagah bas jodkar dekhne wale hain.
+[139:11] Speaker 1: Isliye wo thoda sa complex lag sakta hai. Baaki jo bhi concepts hum use karenge, saare ke saare concept hum already padh chuke hain.
+[139:16] Speaker 1: Bas un concepts ko milakar hum kuch cheez create karne ki, kuch cheez build karne ki soch rahe hain. To sabse pehle badhte hain towards setting up our enter, to hamare liye Express aa jayega.
+[140:54] Speaker 1: Iske alawa.
+
+
+
+
+
+
+
+
+
+
+# Express App User Management Demo
+
+## Summary
+### Flow Summary
+Express + MySQL app mein teen routes bane: home (total 103 users count), /user (sabhi users ki table) aur password-check ke saath PATCH se username update. Homework: add user aur delete user routes.
+
+### Express setup aur home route
+- npm i express aur uuid install kiya; uuid homework mein naya user add karne ke liye chahiye hoga
+    - Server app.listen se port 8080 par, nodemon index.js se run
+- Home route (GET /) par SELECT count(\*) FROM user query: 103 users (100 faker se, 3 manually)
+- res.send mein sirf number bhejne par Express use status code samajhta hai (deprecated warning)
+- EJS install karke app.set view engine aur views path.join se set; home.ejs count aur "Join us today" button dikhata hai
+    - app.use ki jagah app.set likhna tha, isi se error aaya tha
+
+### Show users route (/user)
+- SELECT \* FROM user se saare users laaye, result showusers.ejs ko users naam se pass kiya
+- EJS for loop se table mein id, email, username dikhaye; table par 1 pixel solid black border
+- connection.end ki zarurat nahi, response jaane par connection khud end ho jaata hai
+
+### Edit aur update route
+- Har row mein "edit username" button, GET /user/:id/edit par edit.ejs form kholta hai (id se user fetch)
+    - Form mein existing username aur password input
+- Form se PATCH request ke liye method-override (?\_method=PATCH) aur express.urlencoded use kiya
+- PATCH /user/:id ke teen steps: id se user dhoondo, form password match karo, UPDATE query se username badlo
+    - Galat password par "wrong password" response; success par res.redirect /user
+- Test: pat74 ko Shraddha aur theo61 ko apnacollege\_delta kiya; changes server restart ke baad bhi persist
+    - JS array ke changes ke ulat, database changes permanent hain
+
+### Homework aur aage ka plan
+- Dono homework ka solution GitHub par Delta project mein pushed hai; pehle khud try karna hai
+- SQL ke basic commands tak hi cover hoga (joins, views, triggers nahi); aage focus MongoDB par, final project ke liye
+
+### Agle Kadam
+- (Students) POST /user route banao jo naya user database mein add kare (uuid ke saath)
+- (Students) DELETE /user/:id route banao: sahi email aur password par user delete karke all users page par redirect
+- (Students) Database mein row add/delete karke check karo ki home page ka count change hota hai
+
+## Transcript
+[00:09] Speaker 1: to sabse pehle badhte hain towards setting of our express. Express app ko set karne ke liye kuch-kuch basic cheezein humein install karni padengi. Sabse pehle to humein express ko install karna padega, to yahan ise clear kar lete hain.
+[00:18] Speaker 1: hum likhenge npm i express, enter. To hamare liye express aa jayega.
+[00:24] Speaker 1: iske alawa hum kar lete hain npm i uuid. uuid se kya hoga?
+[00:28] Speaker 1: uuid ko hum naya data jab add karenge, naya user jab add karenge, jo aapki homework problem hai, uske liye humein is cheez ko install karna padega. To ise hum pehle se hi ek baar install karke rakh lete hain, taaki baad mein koi problems na aayein.
+[00:37] Speaker 1: ab app ko create karne ke liye index.js mein upar jaakar hum express ko kar lenge require. const express = require("express") const app = express.
+[00:51] Speaker 1: and ab apne server ko kar denge start, bilkul last mein jaakar. app.listen port number is 8080 console.log server is listening to port 8080.
+[01:08] Speaker 1: ise kar lete hain save. And ab apna ek simple hum route banayenge app.get.
+[01:12] Speaker 1: to jab home par, yaani root par get request aayegi, to us case mein hum print karwane wale hain requestResponse. To hum simply kya karenge, response mein hum send kar denge app is working.
+[01:22] Speaker 1: ya isko keh dete hain welcome to homepage.
+[01:28] Speaker 1: ise kar lete hain save. To ye hamari bahut basic cheezein ho gayin, jinko humne express ke andar setup kar liya.
+[01:33] Speaker 1: ye jo itna part hai, kyunki already hum fake data ko to insert kar hi chuke hain, to dobaara se humein aur data ko to insert karna nahi hai. To abhi ke liye ye jo itna part hai, ise hum kar sakte hain delete, yaani apne code se hata sakte hain.
+[01:42] Speaker 1: aur ye jo hamara try catch block hai, connection end, ise abhi ke liye kar lete hain comment out. Comment out karke ise last mein hum rakh sakte hain, kyunki ise baad mein hum use karne wale hain.
+[01:51] Speaker 1: isko kar lete hain save. To abhi tak hamara code kaisa dikh raha hai?
+[01:54] Speaker 1: abhi tak ye saari cheezein humne require ki hain, connection form kiya hai, getRandomUser naam ka humne ek function banaya hua hai, getRandomUser. And humne do routes create kiye hain.
+[02:01] Speaker 1: ab apne code ko run karne ke liye neeche clear kar lete hain. Aur is baar hum execute karenge using node mon. index.js.
+[02:11] Speaker 1: Enter. Server hamara start ho gaya.
+[02:13] Speaker 1: Server is listening to port 8080. Ab hum chahein toh yahan par localhost:8080 par jayenge.
+[02:19] Speaker 1: Aur yahan par aa gaya welcome to homepage. Yaani hamara server acche se work kar raha hai.
+[02:22] Speaker 1: Ab hum aa jaate hain apne sabse pehle route par, jo hone wala hai getSlash. getSlash ka kaam hoga to fetch and show total number of users on our app.
+[02:31] Speaker 1: Yaani hamari jo app hum bana rahe hain, delta app, uske andar total abhi kitne users hain. Hamari jo user table hai, uske andar total number of users kitne hain, woh hamein print karwana hai.
+[02:38] Speaker 1: Ab user table ke andar total kitne users hain, woh print karwane ke liye hamari kaun si SQL query hogi? Hamari SQL query hone wali hai SELECT * COUNT OF ALL FROM user.
+[02:51] Speaker 1: Is SQL query ko run karke hum saare ke saare users ka count find out kar sakte hain, ki hamari user table ke andar kitne users hain. Uske liye hum COUNT wala aggregate function use karenge aur uske andar pass kar denge ALL.
+[03:00] Speaker 1: Ek baar verify bhi kar lete hain ki kaise hoga ye. Yahan par SQL ke andar jaate hain.
+[03:04] Speaker 1: SELECT COUNT OF ALL FROM user. Enter.
+[03:09] Speaker 1: Toh kitna count aaya? Abhi hamare paas 103 users hain.
+[03:13] Speaker 1: Inmein se 100 users humne fake karke through enter karaye the. Aur 3 users ko shuruat mein humne manually hi enter kiya tha.
+[03:19] Speaker 1: Toh hamein pata hai ye command toh hamari work karne wali hai. Toh is command ko yahan se kar sakte hain copy.
+[03:23] Speaker 1: Aur use yahan par hum kar lenge paste. Kahan par karenge?
+[03:25] Speaker 1: Hamara jo get request aa rahi hai, hamare route par. Toh yahan ek variable bana lenge let q = this.
+[03:31] Speaker 1: And iske andar back text ke andar, ya chahein toh double quotes rakh sakte hain, single quotes rakh sakte hain. Hum apni ye command paste karenge.
+[03:36] Speaker 1: hum chahein toh is semicolon ko skip kar sakte hain, ise laga denge last mein. Toh ye hamari command hai, jo humein return karke degi total number of users in the user table.
+[03:43] Speaker 1: Ab is query ko humein run karna hai database ke andar. Kahan par run karna hai?
+[03:46] Speaker 1: Apne isi route ke andar. Kyunki is query ko ab humein bahar kisi function ke andar run nahi karna.
+[03:50] Speaker 1: Hum chahte hain jab slash ke upar get request aaye, tabhi hamari total number of users print ho jayenge.
+[11:40] Speaker 1: Total number of users kaise print honge? Pehle humne query bana li.
+[11:43] Speaker 1: Uske baad hum apna jo try catch block hai, ise kar lete hain copy. And ise yahan par kar lete hain paste.
+[11:49] Speaker 1: Aur ise kar dete hain uncomment. Save.
+[11:52] Speaker 1: Toh yahan kya hua? Try ke andar hum kya karenge?
+[11:54] Speaker 1: connection.query ke andar q ko send karenge apni is query ko. Aur iske saath humein kuch bhi extra data send karne ki zarurat nahi hai.
+[12:00] Speaker 1: Toh use hata dete hain. Hamare paas error aa sakta hai ya hamare paas result aayega.
+[12:03] Speaker 1: Agar error aayega toh throw kar denge error ko. Nahi toh console.log karwa denge result ko.
+[12:07] Speaker 1: console.log karwane ke saath-saath, kyunki abhi hum app.get ke andar hain, hum ek response send kar sakte hain. Response mein hum apna pura ka pura result send kar denge.
+[12:14] Speaker 1: Aur agar error catch hota hai, toh us case mein hum error ko print karwa denge. Aur us case mein agar humein result phir bhi send karna hai, toh result mein hum send kar sakte hain SUM ERROR IN DATABASE.
+[12:24] Speaker 1: Aur ye result.send("welcome to homepage") ise hum hata lete hain. Ise kar lete hain save.
+[12:28] Speaker 1: Toh basically ye hamara pura ka pura ek route create ho gaya hai, slash, jiske andar humne query banayi hai. connection.query se hum us query ko run kar rahe hain.
+[12:35] Speaker 1: run karne par error aa jata hai, toh hum error ko throw kar denge, print karva denge, aur return kar denge SUM ERROR WITH DATABASE. Agar koi error nahi aata, result aa jata hai, toh us case mein hum result ko print karva denge aur response ke andar send kar denge apna result.
+[12:46] Speaker 1: toh is RES ko confuse nahi karna ki ye result hai kya. Ye RES kya hai?
+[12:49] Speaker 1: ye hamara response hai. kiska response hai?
+[12:51] Speaker 1: hamare call back ka. Jabki ye result hamare database ka result hai.
+[12:54] Speaker 1: ab dobara se ek baar request bhejne ki koshish karte hain. Refresh.
+[12:56] Speaker 1: toh is baar kya hua? Result mein hamare paas ye print hokar aaya.
+[12:59] Speaker 1: yahan aa jaate hain. Toh result hamare paas print ho gaya hai.
+[13:01] Speaker 1: result mein kya hai? Result mein ek array hai.
+[13:03] Speaker 1: array ke andar hamare paas object hai. Object ke andar kya hai?
+[13:05] Speaker 1: object ke andar count hai saari ki saari cheezon ka, jiski value hai hamare paas 103. Ab agar humein ye value 103 chahiye, toh is value 103 ko hum kaise bhej sakte hain?
+[13:13] Speaker 1: hum result ke liye uska zeroth element use karenge abhi ke liye. Save kar lete hain.
+[13:18] Speaker 1: and refresh karenge. Zeroth element aa gaya.
+[13:20] Speaker 1: yaani hamare paas hamari table aa gayi. Thoda sa ise zoom in kar lete hain.
+[13:22] Speaker 1: ye hamare paas hamari object aa gayi. Is object ke andar ye hamari key hai aur ye hamari value hai.
+[13:26] Speaker 1: is key ki value ko yahan se kar lete hain copy. Copy kiya.
+[13:29] Speaker 1: to yaha par agar object ke andar ye result of zero kya hai? Ye result of zero ek object hai.
+[13:33] Speaker 1: object ke andar agar hame kisi specific key ki value chahiye, to do tareeqe hote hain. Ya to hum likh sakte hain dot key, ya phir hum likh sakte hain square brackets aur uske andar apni key ki value.
+[13:40] Speaker 1: to yaha humne paste kar di ki ye hamari key hai. Is key ke liye hame hamari value chahiye.
+[13:44] Speaker 1: to ye same cheez yaha se copy kar lete hain. Yaha par paste kar lete hain.
+[13:47] Speaker 1: save. To wahi same result hamara print hoga.
+[13:48] Speaker 1: wahi same result hamara response mein jayega. Dobara se refresh karenge.
+[13:52] Speaker 1: is baar hamare paas aa gaya hai deprecated response dot send status. Achha, yaha par ise status ki tarah liya ja raha hai.
+[13:58] Speaker 1: yaani hamare answer mein to 103 humne access kar liya. Par 103 ko jo response dot send hai, uske andar kyuki hum koi number bhej rahe hain, to wo use kya kar raha hai?
+[14:05] Speaker 1: status ki tarah interpret kar raha hai. To abhi ke liye response dot send ke andar hum send karenge.
+[14:10] Speaker 1: success. Is tareeqe se kuch likh dete hain.
+[14:12] Speaker 1: refresh karenge. To hamare paas success print hokar aa gaya.
+[14:14] Speaker 1: aur answer mein kya aaya? Answer mein aaya 103.
+[14:16] Speaker 1: 103 yaani total number of kitne users hain hamare user table ke andar? 103 ke equal.
+[14:20] Speaker 1: abhi ke liye to humne us number ko nikala hai. Ab hum templating ki form se aisa home page banayenge, jiske upar actually hum us number ko print kar paaye.
+[14:30] Speaker 1: to ek baar apne server ko stop karenge. Aur templating ke liye humein install karna padega EJS ko.
+[14:34] Speaker 1:  तो npm iejs। इंस्टॉल करने के बाद हम ऊपर लिख सकते हैं app.set viewengine।
+[14:42] Speaker 1:  तो सबसे पहले बढ़ते हैं। viewengine हमारे पास होने वाला है हमारे लिए।
+[14:47] Speaker 1: EJS. And saath ke saath app.use.
+[14:50] Speaker 1: hamare views ke liye hum yahan par likhenge path.join__directory_name and hamara slash views. yaani hamein ek views naam ka folder banana padega aur is path ko hamein require karna padega.
+[15:05] Speaker 1: path ko require karne ke liye hum likh sakte hain const path = requirePath. save.
+[15:11] Speaker 1: Aur yahan par matlab SQL class is folder ke andar hum ek naya folder banayenge.
+[15:25] Speaker 1: Views naam se. Is views ke andar hum apne saare templates ko create kar sakte hain.
+[15:29] Speaker 1: Templates ke andar sabse pehla template hum create karenge home.ejs ke naam se. Ye hamara home page hone wala hai.
+[15:35] Speaker 1: Home page ke andar ise likh dete hain home page. Hum apna count print karwayenge.
+[15:39] Speaker 1: h2 keh dete hain. The total number of users are.
+[15:46] Speaker 1: Yahan par hamara kuch bhi count yaani x count aane wala hai. And kyunki hum ek app bana rahe hain jo total number of users dikha rahi hai, to hum chahein to yahan par ek button bhi create kar sakte hain.
+[15:54] Speaker 1: Join us today. Is tareeqe ka kuch button to make the user join our app.
+[15:58] Speaker 1: Ise kar lete hain save. index.js ke andar jayenge.
+[16:00] Speaker 1: index.js ke andar response mein ab hum render karne wale hain kya? Apna home.ejs.
+[16:07] Speaker 1: Yaani ye hamara get wala route tha. Iske andar render kar denge home.ejs ko.
+[16:11] Speaker 1: achha, yaha par nahi render karna. hume tab render karna hai jab successful ho jaye.
+[16:15] Speaker 1: to success ki jagah home.ejs. nahi to kya response send karenge?
+[16:18] Speaker 1: nahi to error send kar denge. isko kar lete hain save.
+[16:20] Speaker 1: dobara se apne server ko karenge start.
+[16:25] Speaker 1: error ko resolve karne ke liye yaha app.use ki jagah hame app.set karna tha. infact ise kar lete hain vaapis ek baar clear and restart.
+[16:33] Speaker 1: restart karenge aur jayenge. to yaha par agar hum local host slash par jaye to hamare paas aaya hai the total number of users are x and ek button aaya hai which says join us today.
+[16:42] Speaker 1: ab yaha is x ki jagah hame ek count print karwana hai jo hai 103. is count ko print karwane ke liye hum apne function ke andar aa jaate hain.
+[16:49] Speaker 1: aur yaha par ye jo hamara result aa raha hai, ise console.log karne ki bajay ise ek variable ke andar store kara lenge jo hai count variable. count is equal to this value.
+[16:57] Speaker 1: aur is count ko hum pass kar denge apne ejs ko. to ye ho gaya count.
+[17:00] Speaker 1: home.ejs ke andar hamare paas count aayega. to x ki jagah use hum print karwa lenge.
+[17:04] Speaker 1: less than percentage equal to. yaha par hamara count print ho jayega.
+[17:08] Speaker 1: equal percentage greater than. to is tarike se hum ejs ke andar apne different different variables ko use karte hain.
+[17:13] Speaker 1: index.js ke andar aa jaenge. dobara se refresh karenge.
+[17:16] Speaker 1: to is baar count aa gaya hai 103. ek cheez aapko yaha par karni hai ki pause karke ek baar apne database ke andar ya to directly aap work bench se kar sakte hain.
+[17:23] Speaker 1: nahi to yaha se sql se kar sakte hain ki ya to ek nayi row add karke dekhni hai ya koi puraani row delete karke dekhni hai. aur fir dekhna hai ki kya ye count change hota hai.
+[17:30] Speaker 1: Kyonki ye count dynamically database se aa raha hai. Har baar jab hum refresh kar rahe hain, har baar database ko ek nayi call lag rahi hai.
+[17:35] Speaker 1: Database hamein count return karke de raha hai. Wo count server side se client side mein aa raha hai.
+[17:39] Speaker 1: Ek baar ise chahein to hum visualize bhi kar sakte hain. Actually kya ho raha hai ki hum client side se ye hamara client hai.
+[17:45] Speaker 1: Client request bhej raha hai ki mujhe count chahiye. Client hamare server ko request bhej raha hai.
+[17:49] Speaker 1: Server kya kar raha hai? Server database ko request bhej raha hai.
+[17:51] Speaker 1: Server ne database ko request bheji. Database ne server ko result bheja.
+[17:55] Speaker 1: Result mein wo count bhej raha hai which is 103. Ab ye jo count server ke paas aa gaya, ise wapas ejs ke andar embed karke server client ko wapas bhej raha hai.
+[18:03] Speaker 1: To is tarike se hamara pura process kaam kar raha hai. Aur ye jo saari cheezein poochne wala process hai, ye itni jaldi ho raha hai ki agar hum refresh kar rahe hain, to yahan par baar-baar baar-baar database hamein 103 hi value return karke de raha hai.
+[18:13] Speaker 1: To ye sara process dynamically run kar raha hai. Yaani database se poochha ja raha hai.
+[18:16] Speaker 1: Database server ko bata raha hai. Server client ko bata raha hai.
+[18:18] Speaker 1: To is tarike se hamari applications kaam karti hain. Is tarike se development kaam karta hai.
+[19:34] Speaker 1: Jab hum server side, jab hum client side, jab hum database ke sath deal kar rahe hain, to. To ye to ho gaya first example jiske andar humne apne express app ko setup kiya.
+[19:41] Speaker 1: Uske upar humne apna ek get route create kiya jiska kaam hai to fetch the total number of users on our app. dot ejs.
+[19:49] Speaker 1: Iske andar ab aa jaate hain apne second route ki taraf jiske andar hum slash users ko setup karenge jiska kaam hoga to fetch and show all the users aur users ke andar hamein user ID chahiye.
+[20:06] Speaker 1: Hamein username chahiye. Hamein email chahiye of all users.
+[20:09] Speaker 1: Isko karne ke liye ek naya route pehle create karte hain. Hum chahein toh is part ko yahan se hata sakte hain.
+[20:16] Speaker 1: Ab ek cheez yahan par aapne notice ki hogi ki humne kahin bhi connection dot end nahi likha. Connection dot end ki ab zaroorat nahi hai kyunki connection automatically yahan par tabhi end ho jaega jab hamara app.get wala function complete ho jaega ya yahan se response chala jaega.
+[20:26] Speaker 1: Toh woh hamein yahan par likhne ki zaroorat nahi hai.
+[20:39] Speaker 1: Ek aur route hum create karenge. Ise hum keh dete hain this was our home page ya home route.
+[20:47] Speaker 1: Ab create karne wale hain hum apna get ya show users wala route. Toh ise hum apna show route keh dete hain.
+[20:54] Speaker 1: Uske liye hum karenge app.get on slash user. Iske liye hamare paas request aayega.
+[21:00] Speaker 1: Response jaega. End yahan se kar lete hain response dot send.
+[21:05] Speaker 1: Success. Abhi ke liye ek baar test kar lete hain.
+[21:08] Speaker 1: Wapas se aa jaate hain apne terminal par. Server hamara already run kar raha hai.
+[21:11] Speaker 1: Ab hum request bhejenge to slash user. Enter kiya.
+[21:14] Speaker 1: Toh success hamare paas aa gaya. Yaani ye abhi working hai.
+[21:16] Speaker 1: Ab isko sirf working nahi rakhna.
+[21:46] Speaker 1: Hamein kya karna hai? Data sara ka sara lekar aana hai apni user table se.
+[21:49] Speaker 1: Toh uske liye query kya hogi? Uske liye hamari query hone wali hai select all from user.
+[21:55] Speaker 1: Yaani hamein sara ka sara data lekar aana hai user ki form mein. Toh ise hum back ticks ke andar likh lete hain taaki saare same format mein aa jaye kyunki pehle bhi back ticks mein likha hai.
+[22:03] Speaker 1: To ise bhi hum apne back text ke andar likh sakte hain. To is query ko hame run karna hai.
+[22:07] Speaker 1: Isse jo bhi result aayega use hum apne ek template ke andar daalenge aur phir user ko send kar denge. To sabse pehle to is query ko run karwa kar dekhte hain ki kya result aata hai hamare paas.
+[22:15] Speaker 1: Upar wali ye wala jo try catch block hai ise hum kar sakte hain copy. And ise kar lenge yahan par paste.
+[22:20] Speaker 1:  iske andar connection dot query ke andar hum apni query send karenge. agar koi error aa jata hai to us error ko print karva denge aur result mein send karva denge response mein some error in database.
+[22:29] Speaker 1: Agar successful ho jata hai to successful ke case mein simply hum console dot log karwane wale hain apne result ko. And response ke andar abhi hum send karenge apna result.
+[22:38] Speaker 1: Sirf itna part karne wale hain ki result ko print bhi karwa denge. Use response ke andar send bhi kar denge.
+[22:43] Speaker 1: Ise kar lete hain save. Ab slash users ko request bhejenge.
+[22:46] Speaker 1: Request aayi to ye bahut sare users ka data ek sath hamare paas aa gaya. Ise agar minimize karein to hum notice karenge ye sare ke sare users ka data hamare paas aaya hai.
+[22:54] Speaker 1: Jisme ye ek array hai. Array ke andar individual ye hamari ID hai.
+[22:58] Speaker 1: Ye hamara username hai. Hamara email hai.
+[23:00] Speaker 1: Hamare liye password hai. Uske baad yahan se second hamari object start ho rahi hai.
+[23:03] Speaker 1: To is tarike se 103 users ka data hamare paas aa gaya. Ye sara ka sara data yahan bhi aakar print ho gaya terminal mein.
+[23:09] Speaker 1: Expand karenge to hame dikh raha hai. Ye ek user ka data hai jisme ID, username, email and password hai.
+[23:13] Speaker 1: Ye dusre user ka data hai. Ye hamare paas teesre users ka data hai.
+[23:15] Speaker 1: Ye hamare paas fourth user ka data hai. Is tarike se total 103 users ka data hamare paas aaya hai.
+[23:19] Speaker 1: Ab is saare data ko is tarike se toh hum send nahi kar sakte kyunki readable nahi hai. Samajh hi nahi aayega kisi ko ki hum kya send karne ki koshish kar rahe hain.
+[23:25] Speaker 1: Toh is data ko achhe se send karne ke liye hum kya karenge? Hum ek naya template banayenge EJS.
+[23:30] Speaker 1: Toh ise kar dete hain yahan par minimize. End ye console dot log wali line ko kar dete hain comment out.
+[23:36] Speaker 1: Isko kar lete hain save. Hum views ke andar jayenge aur yahan par kar denge users dot EJS ya fir ise hum kar sakte hain show dot show users dot EJS.
+[23:47] Speaker 1: Iske andar sare ke sare data ko hum print karwane wale hain. All users data ko display karne ke liye yaani is data ko display karne ke liye hum ek table format ko use karenge.
+[23:57] Speaker 1: Toh table format ke andar hum ek table create kar lete hain. Aur is table ke andar sabse pahle toh hum kuch-kuch columns create karenge.
+[24:04] Speaker 1: Toh table row. Table row ke andar hamare paas ek table head aa jayega ki hum ID ko print karwa rahe hain.
+[24:08] Speaker 1: Ek table head ke andar hum apne user ya apne email ko print karwa rahe hain. Aur ek table head ke andar hum apne username ko print karwa rahe hain.
+[24:20] Speaker 1: Ek baar sample data ko print karwate hain yahan par. Table data ke andar ID hamare paas aa sakti hai 1 2 3 end yahan par email hamare paas aa sakta hai abcd@gmail.com aur table data mein username hamare paas aa sakta hai lets call it ABC.
+[24:35] Speaker 1: Toh ye sample table humne create ki hai. home.js ko cross kar dete hain.
+[24:38] Speaker 1: index.js ke andar aate hain. Yahan par abhi hum results ko show nahi karenge kyunki bahut saare results hain aur infact isko send bhi nahi karenge.
+[24:45] Speaker 1: Hum kya karenge? Result mein render karne wale hain apna show users dot EJS.
+[24:51] Speaker 1: Isko kar lete hain save and refresh. Toh hamare paas ye table aa rahi hai.
+[24:55] Speaker 1: Is table ki boundary dikhane ke liye ek style tag create kar lete hain. Style apni table ko, apne table head ko ya ise table row kah lete hain aur apne table data ko hum ek border dene wale hain one pixel solid black ka.
+[25:08] Speaker 1: Kar lete hain save and refresh. Toh ye hamare paas hamari table aa gayi.
+[25:12] Speaker 1: Iske andar hum chahein toh table head kar sakte hain. Save and refresh.
+[25:16] Speaker 1: Toh yeh hamare paas hamari table aa gayi. Toh isi tabular format mein hum chahte hain ki hamara sara ka sara data display ho jaye.
+[25:21] Speaker 1: Is table format mein data karane ke liye sabse pehle toh index dot js se hamare paas yeh jo result hai is result ko hume bhejna padega apne show users dot ejs ko.
+[25:51] Speaker 1: Toh ise bhejne ke liye hum ek object ki form mein bhej sakte hain. Toh yeh hamari result aa gayi ya ise result ki jagah hum apne users keh lete hain.
+[25:59] Speaker 1: Yahan result ki jagah isko naam de denge users. Toh yeh jo hamare sare ke sare users hain inhein hum send kar denge to show users.
+[26:06] Speaker 1: Show users ke andar yeh user hamare paas aayenge. Toh hume yahan par ek for loop likhna padega.
+[26:10] Speaker 1: For user of users. Har user ke liye hume kya karna hai?
+[26:14] Speaker 1: Ek row create karni hai. Har row ke andar sabse pehle hum apne user ki id ko print karwayenge.
+[26:20] Speaker 1: Uske baad hum apne user ke liye mujhe bahut neend aa rahi hai.
+[26:28] Speaker 1: ki email ko print karane wale hain. And uske baad user ke liye hum uske user name ko print karane wale hain.
+[26:32] Speaker 1: Toh yeh teen data ko hume print karwana hai for all the user inside the users array. Toh yahan par apni sahi formatting add kar lete hain ejs ke liye.
+[26:43] Speaker 1: I hope ki abhi tak hum sabko ejs ka jo syntax hai woh yaad ho gaya hoga ki kis tarike se hum for likhte hain. Kis tarike se agar ejs ke andar templates ke andar hume kuch bhi print karwana hai toh us cheez ko hum print karane hain.
+[26:53] Speaker 1: Toh is tarike se hamare format ready ho gaya ki kaise users ke upar loop run karna hai aur har kisi user ki hume inffashion print karwani hai. Ise cut kar lete hain yahan se and ise kar denge hum yahan par paste.
+[27:02] Speaker 1: Basically table head toh create ho jayenge but uske baad hamare users ka data kuch is tarike se hamare paas aa raha hoga. Kar lete hain save and now refresh.
+[27:09] Speaker 1: Aur is baar kya hua? Is baar sare ke sare users ka data ek table format mein hamare paas aa gaya.
+[27:13] Speaker 1: hum notice karenge ye total 103 users bhi hain. Jinme se ye in teeno ko humne initially add kiya tha apne database ke andar manually and baaki sabko hamari faker ne generate kiya tha.
+[27:22] Speaker 1: to hamare do routes create ho gaye hain. Sabse pehla route jo hamara home route hai jiske andar hamare total number of users aate hain.
+[27:27] Speaker 1: kuch is tarike se. And second route hai hamara slash users ka jisme hum sare users ke data ko check check kar sakte hain.
+[27:33] Speaker 1: dekh sakte hain kaun se user ka kya email ID hai aur unka kya username hai.
+[27:40] Speaker 1: ab hum baat karne wale hum pehle apne next step ke bare me jo hoga, hamara edit route ko hum do steps ke andar create karenge.
+[44:33] Speaker 1: sabse pehle, hamari jo bhi table bani hai, is table ke andar har ek row ke samne hum ek edit ka option denge taki har row ko edit karne ka option hamari user ke paas available ho.
+[46:27] Speaker 1: ab jaise hi us edit option ke upar click hoga, to hamare user ke paas ek form chala jayega.
+[50:13] Speaker 1: is form me user username ko edit kar sakta hai aur ye form khulega based upon the ID. Aur jo username edit ho raha hai, wo sirf tabhi ho paega jab hamare form ke andar sahi password enter hone wala hai.
+[50:21] Speaker 1: to sabse pehle to iske basic first step ko complete karte hain. Yaani apni table me yaha par har ek row ke samne hum sabse pehle ek button create karte hain.
+[50:28] Speaker 1: to button create karne ke liye humein show users par jana padega. Aur yaha par ye jo hum ek row create kar rahe the har ek individual user ke liye, is row ke andar hum ek form create karenge jiske andar ek individual button aayega jis button pe likha hoga edit username.
+[50:41] Speaker 1: aur is form se hamara ek get request chali jayegi. Kiske paas jayegi get request?
+[50:46] Speaker 1: action me hum likh denge slash user slash yaha par hamari ID hone wali hai slash edit. Is route par hamari ek request jayegi aur us request ke baad hamare paas ek edit ka form aayega.
+[51:06] Speaker 1: ab yaha par ID ki jagah humein kya dalna hai? Yaha par ID ki jagah hum input karne wale hain user ID ko.
+[51:11] Speaker 1: to is route par hum request bhejenge. Get request hum bhejne wale hain aur button ke upar likha hai edit user.
+[51:15] Speaker 1: ise kar lete hain save. And yaha pe kar lenge refresh.
+[51:18] Speaker 1: refresh kiya to sare ye jo buttons hain upar ki taraf aa gaye. In buttons ko hame upar ki taraf nahi dalna.
+[51:22] Speaker 1: to is form ko ek table data wale tag ke andar hum enter kar dete hain. Save kiya.
+[51:28] Speaker 1: and now refresh. To har ek user ki information ke aage edit username aa gaya.
+[51:32] Speaker 1: is tarike se edit username par click karenge. To abhi ke liye request is link ke upar ja rahi hai.
+[51:35] Speaker 1: slash users slash id slash edit. Is request ko accept karne ke liye hum apna ek get route create karenge.
+[51:41] Speaker 1: index.js ke andar aa jaate hain. Aur yaha par ise hum keh dete hain apna edit route.
+[51:49] Speaker 1: edit route ke liye hum karenge app.get. Request hamari aa rahi hai slash user slash id slash edit par.
+[51:56] Speaker 1: yaha par hai request and response. Aur jaise hi yaha par request aayegi, hum ek edit form jo hai use render kar denge.
+[52:04] Speaker 1: edit form ko render karne se pehle hume use views me create karna padega. Isko keh dete hain edit.ejs.
+[52:09] Speaker 1: edit.ejs ke andar hum likh denge edit username. Ise kar lete hain save.
+[52:16] Speaker 1: and yaha par likh dete hain H2 you are about to edit this user. Abhi ke liye sirf itna part likhenge.
+[52:23] Speaker 1: index.js ke andar response dot render me kar denge edit dot ejs. Ise kar lete hain save.
+[52:30] Speaker 1: sath ke sath hum chahe to apni id ko bhi nikaal sakte hain. ID kaise nikaalenge?
+[52:33] Speaker 1: ID ko yaha se nikaalne ke liye hum likhenge let id equals request dot params. Ise kar lete hain save.
+[52:41] Speaker 1: and yaha par refresh. Jaise hi edit username par click karenge, hamare paas hamara edit form aakar khul jaayega.
+[52:47] Speaker 1: abhi ye sirf edit ka page hai. Form exactly hai nahi.
+[52:49] Speaker 1: Request kahan par gayi hai? Request gayi hai user slash id slash edit ke paas.
+[52:52] Speaker 1: Ab sabse pehle toh hamare paas hamari id aa gayi hai user ki. Hum is id ko verify bhi kar sakte hain.
+[52:57] Speaker 1: Console dot log apni id ko print karwakar save and refresh edit username. Toh ye hamari id aa gayi jo hamare paas aa rahi hai.
+[53:05] Speaker 1: Ab is id ke basis par sabse pehle toh hame user ki information find out karni hai taaki uska purana username aur baaki saari cheezein hamare paas aa sake. Agar hamare paas id hai aur is id ke basis par hame apne database ke andar us user ko search karna hai.
+[53:15] Speaker 1: Toh uske liye kya query honi chahiye? Uske liye hamari query hogi let query equal to select all from user where id equals yahan par back ticks use kar lete hain.
+[53:29] Speaker 1: Aur id ki kya value hone wali hai? Id ki value hone wali hai hamare is id variable ke andar.
+[53:33] Speaker 1: Toh basically is query ko hame run karna hai. Is query mein kya hai?
+[53:36] Speaker 1: Select all from user where id is equal to this id. Yaani is id ke basis par jo bhi user match kar raha hai, us user ki information hame lekar aani hai.
+[53:44] Speaker 1: Ab yahan par ek cheez zaroor notice karni hai ki ye jo id humne print karwayi hai, ye string nahi hai. Yahan par kya dikh raha hai?
+[53:49] Speaker 1: Yahan par double quotes nahi dikh rahe. Toh quotes nahi hai, toh alag se hame yahan par apne quotes add karne padenge query ke andar.
+[53:54] Speaker 1: Yaani jab bhi hum koi string ki value pass kar rahe hain is tarike se, toh usme alag se quotes hame add karne padenge. Nahi toh sirf uski value jayegi.
+[54:00] Speaker 1: Woh as a string nahi ja rahi hogi. Toh ye hamari query ho gayi.
+[54:04] Speaker 1: Console dot log id yahan se hata lete hain. Aur yahan par hum paste karne wale hain apni saari information.
+[54:09] Speaker 1: Toh jaise hi hamare paas query aa gayi, waise hi hum kya karenge? Hum try karenge ki apni query ko run karein.
+[54:14] Speaker 1: query ko run karenge to hamare paas kuch result aayega. Agar koi result aaya, to us result ko hum yaha par pass karne wale hain.
+[54:19] Speaker 1: to yaha response dot render karenge hum apne edit dot ejs ko. Ise kar lete hain save.
+[54:26] Speaker 1: ab yaha par sabse pehle to jo bhi result aayega query ko run karne ke baad, us result ko hum print karwane wale hain. Save kar liya.
+[54:31] Speaker 1: and wapas se chale jaate hain back. Refresh kiya.
+[54:34] Speaker 1: edit username. Yaha par result mein kya aaya?
+[54:36] Speaker 1: result mein hamare paas username aa gaya. Kaun se user ka name aaya?
+[54:39] Speaker 1: ye hamari id thi. Us id ke basis par database mein search hua.
+[54:41] Speaker 1: to ye username tha. Ye email tha.
+[54:43] Speaker 1: ye hamare paas password tha. Dobara se test kar lete hain.
+[54:45] Speaker 1: refresh kiya. Let's suppose hum is pat 74 wali id par click kar rahe hain.
+[54:48] Speaker 1: edit username. To yaha par kya print hokar aaya?
+[54:51] Speaker 1: pat 74 username hai. Ye hamari email hai.
+[54:53] Speaker 1: ye hamara password hai aur ye uski id hai. To matlab data to hamare paas successfully aa raha hai.
+[54:57] Speaker 1: kaise aa raha hai? Ek array ke andar aa raha hai.
+[54:58] Speaker 1: to hame array ka zeroth part chahiye. Array of result of zero.
+[55:02] Speaker 1: aur is result of zero ko hum ek variable ke andar store karva lenge. Let user equal to result of zero.
+[55:07] Speaker 1: yaani result of zero matlab ye wali jo object hai, isko hum naam de denge user. Aur is object ko edit dot ejs ke andar hum pass kar denge.
+[55:13] Speaker 1: is user ko humne edit dot ejs ke andar pass kar diya. To ab user ki information ye jo template hai, ye use kar payega.
+[55:18] Speaker 1: kaise use kar payega? Hum ise information dikha denge.
+[55:21] Speaker 1: You are about to edit this user. And hum yahan par user ki email ko print karwa denge ki is user ki email ye hai.
+[55:27] Speaker 1: and ise ab hum edit karne wale hain. Edit karne ke liye ek form create kar lete hain.
+[55:31] Speaker 1: form ke andar sabse pahle to hum let's suppose we give it a text area jiska naam hone wala hai username aur username ke andar hum already existing value rakhenge user dot username aur hum ek button de denge is form ko edit. Sath ke sath edit karne ke liye hum apne user se uska password poochhenge.
+[55:51] Speaker 1: to input type is equal to password. Agar galat password enter hua, to phir client hamare username ko edit nahi kar payega.
+[55:56] Speaker 1: to ye ho gaya password. Ise ek name de dete hain.
+[55:59] Speaker 1: which is going to be password. Aur yahan likh dete hain placeholder mein enter password.
+[56:04] Speaker 1: ise kar lete hain save. Itna part save ho gaya.
+[56:06] Speaker 1: to abhi ke liye kya hua? Back jayenge.
+[56:08] Speaker 1: refresh karenge. Let's suppose hum pat 74 ko edit karna chahte hain.
+[56:12] Speaker 1: is par edit ne username par click kiya. Edit username pe click kiya.
+[56:15] Speaker 1: to hame dikha raha hai You are about to edit this user. Is username ki hamare paas email aa gayi.
+[56:18] Speaker 1: Iski email aa gayi hai. To ab yahan par hum kya kar sakte hain?
+[56:21] Speaker 1: Iska username edit kar sakte hain. Ab username edit karna chahte hain.
+[56:24] Speaker 1: Let's suppose we want to edit to Shraddha. Shraddha edit karne ke liye humein is user ka password chahiye hoga.
+[56:28] Speaker 1: To is user ka password kaise lekar aaye? User ke password ke liye hum yahan par apne doosre terminal par jayenge aur MySQL ke andar se iske password par jayenge aur copy kar lenge.
+[56:37] Speaker 1: Password ko kaise copy karenge? Select all from user where email equals aur yahan par hum apni email paste karne wale hain.
+[56:47] Speaker 1: To ye hamare paas pat 74 aa gaya aur pat 74 ka password ye hai. Is password ko yahan se kar lete hain hum copy.
+[56:52] Speaker 1: Jaise hi copy kiya, yahan par paste kiya, edit par click kiya, to hamare paas request chali gayi. Yaani hamare server ke paas kya gayi?
+[56:58] Speaker 1: Automatically GET request gayi hai jiske paas naya username ja raha hai. Sabhi acche ho?
+[57:04] Speaker 1: Theek hai.
+[57:09] Speaker 1: Aur password ki value ja rahi hai. Par humein to GET request nahi bhejni.
+[57:11] Speaker 1: Edit karne ke liye humein kaun si request bhejni hai? Edit karne ke liye humein PATCH request bhejni hai.
+[57:16] Speaker 1: Humne pehle bhi baat ki hai edit ke liye do requests ja sakti hain. Ek hoti hai hamari PUT request jisse poora ka poora user edit hota hai aur ek hoti hai PATCH request jisme user ka kuch part edit hota hai.
+[57:23] Speaker 1: To hum sirf username edit kar rahe hain isliye PATCH request karenge. Aur jaise hi form submit hoga form ke submit hote hi kahan par jayegi request?
+[57:29] Speaker 1: Slash user slash id ke paas. PATCH request yahan par jayegi aur jaise hi ye request yahan par gayi to hum kya karenge?
+[57:34] Speaker 1: Yahan par username ko edit kar denge apne database ke andar. To ye jo edit hoga ye bahar kahin nahi hoga.
+[57:38] Speaker 1: ye hamare actual database ke andar hum update kar rahe honge username ki value ko. to isko karne ke liye sabse pehle to form ke andar hum kya karenge?
+[57:44] Speaker 1: terminal apna change kar lete hain. form ke andar se hum request ka jo method hai use to rakhne wale hain.
+[57:50] Speaker 1: hum get rakh sakte hain. hum post rakh sakte hain.
+[57:52] Speaker 1: aur action hum kya rakhenge? action hum rakhenge slash user slash id.
+[57:57] Speaker 1: id ko print karwane ke liye hum likh sakte hain equal to user dot id. par kyunki form ke andar se hum apni patch request ko nahi bhej sakte.
+[58:05] Speaker 1: isliye hum apna wo ek purana package use karenge jiska naam hota tha method override. method override package ko humne already use kar rakha hai.
+[58:10] Speaker 1: to pehle to hame use install karna padega. npm i method override.
+[58:16] Speaker 1: to method override install ho gaya hai. to yahan par ye jo link hai action ke andar form ke andar hum define karenge question mark aur yahan par underscore method equal to hum patch request bhejne wale hain.
+[58:27] Speaker 1: to ye yahan se clear ho gaya. isko kar lete hain save.
+[58:29] Speaker 1: index dot js ke andar ab hum ek naya route create karenge. isko keh dete hain edit ya update route.
+[58:35] Speaker 1: update route. update kyun?
+[58:36] Speaker 1: kyunki hum actually database ke andar update karne wale hain. edit route se to sirf edit karne ka form mil raha tha.
+[58:41] Speaker 1: update route se database ke andar actual update hoga. to ise accept karne ke liye yahan likh dete hain app dot patch.
+[58:47] Speaker 1: app dot patch ke paas request aayegi user colon id ke paas. and yahan par hogi hamari request response cycle.
+[58:53] Speaker 1: abhi ke liye yahan se response dot send kar dete hain. updated lets call it updated.
+[59:00] Speaker 1: Ab method override ko use karne ke liye hum yahan par use require kar lete hain. const methodOverride = require('method-override').
+[59:14] Speaker 1: Ise kar lete hain save. And saath mein likh dete hain app.use(methodOverride('_method')).
+[59:22] Speaker 1: Ise kar lete hain save. Also kyunki hum patch request bhej rahe hain aur uske saath mein hamare paas form ka data aayega.
+[59:26] Speaker 1: To us form ke data ko parse karne ke liye hum likhenge app.use(express.urlencoded({extended: true})). Isko kar lete hain save taaki hum apne form ke data ko parse kar paayen.
+[59:39] Speaker 1: Waapis se aa jaate hain yahan par apne update route ke paas. Hum bas check karna chahte hain kya hamari update ye jo patch request successful hui ya nahi hui.
+[59:46] Speaker 1: To dobaara se apne server ko kar sakte hain restart. Ye hamara server ho gaya restart.
+[59:51] Speaker 1: Yahan se ek baar apne password ko kar lete hain copy. Abhi waise password ko humne check nahi kiya ki password hamara sahi enter kar rahe hain.
+[59:57] Speaker 1: Hum galat enter kar rahe hain. Abhi wo wali cheez humne nahi ki hai.
+[59:59] Speaker 1:  refresh kar rahe hain. dobara se pat 74 par jaenge.
+[60:01] Speaker 1:  edit kar denge. hum chahte hain pat 74 ka username edit hokar ho jaye shraddha.
+[60:05] Speaker 1: Yahan par enter kar denge password aur humne click kiya edit pe. Edit pe click kiya to updated hamare paas print hokar aa gaya.
+[60:10] Speaker 1: But actual updated abhi hua nahi hai. Sirf print hokar aaya hai kyunki response mein update database mein humne kuch kiya hi nahi.
+[60:15] Speaker 1: Sirf response bheja hai. Ab humein yahan par kuch actions lene ki zaroorat hai.
+[60:23] Speaker 1: Sabse pehle to hum apni is ID ko nikaalenge. ID ko nikaalne ke liye ye saara ka saara hum chahe to itne wala part yahan par copy kar sakte hain.
+[60:31] Speaker 1: Infact ye neeche wala part bhi hum yahan par copy kar sakte hain. Ek baar discuss kar lete hain ki hum karna kya cha rahe hain.
+[60:36] Speaker 1: hamare paas kya roti?
+[60:43] Speaker 1: humne jo form submit kiya hai wahan se kuch-kuch information aa rahi hai. Form se hamare paas ek password aa raha hai jo form ke andar tha.
+[60:49] Speaker 1: hamare paas ek naya username aa raha hai. This is my new username.
+[60:53] Speaker 1: uske alawa hamare paas hamare user ki id aa rahi hai. Ye saari information hamare paas aa gayi hai.
+[60:56] Speaker 1: ab hame kya karna hai? Apne database ke andar yaani jo hamare database ke andar user ki information hai, us user ki information mein jo id hai, jo hamara username hai, jo hamara password hai, wo sab hame pata hai.
+[61:07] Speaker 1: kaise pata hai? Kyunki hum ek query run kar sakte hain based upon this id.
+[61:10] Speaker 1: kyunki ye id to hamesha same hi hogi. ID hum kabhi user se nahi maang rahe.
+[61:12] Speaker 1: hamara system hi id provide kar raha hai. To ye jo id aati hai yahan par, ye to hamesha correct hi hogi.
+[61:17] Speaker 1: is id ke basis par hum database ke andar sahi wala jo user hai, use pehle to search karenge. To sabse pehla to kaam hoga search user based on id.
+[61:27] Speaker 1: vaise ye kaam hum already kar chuke hain apne edit route ke andar. Edit route ke andar ye jo select all from user id equal to id.
+[61:33] Speaker 1: bas yahi kaam hame karna hai. Isi query ko hame run karna hai.
+[61:35] Speaker 1: ab lets suppose ye wala user hame mil gaya. Ab ye wala user hame mil gaya.
+[61:38] Speaker 1: to uske baad ek second step hame karna hai ki sabse pehle to check kar lo ki agar edit karwana cha rahe hain hum username ko to kya humne sahi password enter kiya tha? Matlab database ke andar jo password hai aur user ne ye jo password enter kiya hai, dono same hone chahiye.
+[61:50] Speaker 1: agar dono same nahi hai, to us case mein hum koi updation nahi karenge. To dono same hai, to update karenge.
+[61:54] Speaker 1: to sabse second kaam jo hamara check hoga, check if form password form ke andar se jo password hamare paas aaya hai, is equal to hamare user ka password. Agar same nahi hai, to us case mein hum response mein send kar denge.
+[62:06] Speaker 1: password was incorrect aur same hai, toh us case mein hum update kar denge. Aur update karne ke liye kya karenge?
+[62:10] Speaker 1: update karne ke liye simply hum ek update query run karenge. Kis username ki value ko hata do aur wahan par ye naya username hame database ke andar enter karna hai.
+[62:17] Speaker 1: toh yahan par third step mein hoga update username. Toh in teen steps mein hum apni query ko perform karenge.
+[62:26] Speaker 1: sabse pehle is step ko perform karte hain. Is step ke liye update database route ke andar hamare paas hamari id hai.
+[62:31] Speaker 1: id ke basis par humne user ko find out kar liya hai. User hamare paas yahan par aa jayega.
+[62:34] Speaker 1: lets suppose abhi tak hamare paas yahan par user hai aur response ke andar hum simply send kar rahe hain apni user object ko.
+[62:54] Speaker 1: sirf itna kaam ho raha hai abhi response ke andar. Nahi toh hamare paas agar koi error aa gaya toh use hum print karwa denge.
+[63:00] Speaker 1: wapas se aa jaate hain terminal mein. And back karte hain yahan par.
+[63:05] Speaker 1: apna password hum yahan se copy kar lete hain. Ye hum pat 74 hain.
+[63:10] Speaker 1: edit karenge username ko. Username ko edit karke hum chahte hain ki woh ho jaye change to Shraddha.
+[63:14] Speaker 1: password enter kar diya. Edit kar diya.
+[63:16] Speaker 1: jaise hi edit kiya, hamare paas ek object print hokar aa gayi. And ye object ka username kya hai?
+[63:20] Speaker 1: pat 74. Email bhi wahi same hai.
+[63:21] Speaker 1: password bhi same hai. Matlab user hamara successfully hum database ke andar dhoond pa rahe hain.
+[63:25] Speaker 1: to ye to ho gaya hamara step one complete. Ab aa jaate hain step two par ki hamein check karna hai ki jo hamara form ka password hai, kya wo hamare database ke password ke saath match karta hai.
+[63:33] Speaker 1: to uske liye hame form ka password pehle nikalna padega. Form ka password kaise nikal sakte hain?
+[63:36] Speaker 1: request ki body se. Let request ki body me do cheezein hongi.
+[63:39] Speaker 1: ek hoga hamara password aur ek hoga ya ise hum keh dete hain form password. To hame clear ho jayega ki ye form ka password hai aur dusra hoga new username.
+[63:48] Speaker 1: par inke naam jo hain wo alag hone wale hain. To ise hum keh dete hain ki hamara jo password aayega form se use hum keh denge form ka password.
+[63:57] Speaker 1: form password and jo bhi hamara username aayega use hum keh denge new username. To request dot body se ye dono values hamare paas aa rahi hongi.
+[64:04] Speaker 1: jo bhi password aayega request ki body se yaani form se use hum form password keh denge. Jo username aayega use hum new username keh denge.
+[64:10] Speaker 1: ab yahan par jaise hi hamare paas database ke andar query successful ho gayi. Result aa gaya.
+[64:14] Speaker 1: yahan par hum search kar sakte hain ki kya hamare form ka jo password hai is not equal to hamare user ka password. Agar dono not equal to hain to hum response ke andar send kar denge password ya yahan hum send kar dete hain wrong password.
+[64:31] Speaker 1: ise kar lete hain save. Back karenge.
+[64:33] Speaker 1: back karenge. Refresh kar lenge.
+[64:35] Speaker 1: pat 74 par jayenge. Edit karenge username.
+[64:37] Speaker 1: ise keh dete hain Shraddha. Yahan par hum apna password enter karenge.
+[64:40] Speaker 1: edit kiya. Edit kiya to wrong password nahi aaya kyunki humne sahi password enter kiya tha.
+[64:44] Speaker 1: par is baar agar main galat password enter kar dun. Maan lete hain humne abc likh diya.
+[64:47] Speaker 1: edit kiya to is baar wo detect karega ki maine wrong password ko enter kiya hai. To ab ye authentication ek tarike se yahan par beech me ek layer lag gayi hai ki haan aap galat password enter nahi kar sakte.
+[64:55] Speaker 1: galat password send nahi kar sakte. Nahi to hum username ko edit nahi kar payenge.
+[64:59] Speaker 1: par agar humne sahi password enter kiya to step one, step two to complete ho gaye. To fir hum update kar denge apne username ko.
+[65:04] Speaker 1: username ko kaise update karenge? Else ke andar aa jaate hain aur else ke andar update karne ke liye hum ek aur query ko run karenge.
+[65:11] Speaker 1: to yahan par hum ek aur query ko run karenge. Matlab hum nested queries ko use karne wale hain.
+[65:15] Speaker 1: ek to ho gayi ye hamari pehli query jisse hum select kar rahe hain user ko based upon the id. Isi ke andar agar successful ho jaati hai to hum second query run karenge update karne ke liye.
+[68:52] Speaker 1: mere paas nahi.
+[81:26] Speaker 1: to yahan ek second query bana lete hain. Let q2 = second query kya hone wali hai?
+[81:31] Speaker 1: hame update karna hai username ki value ko. To hum update karne ke liye likh sakte hain SELECT, ya SELECT ki jagah hum ise likhenge UPDATE user set username = yahan hum back text laga lete hain.
+[81:43] Speaker 1: username ko set kar denge to new username where id = id. Itne part ko kar lete hain copy.
+[81:52] Speaker 1: to is query ko hame run karna hai. Ye query kya hai?
+[81:54] Speaker 1: ye query hai username ko actually update karne ke liye. To agar id ki value hamari id ki value ke equal hai, to us case me hame username ki value ko set karna hai to new username.
+[82:02] Speaker 1: aur is new username ke samne hum apne quotes laga denge, kyuki quotes automatically SQL add nahi karega, hame khud se add karne padenge. To is query ko hame run karna hai.
+[82:09] Speaker 1: is query ko run karne ke liye dobara se hum karenge connection.query. Connection.query ke andar hum apni q2 ko pass kar denge.
+[82:16] Speaker 1: aur iske sath hamara ek callback aayega error and result ke sath. Aur is callback ke andar agar error aata hai, to fir hum throw kar denge apne error ko.
+[82:25] Speaker 1: aur result aata hai, to result ke liye hum sabse pehle to us result ko send kar denge as a response. To response.send() hamara jo bhi result aa raha hai, us result ko send kar dete hain.
+[82:35] Speaker 1: save kar liya. To abhi thoda sa ye hamara bada function hoga, but isko samajhna bahut aasan hai.
+[82:39] Speaker 1: app.patchRequest() aayi. patchRequest() aayi, usme hamari id aayi, password aaya, naya username aaya.
+[82:44] Speaker 1: to hum sabse pahle to user ki information database se nikalenge. Fir check karenge form ka jo password hai, wo kya database ke password ke sath match kar raha hai.
+[82:49] Speaker 1: agar match kar raha hai, to theek hai, nahi to hum wrong password send kar denge. Agar match kar gaya, to koi problem nahi, fir to simply username update kar do.
+[82:55] Speaker 1: to humne update karne ki query ko run kiya hai. Usme error aaya, to error throw kar do.
+[82:58] Speaker 1: achha response aaya, result aaya, to us result ko hum wapas se send kar denge. To wapas se aa jate hain yahan par.
+[83:03] Speaker 1: pad74 par hi jayenge, edit karenge username. Hum chahte hain username edit ho jaye to shraddha.
+[83:07] Speaker 1: and yahan par hum apna password enter kar denge. edit kar diya.
+[83:10] Speaker 1: ye hame galat password dikha raha hai, to ek baar sahi password apna copy kar lete hain yahan se. This is my correct password.
+[83:17] Speaker 1: ise kar lete hain paste. edit.
+[83:19] Speaker 1: edit kiya, to ye hamara result hamare paas print hokar aa gaya. And ab hum /users par jayen.
+[83:23] Speaker 1: Let's go to /user. /user par gaye, to is baar pad74 nahi hai, pad74 wali email hai, par uske samne mera username likhkar aa raha hai shraddha. Matlab successfully humne pad74 ko update kar diya, is username ko humne update kar diya.
+[83:35] Speaker 1: is tarike se agar hame kisi aur username ka bhi password pata ho, to har koi jakar apna username jakar update kar sakta hai. Hum chahte hain agar directly updation ke baad ye message print hone ki bajay hum isi page par aa jayen.
+[83:43] Speaker 1: to is page par aane ke liye hum kar sakte hain response.redirect. redirect kar denge to /user.
+[83:50] Speaker 1: isko kar lete hain save. Wapas se aa jate hain.
+[83:53] Speaker 1: sev kiya. Is baar let's suppose hum od35 ya is par aa jaate hain theo61.
+[83:58] Speaker 1: theo61 ka username edit karna chahte hain. To ek baar uski information nikaal lete hain.
+[84:02] Speaker 1: hum chahte hain jahaan par username = theo61 ho. To theo61 ka ye password hai hamare paas.
+[84:10] Speaker 1:  इसको कर देते हैं edit username। edit username किया, तो theo61 की जगह हम चाहते हैं यहाँ पर आ जाए अपनाcollege_delta।
+[84:17] Speaker 1:  और इसमें हमने एंटर कर दिया पासवर्ड। जैसे ही एडिट किया, अब यहाँ पर आएंगे तो theo61 की जगह अपनाcollege_delta है।
+[84:23] Speaker 1: end chahe hum server ko stop kar dein, chahe hum server ko restart kar lein, ye change permanent hai. Yaani ye hamare array ke changes ki tarah nahi hai.
+[84:29] Speaker 1: jab humne quora wale post wala poora page banaya tha, jab humne wahaan par apni restful API banayi thi, to uske baad ek baar humne server ko band kar diya aur dobaara se restart kiya, to kya hota tha? To hamara array dobaara se apni initial stage pe aa jaata hai.
+[84:39] Speaker 1: kyunki array to Javascript ka part hai, but jo changes database ke andar ho gaye, wo changes permanent hain. Yaani agar hum yahaan par aakar apne server ko stop karein.
+[84:47] Speaker 1: Let's suppose if I stop my server. Maine stop kar diya, maine dobaara se restart kiya server ko.
+[84:52] Speaker 1: ab yahaan par agar maine refresh kiya, to refresh karne ke baad bhi mere jo username maine edit kiye the, wo saare ke saare changes mere database ke andar persist karte hain. Kyunki change ek baar database ke andar ho gaya, matlab wo change final ho gaya.
+[85:02] Speaker 1: to is tareeqe se jitni bhi SQL commands humne seekhi hain, un sabko hum apni API ki form mein database ke upar run kar sakte hain, execute kar sakte hain. End is tareeqe se Node.js aur database saath mein interact karte hain.
+[85:12] Speaker 1: to ye humne bada sa code yahaan par likh liya hai. Ho sakta hai is code ko samajhne mein hamein thoda sa extra time lage, to tension ki baat nahi hai, wo extra time dena hai.
+[85:19] Speaker 1: thode se bade-bade functions hain, to inko dheere-dheere parts mein hamein samajhna hai. End itna part humne kar liya hai, itna part karna zaroori hai, but uske saath mein homework problem ko bhi karna zaroori hai.
+[85:27] Speaker 1: yaani ab hamare paas do homework tasks hain, jinhe humein complete karna hai. Sabse pehla task hai ki jis tareeqe se humne restful API create ki hai, baaki saare kaam ke liye aapko ek path create karna hai to add a new user.
+[85:37] Speaker 1: ye path hone wala hai /user aur is par aapko bhejni hai ek post request. To app.post naam se aapko ek function banana padega, uske andar hamein ek naya user jo hai enter karna padega.
+[85:46] Speaker 1: bilkul waisa hi similar format use hoga jaise humne restful API wale chapter ke andar use kiya tha. And in dono parts ka solution bhi aapko diya hua hai.
+[85:53] Speaker 1: to already github ke upar jo hamara delta wala project hai, uske andar ye pura ka pura project already entered hai. Wahan par push kiya hua hai.
+[85:59] Speaker 1: to ek baar khud se homework karne ka try karna hai, uske baad jaakar apne solution ko dekhna hai. To ek to ye first cheez hai.
+[86:03] Speaker 1: second cheez mein hum delete karne ke liye ek route create karenge. Isko hum bolenge /user.
+[86:08] Speaker 1: and id yahan par hum bhejne wale hain apni ek delete request. Jaise humne patch request bheji hai.
+[86:13] Speaker 1: aur agar user sahi password aur email enter karega, dono hi sahi hone chahiye, email aur password, tabhi hamara jo user hai wo delete ho paega database se. To saari ki saari jo hamari table thi, jahan humne edit username diya tha, wo har kisi edit ke samne hum ek delete ka button bhi de sakte hain.
+[86:26] Speaker 1: jaise hi delete ke button pe click karenge, humse username ya user ka email and password pucha jayega. Humne sahi email and password enter kar diya, to us basis par phir wo user delete ho jayega.
+[86:35] Speaker 1: aur hum redirect kar jaenge hamare all users wale page par. To ye do routes ko aapko create karna hai, jis par post and delete request ko hum accept kar lenge.
+[86:41] Speaker 1: to I hope ki SQL ko karne mein hame maza aaya hoga. Iske sath mein ek kaafi important point ki aapne notice kiya hoga, SQL mein abhi humne sirf basic commands ko seekha hai.
+[86:48] Speaker 1: matlab SQL ke andar aur bhi kaafi saari cheezein hain jo seekhi ja sakti hain, jaise hamare joins hote hain, ya phir hamare views hote hain, ya phir triggers hote hain database ke andar. To bahut saari different different cheezein hain jinhe SQL ke andar hum seekh sakte hain.
+[86:58] Speaker 1: par delta ke andar hum utni important cheezein cover karenge jitni hamari development process ke liye inuf hain. Kyunki delta ke andar hum apne MERN stack ko cover karna chahte hain, na ki SQL ko.
+[87:06] Speaker 1: to hum itna hi SQL ke sath complete karenge. Abhi aap completely capable hain ki agar aapko apna koi project banana hai, jisme aap SQL ka apna koi database banana chahte hain, to aap usko bana sakte hain, usko use kar sakte hain, uske andar changes kar sakte hain.
+[87:16] Speaker 1: par hamara jo main focus rahega, wo hamare MongoDB database par rahega, jisko use karke hum apna final project build karne wale hain.

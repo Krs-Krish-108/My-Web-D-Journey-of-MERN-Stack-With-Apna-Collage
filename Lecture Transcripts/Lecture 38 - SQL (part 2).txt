@@ -1,0 +1,447 @@
+# Understanding SQL WHERE Clause
+
+## Summary
+### Flow Summary
+SQL clauses ka demo: WHERE, uske operators (arithmetic, comparison, logical, bitwise), LIMIT, ORDER BY aur aggregate functions (MAX, MIN, COUNT, AVG, SUM) ek Instagram-style user table par samjhaaye gaye.
+
+### WHERE Clause
+- Clauses conditions hoti hain jinse specific data milta hai; syntax: SELECT columns FROM table WHERE condition
+- followers >= 200 se 3 users aaye (200, 300, 200 followers); sirf NAME, FOLLOWERS bhi select kar sakte hain
+- AGE < 16 se 2 users aaye jinki age 14 aur 15 hai
+
+### Operators ke Types
+- Arithmetic: +, -, \*, /, modulo; WHERE age + 1 = 18 se Donald (age 17) mila
+- Comparison: =, not equal, >, >=, <, <=; Logical: AND, OR, NOT, IN, BETWEEN
+- Bitwise operators bits (0 aur 1) par kaam karte hain; computer data current hone ya na hone se 1/0 store karta hai
+- Bitwise AND (&) sirf 1 & 1 par 1 deta hai; bitwise OR (|) koi ek value 1 ho to 1 deta hai
+
+### Logical Operators Detail Mein
+- AND: age > 15 aur followers > 200 se sirf Casey (age 16, 300 followers) aaya; OR se 2 users aaye
+- BETWEEN 15 AND 17 se 3 users aaye, range ke andar wale values
+- IN list se match karta hai: email list se Bob aur Donald mile; non-matching value par error nahi aata
+- Do naye users (id 5, 6) insert kiye; age IN (14, 16) se 4 users, NOT IN se Bob aur Donald (15, 17)
+
+### LIMIT aur ORDER BY
+- LIMIT return hone wali rows par upper limit lagata hai, WHERE ke saath ya bina use ho sakta hai
+- ORDER BY column se sorting: ASC (badhte kram) ya DESC (ghatte kram); kuch na likho to default ascending
+
+### Aggregate Functions
+- Set of values par calculation karke single value return karte hain: AVG, MAX, MIN, COUNT, SUM
+- Results: MAX(followers) 10,000, MAX(age) 17, MIN(age) 14, AVG(age) 15.333, SUM(followers) 11,223
+- COUNT(age) WHERE age = 14 ka result two aaya
+
+## Transcript
+[00:15] Speaker 1: Ab next hum SQL ke andar padhne wale hain, clauses ke baare mein. Clauses hamari aisi kuch conditions hoti hain jinaki help se hum kuch specific data wapas lekar aa sakte hain. Jaise, for example, jab bhi hum SELECT ko use karte hain, SELECT ko use karke hum kisi bhi poore column ki information lekar aa sakte hain, ya phir kuch group of columns ki information lekar aa sakte hain.
+[00:30] Speaker 1: Lekin is information ke saath hum kuch clauses, kuch conditions ko add kar sakte hain, jisaki madad se hamare paas specific wo cheezein aa sakti hain jinaki hamein zaroorat ho. Aur sabse pehla clause jisako hum padhenge, ye hai hamara WHERE clause.
+[00:39] Speaker 1: WHERE clause ka kaam hota hai to define sum conditions. Jaise, for example, WHERE ko hum likhte hain normally, jaise hum SELECT likhte hain, yaani SELECT hamare columns ke naam, FROM phir hamari table ka naam, and usake baad WHERE likhkar hum apani condition ko define karte hain.
+[00:50] Speaker 1: Jaise, for example, hamare paas ye saara ka saara data available hai. Ab is data ke andar, ye jo Instagram ka data hai, hamein wo saare users ka naam chahiye jinake followers ka count 200 se zyaada hai, ya 200 ke equal hai.
+[01:00] Speaker 1: To in saare users se un logon ke naam hum kaise lekar aayein jinake followers 200 se zyaada hain? To usake liye hum WHERE ko use kar sakte hain.
+[01:06] Speaker 1: WHERE ko likhane ke liye hum likh sakte hain: SELECT ALL FROM hamari table ka naam, which is user, and yahaan par hum apani WHERE condition define karenge. WHERE condition, aur hum chahte hain followers ka jo count hai, that should be greater than 200.
+[01:18] Speaker 1: To yahaan hum likh denge followers greater than ya equal to 200. Ise ab kar lete hain SELECT, and execute.
+[01:25] Speaker 1: To yahaan par ye teen logon ka naam aaya, inki saari information aa gayi. Ye teeno hamare naam hain, aur in teeno ke jo followers ka count hai, that is 200, 300, and 200.
+[01:32] Speaker 1: Ab agar let's suppose hamein sirf un logon ke naam chahiye, saari ki saari information nahi chahiye, to usake liye hum yahaan par likh sakte hain NAME and FOLLOWERS. Isko kar lete hain SELECT, and execute.
+[01:43] Speaker 1: To ab ye naam aa gaye hamare paas, and ye hamare paas aa gaye hamare followers ka count. To is tareeqe se hamari WHERE condition kaam karti hai jab bhi hamein kuch specific condition define karni hai hamare data ke upar.
+[01:52] Speaker 1: Ab let's suppose hum aise users ki information find out karna chahte hain jinaki age less than 16 hai. To usake liye yahaan par hum apani condition ko change kar sakte hain: AGE less than 16.
+[02:00] Speaker 1: Isko kar lete hain SELECT, and execute. To ye hamare paas do log aa gaye.
+[02:04] Speaker 1: Inki age bhi hum saath mein print karwa lete hain, followers ki jagah is baar hum age ko print karwaenge. Execute, and ye hamare do users aa gaye hain jinaki age hai 14 and 15 ke equal.
+[02:13] Speaker 1: To hamari jo WHERE condition hoti hai, ismein abhi to humne dekha ki hum less than use kar sakte hain, hum greater than use kar sakte hain, hum greater than equal to use kar sakte hain. But is tareeqe ke bahut saare operators hote hain jo hum WHERE condition ke saath use kar sakte hain.
+[02:44] Speaker 1: Jaise, for example, hum jab bhi WHERE clause ko use karte hain, hamare paas bahut saare different different operators hote hain. Inmein se sabse pehle type ke operators hote hain hamare arithmetic operators.
+[02:52] Speaker 1: Arithmetic operators ke baare mein already humne Javascript padhte time seekha hua hai. Arithmetic ke andar hamare paas plus aa jata hai, minus aa jata hai, multiply aa jata hai, divide aa jata hai, aur hamare paas hamara modulo aa jata hai.
+[03:00] Speaker 1: Jaise, let's suppose hamein sirf woh saare users chahiye jo agle saal 18 years ke ho jayenge. Toh aise users ki abhi current age kya hogi?
+[03:06] Speaker 1: Abhi current age 17 hogi, ya fir ek saal baad 18 ho jayenge ka kehne ka matlab hai ki hum yahan par likh sakte hain WHERE age + 1 = 18. Isko kar lete hain SELECT, and execute.
+[03:16] Speaker 1: Toh hamare paas ek single user hai Donald naam se, jiski age abhi 17 hai, par agle saal yaani ek saal baad 18 ho jayegi. Toh is tareeqe se hum apne arithmetic operators ko bhi use kar sakte hain.
+[03:24] Speaker 1: Second type of operators jinhe hum WHERE ke saath use kar sakte hain, ye hote hain hamare comparison operators. Comparison operators jaise hamara equal to ho gaya, jisko humne abhi use kiya hai.
+[03:31] Speaker 1: Not equal to ho gaya, greater than, greater than equal to, less than, and less than equal to. Third type of operators hamare logical operators hote hain.
+[03:37] Speaker 1: Logical operators ko already humne Javascript ke andar thoda bahut seekha hua hai. Waise hi similar sa kaam inka SQL ke andar hota hai.
+[03:42] Speaker 1: Jaise logical operator mein hamare paas AND operator hota hai, OR hota hai, NOT, IN, BETWEEN. In sabko abhi hum dekhne wale hain.
+[03:47] Speaker 1: And inke saath-saath hamare paas bitwise operators bhi hote hain. Bitwise operators bit manipulation ke liye kaam aate hain.
+[03:52] Speaker 1: Jaise bits kehne ka kya matlab hai? Computers ke andar, yaani laptops ke andar, jo bhi hamari digital machines hoti hain, inke andar jo bhi data stored hota hai, woh zero aur one ki form mein stored hota hai.
+[04:00] Speaker 1: Yaani jo hum normal numbers likhte hain, jaise 105 ho gaya, ya 316 ho gaya, ya agar humne koi string bhi likhi hai, hello. Agar humne koi let keyword se, let's suppose, koi ek string define ki hai, message is equal to hello.
+[04:11] Speaker 1: Toh memory ke andar, computer ki memory ke andar, jab ye string jaakar store hogi, ya ye number jaakar store hoga, toh woh exactly is tareeqe se characters ki form mein nahi hota. Kyunki computers ko character samajh hi nahi aate.
+[04:21] Speaker 1: Computer, kyunki ek electronic machine hai, toh use sirf electronic signals samajh mein aate hain. Electronic signal kehne ka matlab hai ki hamari jo machine hai, uske andar current ja raha hai, ya uske andar current nahi ja raha.
+[04:29] Speaker 1: Agar machine current detect karti hai, toh uska matlab hai abhi usne 1 state ko detect kiya hai. Aur agar machine ko lag raha hai ki abhi yahan par koi current nahi hai, toh uska matlab hai usne state 0 ko detect kiya hai.
+[04:42] Speaker 1: Toh hamare jo standard computers hote hain, hamare jo laptops hote hain, unke andar do hi states hoti hain jo woh detect kar sakte hain: ek zero, ek one. Aur zero aur one ko hi hum bits keh dete hain.
+[04:50] Speaker 1: to sara ka sara data bits ki form mein stored hota hai. Ab lets suppose hamare paas koi hamara database hai, jis database ke andar hamare paas columns hain x and y.
+[04:57] Speaker 1: ab in x, y ke andar koi bit value hamare paas stored hai. Ho sakta hai x ke andar zero stored ho, y ke andar one stored ho, ya is tarike se koi bhi ek single bit inke andar stored hai.
+[05:04] Speaker 1: to inke upar hum apne bit wise operations ko perform kar sakte hain. Bit wise operations ka result kaise aata hai?
+[05:08] Speaker 1: uske liye ek choti si hum table bana lete hain, jismein x hoga, jismein y hoga, aur jismein result hoga. Sabse pehla operation jiski hum baat karenge, ye hai hamara bit wise and.
+[05:15] Speaker 1: agar hamare paas x hai, aur x and y humne kar diya. Ek cheez notice karni hai, humne and nahi likha.
+[05:20] Speaker 1: ye wala jo a and and karke hum completely English mein likhte hain, ye hamara logical operator hota hai. Jabki hum sirf and ka symbol likhte hain, yaani ampersand likhte hain.
+[05:27] Speaker 1: ye hamara bit wise and hota hai. Ye sirf SQL ke andar nahi hota.
+[05:30] Speaker 1: yahi similar cheez humein Java jaisi language mein, ya C++ jaisi language ke andar bhi dekhne ko milti hai. To yahan par x and y hamare paas ho gaya.
+[05:37] Speaker 1: to agar x ki value zero hai, aur y ki value bhi zero hai, to x and y ka result hamare paas hamesha zero aayega. Agar x ki value zero hai, aur y ki value one hai, to bhi hamare paas result zero aayega.
+[05:45] Speaker 1: kyunki zero and one hamesha zero hote hain. And tab humein one deta hai jab dono values one hon.
+[05:50] Speaker 1: aise hi agar x ki value one hai, y ki value zero hai, to bhi hamare paas zero aayega. Par x ki value one aur y ki value one hai, to hamare paas is case mein one aayega.
+[05:56] Speaker 1: to is tarike se hamara and operator kaam karta hai. Uske sath-sath hamare paas bit wise or operator bhi hota hai.
+[06:01] Speaker 1: bit wise or kehne ka matlab hai ki agar humne likh diya x pipe y, ye jo hamara seedha danda hota hai, isko hum pipe kehte hain. Yaani jo hamari key hai, uska naam pipe hota hai.
+[06:08] Speaker 1: ek single si line aapko dikh rahi hogi apne keyboard ke upar. Jab hum us line ko press karenge, to hamara or bit wise, bit wise or operator aata hai.
+[06:14] Speaker 1: iska agar result analyze karein, to iske result ke liye agar hamare paas x aur y ki value zero hogi, to result aayega zero. Agar x aur y mein se koi bhi ek value one ho gayi, to phir hamare paas result aayega one.
+[06:24] Speaker 1: yaani zero aur one ke liye result aayega one. One aur zero ke liye result aayega one.
+[06:27] Speaker 1: And one and one ke liye hamare paas result aayega one. To is tarike se hamara bit wise or operator kaam karta hai.
+[06:32] Speaker 1: To ye to ho gaye hamare saare standard operators. Ab isme se hum ek baar logical operators ko aur thoda sa detail me padhne waale hain.
+[06:39] Speaker 1: Ab hum padhne waale hain hamare aise logical operators jo kaafi zyada frequently use hote hain hamare WHERE clause ke sath. Inme se sabse pehla and operator.
+[06:45] Speaker 1: And operator check karta hai ki dono conditions sach hain ya nahi hain. Jaise for example, humein saare ke saare wo users chahiye jinki age to 15 plus ho, aur jinke followers ka count 200 plus ho.
+[06:56] Speaker 1: Yaani humein chahiye ki age 15 plus honi chahiye, yaani age greater than 15 honi chahiye. And hamare jo followers ka count hai, wo greater than 200 hona chahiye.
+[07:06] Speaker 1: Humein aise saare logon ki information chahiye jo dono conditions ko satisfy karte hon. Unka hum name print karwana chahte hain, unki age print karwana chahte hain, aur hum unke followers ko bhi print karwana chahte hain.
+[07:15] Speaker 1: Isko kar lete hain SELECT and execute. To is tarike se hamare paas ek single user hi hai aisa jiska naam hai Casey, age hai 16, and followers hain hamare paas 300 ke equal.
+[07:23] Speaker 1: To is tarike se hum based on multiple conditions apne data ko nikal kar la sakte hain apni table ke andar se. Dusra hamara logical operator hota hai hamara or operator.
+[07:30] Speaker 1: Or operator ka kaam hota hai to check for one of the conditions to be true. Yaani dono me se agar ek bhi condition true ho gayi, toh fir mujhe data laakar de do.
+[07:36] Speaker 1: Yaani yahan par and ki jagah agar hum or laga dein, toh us case me hamare paas kaun-kaun sa data aayega? Un saare logon ka data aayega jinki age toh shayad 15 plus hai, ya fir agar 15 plus nahi hai, toh followers hamare 200 plus zaroor hain.
+[07:45] Speaker 1: To isko kar lete hain SELECT and execute. To hamare paas do log aise aaye.
+[07:48] Speaker 1: In dono ki age 15 plus hai. Inme se first vyakti toh wo hai jiski age bhi 15 plus hai, aur followers bhi 300 hain, yaani 200 plus.
+[07:54] Speaker 1: Aur second vyakti ke followers 200 plus nahi hain, lekin unki age 15 plus hai. Toh isliye unka naam list ke andar aa gaya hai.
+[08:00] Speaker 1: To is tarike se hum or condition ko use karte hain. Jaise hamare paas or hota hai, waise hi hamare paas ek between wala logical operator hota hai.
+[08:06] Speaker 1: Between ka kaam hota hai ki ye kisi given range ke beech mein elements ko select karne ka kaam karta hai. Jaise lets suppose, mujhe sirf wahi logo ka data chahiye jinki age 15 saal se 16 saal ke beech.
+[09:44] Speaker 1: mein ya 15 saal se 17 saal ke beech mein hame sirf unhi users ka data chahiye. To aise users ka data lane ke liye hum likh sakte hain WHERE age and uske baad hum likhte hain apna between operator, aur phir hum apni range ko define karte hain.
+[09:54] Speaker 1: to hamari range hai 15 se 17, to between 15 and 17 hum likh sakte hain. Isko kar lenge SELECT and execute.
+[10:01] Speaker 1: to hamare paas teen logo ke naam aa gaye jinki age between 15 and 17 ke equal hai. Isi tarike se hamare paas ek aur operator hota hai hamara in operator.
+[10:08] Speaker 1: In operator kaise kaam karta hai? In operator ke andar, it is basically jaise operators humne arrays ke sath use kiye the javascript mein.
+[10:14] Speaker 1: yaani in operator ke sath hum ek list de dete hain. Jaise humne koi list de di.
+[10:17] Speaker 1: Is list mein humne do emails add kar diye ki mujhe to wahi user chahiye jo in emails ko use kar rahe hon ya in emails se registered hon mere system ke andar. Ho sakta hai ye dono emails hame pata chala hon ki illegal emails hain ya phir ye unauthorized emails hain.
+[10:28] Speaker 1: to aisi emails se related hame users ka data chahiye. To uske liye hum match kar sakte hain any value ko with our given list.
+[10:34] Speaker 1: to isko use karne ke liye hum ek list bana lete hain. To list banane ke liye hum lenge apne parenthesis.
+[10:38] Speaker 1: aur parenthesis ke andar hum kuch bhi daal sakte hain list mein. List mein lets suppose humne ye ek email dala.
+[10:43] Speaker 1: And ek humne ek second email dala, Bob wala. Hum chahe to koi aur email bhi daal sakte hain.
+[10:48] Speaker 1: abcd@gmail.com is tarike ka hum koi email daal sakte hain. Ab is list ko yahan se kar lete hain cut.
+[10:53] Speaker 1: Hum likhne wale hain SELECT name age followers from users WHERE hum chahte hain hamari email se match kare. To email in this list.
+[11:01] Speaker 1: yaani jahan par hamari jo bhi email hai user ki, wo is list ke andar aa rahi hai. Un users ke liye ye saari information lekar aa jao.
+[11:06] Speaker 1: Infact unke liye hum email ko bhi print karwa dete hain. Age ko yahan se hata dete hain.
+[11:11] Speaker 1: Isko kar lete hain SELECT and execute. Jaise hi execute kiya, hamare paas do logon ki information aa gayi.
+[11:16] Speaker 1: Ek Bob, ek Donald. And kyunki unki email yahan par match kar rahi hai.
+[11:19] Speaker 1: To agar list ke andar koi aisi email hai jo match nahi bhi kar rahi, to usse koi error nahi aayega. Matlab uske sath koi user match nahi kiya, to koi data hamare paas print hokar nahi aayega.
+[11:25] Speaker 1: Isi tarike se hum chahe to agar hamare paas hazaron logon ka data hai, to hum name ke basis par search kar sakte hain ki kitne logon ke paas us same naam ka username hai. Jaise for example, agar hum chahen to aur data apni table ke andar insert kar sakte hain.
+[11:36] Speaker 1: To yahan par insert into user karte hain aur saari information. Isko id paanch dete hain.
+[11:39] Speaker 1: Isko id six dete hain. Inko age dete hain hum 14 and ise de dete hain 16.
+[11:44] Speaker 1: Inke naam hum kuch bhi rakh sakte hain. If fara random naam hum rakhne wale hain.
+[11:49] Speaker 1: Ise keh dete hain fara@gmail.com. Yahan par hum followers following ka count de sakte hain.
+[11:55] Speaker 1: Lets suppose hamare 400 followers hain. Following ka count hum same rakh sakte hain.
+[11:58] Speaker 1: Aur isko keh dete hain 1000 and this is going to be lets suppose they have 10,000 followers. To is tarike se is data ko hum insert kar lete hain.
+[12:08] Speaker 1: SELECT and insert. To ye hamara data insert ho gaya.
+[12:12] Speaker 1: Ab hum chahte hain hum un sare users ki information lekar aayein jinki age ya to 14 hai ya phir 16 hai. Matlab aisa nahi hai ki hame range mein chahiye 14 se 16 wale sare chahiye.
+[12:23] Speaker 1: Hame chahiye wo sare ke sare users ki information jinki age ya to 14 hai ya phir 16 hai. To isko select kar lete hain.
+[12:28] Speaker 1: Isko execute kar lete hain. Yahan par infact hum age ko bhi print karwa dete hain.
+[12:32] Speaker 1: To hamari age yahan par aa jayegi. SELECT execute.
+[12:36] Speaker 1: To yahan par ye char users hamare paas aaye hain. Inmein se do users ki age hamare paas 14 hai.
+[12:40] Speaker 1: Do users ki age hamare paas 16 hai. To is tarike se hamara in kaam karta hai.
+[12:44] Speaker 1: In ke sath hamare paas ek aur operator hota hai, which is the logical not operator. Not operator ka kaam hota hai to negate the condition.
+[12:50] Speaker 1: Yaani kisi bhi condition ka agar hamein negative chahiye ho. Yaani jaise pehle humne check kiya tha ki log hamare is range ke andar hone chahiye ya is list ke andar hone chahiye.
+[12:56] Speaker 1: Ab hamein wo sare users ka data chahiye jo is range ke andar ya is list ke andar na ho. To uske liye hum apne not operator ko use karenge.
+[13:01] Speaker 1: Jaise for example, hamein un users ka data nahi chahiye jinaki age 14 ya 16 hai. Hamein baki sare users ka data chahiye.
+[13:06] Speaker 1: To hum yahan likh sakte hain not in. To bas not operator mujhe yahan add karna hai.
+[13:11] Speaker 1: Ise select kar lete hain. Execute karte hain.
+[13:12] Speaker 1: To is baar hamare paas do users aaye hain. Bob and Donald jinaki age 15 and 17 ke equal hai.
+[13:16] Speaker 1: To is tarike se hamare ye sare logical operators kaam karte hain SQL ke sath. Next hum baat karne wale hain apne limit clause ke bare mein.
+[13:24] Speaker 1: Limit clause condition add karta hai on the total number of rows return. Yaani it sets an upper limit on the number of tuples to be returned.
+[13:30] Speaker 1: Yaani ho sakta hai humne jo query likhi hai, humne select ke andar jo query likhi hai data ko lane ke liye, us data ke andar ho sakta hai 1000 rows return hokar aa rahi hon. Par hamein to sirf panch logon ki information chahiye.
+[13:39] Speaker 1: To us case ke liye hum limit clause ko use karte hain. Limit clause ko likhne ke liye hum apne normal select statement likhte hain.
+[13:44] Speaker 1: And uske baad hum limit likhte hain.
+[14:29] Speaker 1: Aur uske baad jo bhi number jo hamein upper limit mein set karna hai. Jaise lets suppose hamein un sare users ki information chahiye jinaki age 15 plus hai.
+[14:36] Speaker 1: To yaha hum likh sakte hain WHERE age greater than 15. Isko kar lete hain SELECT and execute.
+[14:43] Speaker 1: Execute kiya toh hamare paas teen users ki information aa gayi. Isko 15 ki jagah agar hum 14 kar de aur select kare, toh ab hamare paas char users ki information aa gayi.
+[14:52] Speaker 1: Lekin mujhe toh do hi users ki information chahiye thi. Toh uske liye hum yaha par ek limit add kar sakte hain.
+[14:56] Speaker 1: Hum chahe toh WHERE ke sath bhi wo limit add kar sakte hain. Yani mujhe kya limit chahiye?
+[15:00] Speaker 1: Mujhe limit chahiye do. Ki mujhe do hi users ki information chahiye.
+[15:02] Speaker 1: Toh isko execute karenge. Toh is baar hamare paas do hi users ki information aayi hai.
+[15:05] Speaker 1: Hum chahe toh bina WHERE clause ke bhi limit ko use kar sakte hain. Yani abhi hum sare users ki information lekar aa rahe hain.
+[15:10] Speaker 1: Par mujhe sare users ki information nahi chahiye. Mujhe toh sirf do ya mujhe toh sirf teen hi users ki information chahiye.
+[15:14] Speaker 1: Toh isko kar lete hain SELECT and execute. Toh hamare paas teen hi users ki information aayegi.
+[15:17] Speaker 1: Toh jab hum jitna data return hokar aa raha hai condition ke basis par, us par bhi limit lagana chahte hain, toh uske liye hum apne limit clause ko use kar sakte hain. Next hum baat karne wale hain apne ORDER BY clause ki.
+[15:28] Speaker 1: ORDER BY clause ka kaam hota hai kisi bhi cheez ko sort karna.
+[16:18] Speaker 1: Koi bhi agar hamare paas data hai, toh use hum chahe toh ascending order mein, chahe toh descending order mein sort kar sakte hain. Ascending order kahne ka matlab hai ki humne use increasing fashion ke andar store kiya hai.
+[16:27] Speaker 1: Sabse choti cheez pehle, sabse badi cheez baad mein. Aur descending kahne ka matlab hai ki humne use decreasing fashion mein show kiya hai.
+[16:32] Speaker 1: Yani sabse badi cheez pehle aur sabse choti cheez baad mein. Toh jab bhi hum apne data ko sort karna chahte hain, uske liye last mein, yani humne apne data ko select kar liya, fir last mein hum likh sakte hain ORDER BY and fir us column ka naam jiske upar hame sorting karni hai.
+[16:44] Speaker 1: Jiske upar hum ascending ya descending order ke upar sort karna chahte hain. Kyunki table ke andar toh bahut sara data ho sakta hai.
+[16:49] Speaker 1: jaise agar is table ka example le, to iske andar to bahut sara data ho sakta hai. ab hum chahte hain ki hamara jo users hain, vo kitne unke followers hain, uske basis par ascending order mein sort ho jaye.
+[16:59] Speaker 1: to us hisab se to ye vala user sabse pehle aayega. phir in ye dono 200-200 followers vale user aayenge.
+[17:05] Speaker 1: phir hamare paas ye hamara third user aayega.
+[18:49] Speaker 1: hame specify karna hota hai kaun se column ke basis par hum apni sorting karna chahte hain. aur phir hum decide kar sakte hain ki hum ascending order mein sorting karna chahte hain ya hum descending order mein sorting karna chahte hain.
+[18:56] Speaker 1: ascending ke liye hum asc likh sakte hain. descending ke liye hum desc likh sakte hain.
+[19:00] Speaker 1: to agar hame sare users ka data mil raha hai. ye hamare sare ke sare users hain.
+[19:04] Speaker 1: inki hame name chahiye. inki hame age chahiye.
+[19:06] Speaker 1: aur iske sath mein inka hame lets suppose followers ka count chahiye. ab hum chahte hain ki hum inhe order kar de based upon their followers count.
+[19:14] Speaker 1: to followers count ke basis par hum ascending order mein inhe sort karna chahte hain. to isko kar lete hain select and execute.
+[19:21] Speaker 1: to ye sare ke sare hamare users aa gaye. sabse pehle us user ka naam hai jiske sabse kam followers hain.
+[19:24] Speaker 1: phir 200, phir 200, phir 300, phir 400, phir 10,000. usi tarike se hum chahe to ise descending order mein bhi sort kar sakte hain.
+[19:31] Speaker 1: select karke execute. to ye descending order mein hamare sare ke sare users aa jayenge based upon the followers column.
+[19:36] Speaker 1: aur agar hum yahan par kuch bhi nahi likhte. lets suppose ek case aisa hai jisme humne yahan par kuch bhi nahi likha.
+[19:41] Speaker 1: to by default jo sorting hogi vo ascending order ke andar hi hoti hai. to is tarike se hum apne data ko sort kar sakte hain based upon the order by clause.
+[19:50] Speaker 1: next hum baat karne vale hain aggregate function ke bare mein. aggregate functions hamare SQL ke andar kuch predefined functions hote hain jo pehle se likhe hue hain.
+[19:56] Speaker 1: Ab aggregate functions perform a calculation on a set of values and return a single value. Yaani aisa function hai jo kya value return karega?
+[20:02] Speaker 1: Jo single value return karega last mein. Aur ye kuch calculation perform karte hain on sum set of values.
+[20:07] Speaker 1: Jaise ye hamare kaafi well known aggregate functions hain. Agar hum average function ko use karte hain.
+[20:11] Speaker 1: Toh average kya karega? Average bahut saari values lega aur unke badle mein hamein ek single average un saari ki saari cheezon ka average laakar de dega.
+[20:18] Speaker 1: Agar hum maximum aggregate function ko use karte hain toh ye saari ki saari values lega aur un values mein se hamein maximum nikaal ke dega. Agar hum minimum use karte hain toh saari values mein se ye hamein minimum nikaal ke dega.
+[20:27] Speaker 1: Count use karte hain toh agar humne ise 10 values bheji toh ye hamein unka count return karega yaani 10. Agar hum ise 20 values bhejte hain toh ye unka count return karega yaani 20.
+[20:35] Speaker 1: Yahin par agar hum sum aggregate function ko use karte hain toh ye hamein saari ki saari values ka sum return karke deta hai. Jaise iska ek example hai.
+[20:40] Speaker 1: Agar humne koi student naam ki table banai hui hai. Iss tareeqe se agar humne koi table banai hui hai student jiske andar humne student ka naam store karaya hai aur humne student ke marks store karaaye hain.
+[20:50] Speaker 1: Toh agar hamein chahiye ki saare ke saare marks mein se hamein maximum marks wala student chahiye. Toh uske liye hum likh sakte hain select maximum of marks from student.
+[20:57] Speaker 1: Toh student table ke andar jo marks wala column hoga us column ke andar se maximum value ko nikaalkar kaun lekar aayega? Nikaalkar ye mera aggregate function lekar aayega.
+[21:04] Speaker 1: Toh aggregate function ko hum likhte hain. Uska naam likhte hain.
+[21:06] Speaker 1: Phir parentheses likhte hain aur uske andar hum apne column ki value pass karte hain jiske upar hum wo function apply karna chahte hain. Jaise let's suppose hamein apni table mein se maximum followers nikaalne hain.
+[21:13] Speaker 1: Toh maximum followers nikaalne ke liye hum likh sakte hain select maximum of. Ise hum capital M ke saath bhi likh sakte hain.
+[21:19] Speaker 1: Hamare followers from hamari table ka naam user. Isko kar lete hain select and execute.
+[21:26] Speaker 1: Toh hamare paas answer aa gaya 10,000 ke equal. Usi tareeqe se hum chahein toh maximum of age nikaal sakte hain.
+[21:31] Speaker 1: select kiya execute. To age jo maximum hai hamare paas users mein that is equal to 17.
+[21:36] Speaker 1: Ab lets suppose hame count nikalna hai. Hame un sare students ka count nikalna hai ki kitne aise bachche hain, kitne aise users hain jinaki age 14 ke equal hai.
+[21:43] Speaker 1: To uske liye hum likh sakte hain select count of age from user where user age is equal to 14. Yaani hum sabse pehle to vo sari ki sari age nikal lenge jahan par age ki value 14 hai aur fir unse hum sari ki sari ages ka count nikal lenge.
+[21:58] Speaker 1: Isko kar lete hain select and execute. To execute kiya to hamare paas answer mein aaya hai two.
+[22:02] Speaker 1: Yaani aise users jinaki age 14 ke equal hai. Aise users ka kya count hai?
+[22:05] Speaker 1: Aise users ka count hai two. Yaani ek hamare paas ye wala user hai aur ek hamare paas ye wala user hai.
+[22:09] Speaker 1: Ab lets suppose agar hume minimum age nikalni hai ki minimum age wale kitne users hain.
+[23:08] Speaker 1: Jitne bhi users hain unki sabhi sab age agar dekhi jaye to minimum kiski age hai? To minimum age hamare paas aa jayegi which is equal to 14.
+[23:14] Speaker 1: Agar hum average nikalna chahte hain sare logon ki ages ka to hum likh sakte hain average of age. Isko kar lete hain select and execute.
+[23:22] Speaker 1: To ye hamare paas average aa gaya which is 15.333. Hum chahein to sum bhi nikal sakte hain.
+[23:28] Speaker 1: Agar hume sare ke sare logon ke followers ka sum nikalna hai to uske liye hum likh sakte hain sum of aur yahan par followers. Ise kar lete hain select and execute.
+[23:40] Speaker 1: To hamare paas sare logon ke followers ka sum aa gaya which is 11,223. To is tarike se hum apne aggregate functions ko use kar sakte hain jab bhi hum apni select ki condition likhte hain uske sath mein.
+[23:51] Speaker 1: Ab.
+
+
+
+
+
+
+
+
+
+# SQL GROUP BY and HAVING
+
+## Summary
+### Flow Summary
+SQL lecture: GROUP BY aggregate functions ke saath, HAVING groups par condition, clauses ka order, aur UPDATE, DELETE, ALTER, TRUNCATE vs DROP examples ke saath samjhaye gaye.
+
+### GROUP BY aur HAVING
+- GROUP BY same value wali rows ko summary rows mein group karta hai, aksar aggregate function ke saath use hota hai
+    - Example: SELECT age, count(id) FROM user GROUP BY age: 14 ke 2, 15 ka 1, 16 ke 2, 17 ka 1
+    - max(followers) per age: 14 mein 400, 15 mein 200, 16 mein 10,000, 17 mein 200
+- Jo column GROUP BY mein nahi hai (jaise name), use aggregate ke bahar select karne par error aata hai
+- HAVING groups par condition lagata hai, WHERE rows par; HAVING ke liye pehle GROUP BY zaroori hai
+    - HAVING max(followers) > 200 se sirf age 14 (400) aur 16 (10,000) groups aaye
+
+### Clauses ka general order
+- Order: SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY
+- ORDER BY age DESC lagane par age 16 upar aur 14 neeche aa gaya
+
+### UPDATE aur DELETE
+- UPDATE user SET followers = 600 WHERE age = 16 se saare 16 saal wale users ke followers 600 ho gaye
+- Pehli baar UPDATE par Error code 1175 (safe updates mode); fix: SET SQL\_SAFE\_UPDATES = 0
+- DELETE FROM user WHERE age = 14 se 14 age wale users hata diye; WHERE bhoolne par saari rows delete hoti hain
+
+### ALTER TABLE operations
+- ADD COLUMN: city VARCHAR(25) DEFAULT 'Delhi' add kiya, sabki city Delhi set hui
+- DROP COLUMN age kiya; RENAME TO se user ko insta user aur wapas user kiya
+- CHANGE COLUMN se followers ko subs kiya; naam badalne par bhi data type (INT DEFAULT 0) dobara dena padta hai
+- MODIFY subs INT DEFAULT 5 ke baad naye insert (id 7) mein subs by default 5 aaya
+    - id 6 par duplicate entry error aaya, isliye 7 use kiya
+
+### TRUNCATE vs DROP aur aage ka plan
+- TRUNCATE data khaali karta hai par table rehti hai; DROP poori table hata deta hai
+- Error 1701: post table ki foreign key user id ko reference kar rahi thi; post drop karke truncate chala
+- Agla part: SQL ko Node backend se connect karna; pehle practice questions, jaise college database banana
+
+## Transcript
+[00:08] Speaker 1: Next hum baat karne wale hain apne ek aur clause ke baare mein, jo hai hamara group by clause. Ab group by clause ko jab hum first time as a beginner padh rahe hote hain SQL ke andar, toh ye thoda sa tricky lag sakta hai, par ye actually utna tricky nahi hai, bahut simple hai. Group by clause ka kaam hota hai to group rows that have the same value into summary rows.
+[00:23] Speaker 1:  yaani group by kya karta hai? Group by multiple rows se data collect karta hai, aur phir us data ko group kar deta hai based on the result by one or more columns.
+[00:30] Speaker 1:  Achha, jab bhi hum group by ko use karte hain, isko hum individually use generally nahi karte; group by ko hum use karte hain kisi na kisi aggregate function ke saath. Jaise iska ek example lete hain.
+[00:38] Speaker 1:  Mere jo users hain, jitne bhi users hain hamare paas database ke andar, un users mein mujhe find out karna hai ki 14 ki age ke kitne individual users hain. Matlab har age group ke hisaab se mujhe number of users find out karne hain, ki 14 ki age ke users hain, unka kya count hai.
+[00:52] Speaker 1:  15 ki age ke jo users hain, unka kya count hai. 16 ki age ke jo users hain, unka kya count hai.
+[00:56] Speaker 1:  17 walon ka kya count hai. Iske alawa, agar kal ko maan lo 18, 19, 20, 21, kuch bhi age ka user add hota hai, mujhe is tarike se unka count chahiye.
+[01:03] Speaker 1:  Toh uske liye kya general SQL query hogi, jisko hum likh sakte hain? Ab main chahti hoon, mere jo users hain, unko main kis basis par group karna chahti hoon?
+[01:09] Speaker 1:  Main unhe group karna chahti hoon on the basis of their age. Yaani age ke hisaab se group banega.
+[01:14] Speaker 1:  Ki 14 saal ke bachhon ka ek group ban jaye, 15 saal ke students ka users ka ek group ban jaye, 16 years ke users ka ek group ban jaye, 17 years ke users ka ek group ban jaye. Ab mujhe chahiye ki jo groups ban gaye, in saare groups ka mere paas count aa jaye.
+[01:26] Speaker 1:  Ki kitne log first group mein hain, kitne log second group mein, kitne log third group mein, kitne log fourth group mein hain. Toh is kaam ko karne ke liye hamari kya SQL query rahegi?
+[01:32] Speaker 1:  Hum kya karenge? Hum likhenge SELECT.
+[01:34] Speaker 1:  Aur hame actually kya SELECT karna hai? Hame kya data chahiye?
+[01:37] Speaker 1:  Hame chahiye ki mujhe count of age chahiye. Ya ise hum keh sakte hain, count of name chahiye, ki kitne names hain.
+[01:43] Speaker 1:  Ya count of ID chahiye, ki kitne log hain. Har kisi ki, kyunki ID unique hogi, toh sab har kisi ko uniquely count kiya jayega.
+[01:49] Speaker 1:  SELECT kar lo count of ID from user table group by age. Yaani user table ke andar age ke hisaab se toh pehle groups bana do.
+[01:59] Speaker 1: To yahan par kya hua? Age ke hisaab se pehle hamare groups ban jayenge.
+[02:01] Speaker 1: Ab jaise hi hamare groups ban gaye, unke andar mujhe sabhi ki ID ko count karna hai. Yaani pehla jo group hai, uska count aa jayega.
+[02:07] Speaker 1: Dusra group hai, uska count aa jayega. Teesra group, uska count aa jayega.
+[02:09] Speaker 1: Chautha group, uska count aa jayega. Isko ek baar kar lete hain SELECT and execute.
+[02:13] Speaker 1: Execute kiya to hamare paas ye saare ke saare aa gaye count of ID. Ki 14 ki age wale do hain, 15 wale one hain, 16 wale do hain, 17 wala ek hai.
+[02:21] Speaker 1: iske saath mein hum chahein toh age ko bhi print karwa sakte hain, ki mujhe age bhi print karwani hai aur har age ka count bhi print karwana hai. SELECT kar lete hain.
+[02:26] Speaker 1: To age 14 ke do users hain, age 15 ka ek user hai, age 16 ke do users hain, age 17 ka ek user hai. To is tarike se humne age ke hisaab se group kar diya, aur phir un sabka hum count lekar aa gaye.
+[02:36] Speaker 1: Agar hum chahte, to hum ye aggregate function hata bhi sakte the. Us case mein kya hota?
+[02:39] Speaker 1: Sirf hamare paas age aa jaati. Ki age ke hisaab se humne group kar diya, to hamare paas saari ki saari ages aa gain.
+[02:43] Speaker 1: Ki age kya-kya hain? 14 hai, 15 hai, 16 hai, 17 hai.
+[02:46] Speaker 1: Yaani abhi humne sirf group banaya. Group banakar kuch kiya nahi kaam.
+[02:48] Speaker 1: Group banane ke baad kuch kaam karne ke liye hum apne aggregate functions ko use karte hain. Isliye generally we use GROUP BY with some aggregation function.
+[02:55] Speaker 1: Ab let's suppose, humne jo group banaye hain, 14, 15, 16 and 17, in saare groups ke andar humein maximum followers wala user jo hai, uski information ko print karna hai. Ya maximum followers ko print karna hai.
+[03:05] Speaker 1: To uske liye hum likh sakte hain ki maximum of followers ko hum print karwana chahte hain in each age group. Isko kar lete hain SELECT execute.
+[03:14] Speaker 1: To 14 saal ki age mein jo maximum followers hain, wo hain hamare paas 400. Ye ek user hai, jiske 400 followers hain.
+[03:19] Speaker 1: ye hamare pas 14 years ka ek aur user hai, jiske 123 followers hain. To jyada kaun se vale hue?
+[03:23] Speaker 1: jyada 400 vale hue. 15 ki age mein 200 maximum hai.
+[03:26] Speaker 1: 16 ki age mein 10,000 maximum hai. 17 ki age mein 200 maximum hai.
+[03:29] Speaker 1: is tarike se har age group ke hisab se unke kya maximum followers hain, unki information hamare pas aa gayi. Ab agar hum chahen ki unke naam bhi hamare pas aa jaye, to agar hum is tarike se likhte hain, execute karte hain, to hamare pas error aa jayega.
+[03:40] Speaker 1: error isliye aayega kyuki agar aggregation function ke bahar hum koi bhi column ka naam likhte hain, to us column ke naam ke hisab se hume group by karna hi karna padega. Yaani hum kisi aise column ko select nahi kar sakte, jaise name aisa column hai, jiske basis par grouping nahi hui.
+[03:51] Speaker 1: to is column ko hum yahan par nahi likh sakte. Is column ko likhenge to error aayega.
+[03:54] Speaker 1: is tarike ke columns ko hum apne aggregation function mein likh sakte hain. Jaise aisa column hai, jiske basis par grouping nahi hui.
+[04:25] Speaker 1: to is column ko hum yahan par column ko hum yahan par column ko likhenge to error aayega. To is tarike ke columns ko hum apne aggregation function mein likh sakte hain.
+[04:31] Speaker 1: jaise followers ko humne yahan to likha aggregate function mein, par humne group by ke andar nahi likha. To chal jayega.
+[04:35] Speaker 1: lekin name ko hum yahan par aise individually nahi likh sakte. Hum sirf unhi columns ko select kar sakte hain individually, jinko humne group by ke andar use kiya hai.
+[04:42] Speaker 1: to is tarike se hamara group by kaam karta hai.
+[12:50] Speaker 1: ab jaise hamara group by clause hota hai, vaise hi hamare pas ek aur clause hota hai, having clause. Having clause hamare where clause se kafi jyada similar hota hai.
+[12:58] Speaker 1: where clause ki agar baat karein, to where ka kaam kya hota tha? Where ka kaam hota tha ki ye kuch condition apply kar deta tha.
+[13:02] Speaker 1: sare ke sare jo rows hamare pas aa rahi hain, unke upar ek condition apply kar di. Vaisa-sa hi similar sa kaam hamare having clause ka hota hai.
+[13:07] Speaker 1: But it is used when we want to apply any condition after grouping. To where clause kis pe kaam karta tha?
+[13:13] Speaker 1: Where clause hamari rows ke upar condition apply karta tha. Aur HAVING clause hamare groups ke upar condition apply karta hai.
+[13:19] Speaker 1: Jaise lets suppose, humne kisi bhi column ke upar agar pehle se koi grouping kar li hai. Grouping kehne ka matlab hai, iska ek example lete hain ki humne saare ke saare maximum followers nikal liye hain har ek age group se.
+[13:27] Speaker 1: To uske liye hum query likh sakte hain. SELECT, humne age ko select kar liya.
+[13:32] Speaker 1: And uske sath mein humne maximum of followers nikal liye. From hamari table ka naam hai user.
+[13:38] Speaker 1: And yahan par humne GROUP BY kar diya. Kaun sa column ka name?
+[13:41] Speaker 1: Hamare age column. To is tarike se hum GROUP BY kar sakte hain.
+[13:43] Speaker 1: Hum age ke hisaab se pehle group bana sakte hain ki 14 ka ek group ban gaya, 15 ka ek, 16 ka ek, 17 ka ek. Har group ke hisaab se maximum followers ko print karwa sakte hain.
+[13:50] Speaker 1: Par hamein to sirf wahi wale groups ke maximum followers chahiye, jinka follower count 200 se bada ho. To yahan condition lagane ke liye, is par condition lagane ke liye, hum yahan likh sakte hain HAVING maximum of followers.
+[14:01] Speaker 1: Yaani jis bhi group ke maximum followers greater than 200 hain, hamein sirf unhi groups ka data chahiye. To ye condition kis par lagi?
+[14:07] Speaker 1: Ye condition hamare group pe lagi hai. Ye condition group pe lagi hai, na ki poori ki poori table ke upar.
+[14:11] Speaker 1: To ise ek baar likhkar dekhte hain. Hum already find out kar rahe the maximum followers from each age group.
+[14:15] Speaker 1: Ab iske sath mein hum ek condition karna hai.
+[29:08] Speaker 1: Define kar denge HAVING maximum, jinke maximum followers ki value 200 se badi ho. Ise kar lete hain select and execute.
+[29:15] Speaker 1: To hamare paas do aise groups aaye: ek 14 years ki age ka, ek 16 years ki age ka. Dono ke andar jo maximum followers ki value hai, that is equal to greater than 200.
+[29:22] Speaker 1: Ek ke andar 400 hai, ek ke andar 10,000 hai. To is tarike se hamara HAVING clause kaam karta hai, jiske basis par hum apne groups ke upar condition daalte hain.
+[29:29] Speaker 1: Jaise where clause is for the table, jabki having clause is for a group. Grouping is necessary for having.
+[29:35] Speaker 1: Yaani having clause ko likhne ke liye hamein hamesha pehle group by karna hi karna padega. Bina group by ke hum koi condition apply nahi kar sakte hamare groups ke upar.
+[29:41] Speaker 1: Yaani pehle hamein group by likhna padega, phir hum apne having clause ko likh sakte hain.
+[29:47] Speaker 1: Next hum baat karne wale hain ek general order ke bare mein, jisko hum use kar sakte hain apne different different clauses ko likhne ke liye. Jab bhi hum multiple clauses ko ek sath likhna chahte hain, toh uska general order yeh hota hai.
+[29:56] Speaker 1: Yaani sabse pehle toh hum apne select statement likhte hain from the table, and uske baad hum apni where condition ko define karte hain. Phir agar hamein where condition ke baad ya is condition ke bina bhi agar next hum baat karne wale hain ek general order ke bare mein, jisko hum use kar sakte hain apne different different clauses ko likhne ke liye.
+[37:11] Speaker 1: Jab bhi hum multiple clauses ko ek sath likhna chahte hain, toh uska general order yeh hota hai. Yaani sabse pehle toh hum apne select statement likhte hain from the table, and uske baad hum apni where condition ko define karte hain.
+[37:21] Speaker 1: Phir agar hamein where condition ke baad ya is condition ke bina bhi agar group karna hota hai, toh phir hum group by clause likhte hain. Aur group by clause ke upar agar hamein koi condition lagani hai, toh uske baad hum having ko use karte hain.
+[37:30] Speaker 1: Agar hamein in saari cheezon ko order karna hai, toh last mein hum apna order by clause hai, jisko use kar sakte hain. Ya humne saare ke saare clauses ko un age ke basis par group kar diya.
+[38:46] Speaker 1: Phir hum unse ages and har age ke hisab se maximum followers ko select kar rahe hain. Aur har kisi ke upar hamein condition lagani hai ki maximum followers greater than 200 hone chahiye saare ke saare groups ke andar.
+[38:55] Speaker 1: Ab hum chahein toh iska jo output hai, yeh jo output hai, jo hamare liye abhi aisa print hokar aa raha hai, isko descending order mein bhi sort kar sakte hain. Toh iske liye hum likh sakte hain order by, and yahan par hum likh sakte hain ki age ke hisab se hum ise descending order mein sort karna chahte hain.
+[39:09] Speaker 1: Select kar liya, execute kiya. Toh ab age 16 upar aa gayi hai, age 14 neeche aa gayi hai.
+[39:14] Speaker 1: Toh is tarike se kisi basis par agar hum sort karna chahte hain, toh hum multiple different different clauses ko different different conditions ko combine kar sakte hain in the given order.
+[39:24] Speaker 1: Ab next hum baat karne wale hain dobara se apne table queries ke bare mein. Toh abhi tak humne select ko aur clauses ko kaafi detail mein padh liya hai.
+[39:29] Speaker 1: Ab wapas se apni tables ke upar aa jate hain aur tables ke standard operations ke bare mein baat karenge. Next hum baat karne wale hain ki tables ko update kaise karte hain.
+[39:36] Speaker 1: Tables ko update karne ke liye hum apni update command ko use karte hain. Aur update karne ka matlab hai existing rows ko update karna.
+[39:41] Speaker 1: do cheezein hoti hain.
+[50:38] Speaker 1: hote hain tables ke andar, jinke baare mein humne baat ki hai. Ek hote hain hamare columns, jo vertical fashion ke andar aate hain.
+[50:43] Speaker 1: Columns kya hote hain? Columns hote hain hamari table ka schema, hamari table ka design.
+[50:47] Speaker 1: Abhi hum use change nahi kar rahe. Abhi hum kya kar rahe hain?
+[50:49] Speaker 1: Abhi hum apni individual row ka, yaani ek single user ka ya ek single entity ke data ko change karne ki, update karne ki baat kar rahe hain. Update karne ke liye hum likhte hain update table.
+[50:57] Speaker 1: To is baar hum select nahi likhenge. Is baar hum likhenge update table.
+[51:00] Speaker 1: Aur fir hum likhte hain set. Uske baad hum nayi condition likh sakte hain, nayi values likh sakte hain jo hum change karna chahte hain.
+[51:04] Speaker 1: Aur baad mein hum koi bhi condition specify kar sakte hain ki jin rows ke upar ye condition apply karti ho, sirf unhi rows ko hum update karein. Achha, kabhi bhi update command karne se pehle agar hum first time SQL likh rahe hain, to ho sakta hai ki hamare paas ek error aa jaye.
+[51:15] Speaker 1: Kyunki directly MySQL hamein hamare database ke andar changes karne ke liye allow nahi karta. Jaise agar humne likha update user aur uske andar hum set karna chahte hain jin bhi logon ki age, let's suppose 16 hai, 16 age wale saare logon ke hum followers ka count jo hai, usko set karna chahte hain, let's suppose to 600.
+[51:32] Speaker 1: To uske liye hum likh sakte hain set followers is equal to 600, where age is equal to 16. To is condition se kya hoga?
+[51:41] Speaker 1: Jin bhi logon ki age 16 hai, un sabke followers ka count 600 par set ho jayega. Ab hum ise select kar sakte hain, isko execute kar sakte hain.
+[51:47] Speaker 1: To yahan par kya hua? Yahan par ek error aa raha hai.
+[51:49] Speaker 1: Error code 1175: "You are using safe updates mode." Is tarike ka error aana bahut normal cheez hai agar hum first time apni update command ko execute kar rahe hain to.
+[51:56] Speaker 1: And is error se bachne ke liye hamein ek line run karni padegi, which is set SQL_safe_updates is equal to zero. By default SQL ke andar ek safe updates naam ki cheez hoti hai, jo by default 1 pe set hoti hai.
+[52:09] Speaker 1: Iska matlab hai ki SQL aapko updates nahi karne deta apne database ke andar, apni table ke andar. To us cheez ki wajah se hamare paas error aayega agar update command run karenge.
+[52:15] Speaker 1: to us error se bachne ke liye hum is command ko use kar sakte hain aur isko kar denge execute. Execute karne ke baad dobara se update ko run karenge.
+[52:22] Speaker 1: Execute kiya. To is baar hamara update execute ho gaya.
+[54:57] Speaker 1: Execute ho gaya. Is baar sara ka sara data hum select kar sakte hain.
+[54:59] Speaker 1: Select * from user. Ise kar lete hain select and execute.
+[55:06] Speaker 1: To is baar pura ka pura table ka data aa gaya. And sari ki sari log jinki age 16 hai, agar hum unke followers ka count dekhe to it is equal to 600 now.
+[55:13] Speaker 1: Ye Farah ka bhi followers ka count dekhe to it is equal to 600 now. To is tarike se hum apne updates kar sakte hain in our tables.
+[55:23] Speaker 1: Next query jiski hum baat karne wale hain, ye hai hamari delete query. Delete ka kaam hota hai to delete existing rows.
+[55:28] Speaker 1: Yaani jaise humne update kiya tha rows ko, waise hi hum rows ko delete bhi kar sakte hain. Uske liye hum likhte hain delete from apni table ka naam where condition.
+[55:34] Speaker 1: Yaani jis bhi row ke andar hamari condition satisfy ho rahi hai, wahan par un rows ko hum table ke andar se delete kar sakte hain. Jaise for example, yahan par hum likh sakte hain delete from user.
+[55:45] Speaker 1: And fir hum apni condition likh denge where hum un users ko delete karna chahte hain.
+[64:32] Speaker 1: Jinki age lets say 14 ke equal hai. Where age is equal to 14.
+[64:38] Speaker 1: Isko kar liya execute. And ise ab hum kar denge execute.
+[64:42] Speaker 1: To ab hamare jitne bhi users hain, unke andar age 14 wale jo users hain, wo sare ke sare jakar gayab ho chuke hain. Ek aur cheez, agar hum delete wali ye jo statement hai, ise use karte hain, toh iske andar agar humne where clause nahi likha, toh phir kya hoga?
+[64:52] Speaker 1: Delete statement sari ki sari rows ko delete kar deta hai. To galti se bhi delete jab bhi use karein, uske andar where condition ko bhoolna nahi hai.
+[64:58] Speaker 1: Yaani hum kuch specific data ko delete kar rahe hote hain, na ki pure ke pure table.
+[68:46] Speaker 1: vaise hi hum roz ko delete kuch specific data ko delete kar rahe hote hain, na ki poore ke poore table ke data ko.
+[69:01] Speaker 1: next query jiski hum baat karne wale hain, ye hai hamari alter query. Alter query ka kaam hota hai to change the schema.
+[69:06] Speaker 1: change schema matlab ab hum columns ke andar, yaani columns ka kya naam hai, columns ka kya data type hai, ya columns ke upar humne kya-kya constraints apply kiye hain, ya fir agar hame koi naya column add karna hai, kisi purane column ko agar hame delete karna hai, is tarike ke columns related operations ko agar hame perform karna hai, to uske liye hum alter query ko use karenge. Alter ke andar apne multiple different different types ki queries hoti hain, jisme se sabse pehli hai add column karne
+[69:29] Speaker 1: wali. Yaani agar hame kisi naye column ko add karna hai. Naye column ko add karne ke liye hum likhte hain alter table, apni table ka naam, aur fir likhte hain add column, apne naye column ka naam, us column ka data type, and us column ka constraint.
+[69:39] Speaker 1: jaise yahan par lets suppose hame koi city ka column add karna hai. To yahan hum add kar sakte hain alter table, apni table ka naam, which is user.
+[69:48] Speaker 1: hum add karne wale hain apna column. Column ka naam hai city.
+[69:52] Speaker 1: city ke andar ye hoga hamare varchar type ka, jiski limit hai 25, and jiske liye hum koi default value set karna chahte hain ki sabki city by default Delhi honi chahiye. Ab ise kar lete hain select, and ise kar lenge execute.
+[70:03] Speaker 1: jaise hi execute kiya, successful ho gaya. Ab hum chahe to apni user table ko dekh sakte hain.
+[70:07] Speaker 1: user table ke andar ab by default sare ke sare columns ke andar jo city ki value hai, that is equal to Delhi. Next aa jate hain apne drop column par.
+[70:13] Speaker 1: drop column ka kaam hota hai to drop a column, yaani to delete a column. Hum likhte hain alter table, apni table ka naam, fir drop column, aur fir column ka naam, jisko hum drop karna chahte hain, jisko hum delete karna chahte hain.
+[74:58] Speaker 1: jaise lets suppose is poore ke poore user data me se agar hame age ko delete karna hai, to age ko delete karne ke liye we can write alter table, apni table ka naam, which is user, and ise kar denge drop column, apne column ka naam, which is age. Ise kar lete hain select, execute, and ab sare ke sare apne users ko dekh lenge.
+[75:17] Speaker 1: users ko dekha to ye sare hamare users aa gaye. Ab is users ke sath me hame hamare columns dikhai de rahe hain, par iske andar hamara age wala column nahi dikhai de raha kyuki wo drop ho chuka hai.
+[75:25] Speaker 1: next hum baat karne wale hain rename table ke bare me. Rename ka kaam hota hai hamari poori ki poori table ka naam hi change kar dena.
+[75:31] Speaker 1: jaise rename karne ke liye hum likhte hain alter table, and rename to, fir apni nayi table ka naam. Jaise agar is table ko hum users ki jagah Insta users naam dena chahte hain, to uske liye hum likh sakte hain alter table.
+[75:41] Speaker 1: ye statement yahan se hata sakte hain. Alter table user rename to Insta user.
+[75:52] Speaker 1: Ise kar lete hain select, and execute. To is baar jab hum select all from user karenge, toh isme hume error mil jayega kyunki ab hamari table ka naam ye nahi hai.
+[75:59] Speaker 1: Ab hamari table ka naam insta user ho gaya hai. Toh ab ise select karke karenge execute.
+[76:03] Speaker 1: Toh is baar hamare liye command run karegi. Toh is tarike se hum apni table ko rename bhi kar sakte hain.
+[76:07] Speaker 1: Next hota hai alter table ke andar to change the column. Yaani jab bhi hame column ko rename karna hai, column ko hame change karna hai, modify karna hai, toh uske liye hum likh sakte hain alter table, apni table ka naam, aur phir likhenge change column, apne purane column ka naam.
+[76:18] Speaker 1: Ab purane column ki jagah hum kuch naya lekar aana chahte hain, toh phir hum likhte hain apne naye column ka naam, uska naya data type, and uske new constraints ko. Ab jab bhi hum change karte hain, yaani jab bhi hum kisi column ko rename karte hain, toh let's suppose agar hamara column hai koi aur woh int type ka hai, toh uske baad new data type mein bhi hame dobaara se int ko redefine karna padega.
+[76:34] Speaker 1: Yaani agar hame sirf naam bhi change karna hai, toh sirf naam change nahi hota. Uske saath mein hame dobaara se naya data type dena padta hai.
+[76:38] Speaker 1: Aur agar hamara data type same rehna hai, toh hame purane wala hi data type likhna hota hai. Jaise let change agar hamara data type same rehna hai, toh hame purane wala hi data type likhna hota hai.
+[83:20] Speaker 1: Jaise let's suppose hamari ye jo table hai, iske andar hum followers ko rename karke karna chahte hain subscribers. Toh woh hum kaise karenge?
+[83:27] Speaker 1: Hum yahan par likh sakte hain alter table insta user ya phir insta user se ise waapas se update kar dete hain. Rename kar dete hain alter table insta user rename to user.
+[83:39] Speaker 1: Ye ek baar dobaara run kar diya toh hamari table ka naam dobaara se user ho jayega. Toh successful.
+[83:43] Speaker 1: Toh alter table user. Hum kya karna chahte hain?
+[83:47] Speaker 1: Change column. Hum apne followers naam ka jo column hai, use change karna chahte hain to subscribers.
+[83:53] Speaker 1: Toh ise subs likh lete hain. Aur iske saath ab hume kya karna padega?
+[83:55] Speaker 1: Ab hume uska naya data type dena padega. Naya data type same hi rakhenge hum.
+[83:59] Speaker 1: Yaani followers ko rakhenge int aur default ko rakhenge zero. Toh yahan par hum likh sakte hain this statement.
+[84:05] Speaker 1: ye statement likh lete hain. Execute karte hain.
+[84:07] Speaker 1: Execute ho gaya. Ab saare ke saare data ko ek baar select karte hain.
+[84:12] Speaker 1: select all from user. select all kiya.
+[84:14] Speaker 1: to is baar yahan par followers likha hua nahi aa raha hamare column ke andar. Yahan par is baar hamare paas subs likha hua aa raha hai.
+[84:19] Speaker 1: yaani subscribers. Next hum baat karne wale hain modify column ki.
+[84:22] Speaker 1: modify column ka kaam hota hai ki hame purane column ke andar rename nahi karna cheezon ko. Hame kya karna hai?
+[84:26] Speaker 1: ya to uska data type ya phir uske constraint ko modify karna hai. Jaise alter table table name hum likhte hain.
+[84:30] Speaker 1: uske baad likhte hain modify. Phir apne column ka naam.
+[84:32] Speaker 1: phir agar uske andar hame naya data type dalna hai to usko hum likh sakte hain. Naya constraint dalna hai to use hum likh sakte hain.
+[84:37] Speaker 1: jaise let's suppose ye jo hamare followers hain, inke liye default value hum set karna chahte hain to five. Ab ise kaise modify karein?
+[84:42] Speaker 1: modify karne ke liye hum likh sakte hain alter table user. And yahan par hum likh denge modify.
+[84:47] Speaker 1: hamare column ka naam hai subs. subs ke andar hamara naya data type hone wala hai int.
+[84:50] Speaker 1: and iske liye hum basic condition define karenge. Default to be set to five.
+[84:54] Speaker 1: ab ise kar dete hain select. Execute.
+[84:57] Speaker 1: Execute ho gaya. Saare elements ko select kar lete hain.
+[85:00] Speaker 1: To ye hamare paas data ho gaya. Par abhi hume subscribers count default value nahi dikh rahi.
+[85:03] Speaker 1: Default value dekhne ke liye hum naya data insert karne ki koshish kar sakte hain. Naya data jab hum insert karenge toh iske andar hum apne followers ka count add nahi karenge.
+[85:11] Speaker 1: Followers ka count add nahi kiya. Data number six ko add karte hain.
+[85:14] Speaker 1: This is going to be age 19. And ise hum ek random naam de.
+[85:26] Speaker 1: To ise kaise modify kare? Modify karne ke liye hum likh sakte hain alter table user.
+[85:30] Speaker 1: And yahan par hum likh denge modify. Hamare column ka naam hai subs.
+[85:33] Speaker 1: Subs ke andar hamara naya data type hone wala hai int. And iske liye hum basic condition define karenge.
+[85:37] Speaker 1: Default to be set to five. Ab ise kar dete hain select.
+[85:41] Speaker 1: Execute. Execute ho gaya.
+[85:45] Speaker 1: Sare elements ko select kar lete hain. To ye hamare paas data ho gaya.
+[85:48] Speaker 1: Par abhi hume subscribers count default value nahi dikh rahi. Default value dekhne ke liye hum naya data insert karne ki koshish kar sakte hain.
+[85:53] Speaker 1: Naya data jab hum insert karenge toh iske andar hum apne followers ka count add nahi karenge. Followers ka count add nahi kiya.
+[85:59] Speaker 1: Data number six ko add karte hain. This is going to be age 19.
+[86:02] Speaker 1: And ise hum ek random naam de dete hain. Kuch followers ka count kyunki hum hata rahe hain ya subscribers ka 120.
+[86:09] Speaker 1: Isko kar lete hain select. Achha, ab humne age delete kar diya apni table se.
+[86:13] Speaker 1: to galti se us column ka naam nahi likhna. nahi to hamare paas error aa jayega.
+[86:16] Speaker 1: isko kar lete hain select. execute.
+[86:19] Speaker 1: duplicate entry six. yaani six wali id already hai.
+[86:21] Speaker 1: isko kar lete hain seven. select and execute.
+[86:24] Speaker 1: to execute ho gaya. ab agar hum check karein select all from user.
+[86:28] Speaker 1: to yahan par jo number seven wali id wala user hai, uske liye subscribers by default five par set ho gaye hain. yaani ye jo humne int default five kiya tha subscribers ke liye, us tarike se humne apne subscribers wale column ko kar diya tha modify.
+[86:38] Speaker 1: even do jab humne data ko insert kiya, to iske andar humne koi subscribers ka count set nahi kiya. to wo by default five par set ho gaya.
+[86:44] Speaker 1: to is tarike se hamari alter table command hamare liye kaam karti hai.
+[86:50] Speaker 1: next hum baat karne wale hain table queries ke andar about truncate. truncate ka kaam hota hai ki ye saari ki saari table ke data ko delete kar deta hai.
+[86:56] Speaker 1: ek command hoti hai hamare paas drop table. drop table se kya hota hai?
+[86:59] Speaker 1: drop table se saari ki saari table hi delete ho jati hai. matlab wo table ab exist nahi karegi database ke andar.
+[87:04] Speaker 1: aur dusri command hoti hai truncate command. truncate command ka kaam hota hai to delete a table's data.
+[87:09] Speaker 1: yaani table to rahegi, bas wo puri khaali ho jayegi. hum likhte hain truncate table and fir apni table ka naam.
+[87:14] Speaker 1: jaise lets suppose hame apni user table se saara ka saara data khaali karna hai. to hum likh sakte hain truncate table and fir apni table ka naam which is going to be equal to user.
+[87:23] Speaker 1: isko kar lete hain select. execute.
+[87:25] Speaker 1: To yahan par hamare paas ye error aa raha hai 1701 ka can not truncate a table referenced in some other table. To ye basically error isliye aa raha hai kyunki humne kya kiya tha?
+[87:33] Speaker 1: Humne last lecture ke andar ek aur table banayi thi post naam se aur post table ke andar humne ek foreign key create ki thi. Ab ye jo foreign key hai, is post naam ki table ke andar ye reference kar rahi thi hamari user table ki id ko.
+[87:43] Speaker 1: Yaani humne do tables banayi thi post ke andar. Ye jo hamari user id thi, ye hamari foreign key thi.
+[87:47] Speaker 1: To ab SQL hume kahne ki koshish kar raha hai, agar aapne user ke data ko hi khali kar diya, usko aap truncate karne ki koshish kar rahe ho. To post ke andar jo aap user ki id ko as a foreign key reference kar rahe the, wo cheez to invalid ho jayegi.
+[87:57] Speaker 1: Wo jo aapne connection banaya tha dono tables ke beech mein, wo connection hume is user table ko truncate karne se rok raha hai. To ya to hume is connection ko todna padega, ya to use ab foreign key wala jo uska constraint hai, use hame hatana padega.
+[88:08] Speaker 1: Ya fir hum chahe to pehle is post table ko truncate ya delete kar sakte hain. To usse connection automatically khatam ho jayega.
+[88:13] Speaker 1: To hum kya karenge? Post ko drop kar denge.
+[88:15] Speaker 1: Yahan par hum likh sakte hain drop table post. Jaise hi post ko hum drop karenge, uska connection hat jayega.
+[88:21] Speaker 1: Humne ise drop kar diya. Drop kar diya.
+[88:23] Speaker 1: Matlab ye yahan hamare code se hat jayegi. Ab hum kya kar sakte hain?
+[88:26] Speaker 1: Ab hum truncate kar sakte hain table user ko. Jaise hi enter kiya, to is bar truncate successful ho gaya.
+[88:30] Speaker 1: Successful ho gaya. Select karte hain sare ke sare entries ko user se.
+[88:33] Speaker 1: To is bar hamare paas sari null entries aa rahi hain. Yaani hamara pura data jo humne insert kiya tha apni table user ke andar, wo sara ka sara data ab delete ho chuka hai.
+[88:40] Speaker 1: Par jab hum drop karte hain, yaani agar hum user table ko drop kare is tarike se, to ise agar humne drop kar diya, drop successful ho gaya. Ab agar hum select command ko likhe, to is bar select command mein error aa جائے گا.
+[88:49] Speaker 1: Error isliye aayega kyunki is bar hamari user table exist hi nahi karti. To yahi difference hota hai truncate and drop ke beech mein.
+[88:54] Speaker 1: drop jab hum karte hain, toh phir uske baad table completely gayab ho jaati hai. Phir hum usme se select ya kuch aur nahi kar sakte.
+[88:59] Speaker 1: Naya data bhi add nahi kar sakte. Truncate se sirf woh jo table hoti hai, uska pura data khaali ho jaata hai.
+[89:03] Speaker 1: Par woh table phir bhi hoti hai. Hum chahe toh baad mein jaakar us table ke andar aur data, naya data add kar sakte hain.
+[89:08] Speaker 1: Us table ke andar modifications kar sakte hain. Toh is chapter ke andar, is part ke andar humne kya-kya cover kiya hai?
+[89:12] Speaker 1: Humne apne clauses ko cover kiya hai. Humne apne kuch-kuch operators, apne aggregate functions ko cover kiya hai.
+[89:16] Speaker 1: Saath ke saath humne apni table ke upar aur multiple operations ko cover kiya hai. Ab yeh toh saari cheezein ho gayi hamari related to SQL commands.
+[89:22] Speaker 1: Ab jab hum apna next part padhenge SQL ka, toh uske andar hum dekhenge ki jo basic SQL humne seekh liya ki haan, is tareeqe se queries kaam karti hai. Is tareeqe se data manipulate hota hai.
+[89:30] Speaker 1: Hamari tables hoti hain, hamara database hota hai. Par yeh actually hum apne website ke backend mein kaise use kar sakte hain?
+[89:35] Speaker 1: Yaani hum apne node ke sath apne SQL ko kaise connect karte hain, use ab next hum seekh rahe honge.
+[89:43] Speaker 1: Ab next hum solve karne wale hain apne kuch practice questions ko taaki SQL ke upar hum thodi aur command lekar aa sakein.
+[90:08] Speaker 1: Inmein se sabse pehla question hai hamare paas yeh, jismein hamein bol rahe hain to create a database for your college. Toh hamein ek database
