@@ -1,0 +1,21 @@
+{
+  "name": "39)-backend-5-(node-with-sql)",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "mysql2": "^3.24.6",
+    "url": "^0.11.4",
+    "uuid": "^14.0.3"
+  }
+}
